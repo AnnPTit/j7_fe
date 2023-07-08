@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import { format } from "date-fns";
+import moment from "moment";
 import {
   Avatar,
   Box,
@@ -71,7 +71,10 @@ export const CustomersTable = (props) => {
             <TableBody>
               {items.map((customer) => {
                 const isSelected = selected.includes(customer.id);
-                // const createdAt = format(customer.createdAt, 'dd/MM/yyyy');
+
+                // const birthday = new Date("2003-09-09T07:21:20.000+00:00");
+                console.log(customer.birthday);
+                const day = moment(customer.birthday).format("dd/MM/yyyy");
 
                 return (
                   <TableRow hover key={customer.id} selected={isSelected}>
@@ -104,7 +107,7 @@ export const CustomersTable = (props) => {
                     <TableCell>{customer.address}</TableCell>
                     <TableCell>{customer.phoneNumber}</TableCell>
                     <TableCell>{customer.nationality}</TableCell>
-                    <TableCell>{customer.status == 1 ? "Hoạt động" : "Ngừng hoặt động"}</TableCell>
+                    <TableCell>{day}</TableCell>
                     <TableCell>
                       <button onClick={() => handleDelete(customer.id)}>Delete</button>
                     </TableCell>

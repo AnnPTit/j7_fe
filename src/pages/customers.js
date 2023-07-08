@@ -12,7 +12,7 @@ import { CustomersTable } from "src/sections/customer/customers-table";
 import { CustomersSearch } from "src/sections/customer/customers-search";
 import { applyPagination } from "src/utils/apply-pagination";
 
-const now = new Date();
+
 
 const useCustomers = (data, page, rowsPerPage) => {
   return useMemo(() => {
