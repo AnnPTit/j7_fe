@@ -64,17 +64,15 @@ export const CustomersTable = (props) => {
                 <TableCell>Location</TableCell>
                 <TableCell>Phone</TableCell>
                 <TableCell>Nationality</TableCell>
-                <TableCell>Status</TableCell>
+                <TableCell>Birthday</TableCell>
                 <TableCell>Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {items.map((customer) => {
                 const isSelected = selected.includes(customer.id);
-
-                // const birthday = new Date("2003-09-09T07:21:20.000+00:00");
-                console.log(customer.birthday);
-                const day = moment(customer.birthday).format("dd/MM/yyyy");
+                // const birthday = format(customer.birthday, 'dd/MM/yyyy');
+                const birthday = moment(customer.birthday).format("DD/MM/YYYY");
 
                 return (
                   <TableRow hover key={customer.id} selected={isSelected}>
@@ -107,7 +105,7 @@ export const CustomersTable = (props) => {
                     <TableCell>{customer.address}</TableCell>
                     <TableCell>{customer.phoneNumber}</TableCell>
                     <TableCell>{customer.nationality}</TableCell>
-                    <TableCell>{day}</TableCell>
+                    <TableCell>{birthday}</TableCell>
                     <TableCell>
                       <button onClick={() => handleDelete(customer.id)}>Delete</button>
                     </TableCell>
