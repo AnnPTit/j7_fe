@@ -1,5 +1,5 @@
-import PropTypes from 'prop-types';
-import { format } from 'date-fns';
+import PropTypes from "prop-types";
+import { format } from "date-fns";
 import {
   Avatar,
   Box,
@@ -12,10 +12,10 @@ import {
   TableHead,
   TablePagination,
   TableRow,
-  Typography
-} from '@mui/material';
-import { Scrollbar } from 'src/components/scrollbar';
-import { getInitials } from 'src/utils/get-initials';
+  Typography,
+} from "@mui/material";
+import { Scrollbar } from "src/components/scrollbar";
+import { getInitials } from "src/utils/get-initials";
 
 export const CustomersTable = (props) => {
   const {
@@ -29,11 +29,14 @@ export const CustomersTable = (props) => {
     onSelectOne,
     page = 0,
     rowsPerPage = 0,
-    selected = []
+    selected = [],
   } = props;
 
-  const selectedSome = (selected.length > 0) && (selected.length < items.length);
-  const selectedAll = (items.length > 0) && (selected.length === items.length);
+  const selectedSome = selected.length > 0 && selected.length < items.length;
+  const selectedAll = items.length > 0 && selected.length === items.length;
+  const handleDelete = (id) => {
+    props.onDelete(id);
+  };
 
   return (
     <Card>
@@ -55,21 +58,14 @@ export const CustomersTable = (props) => {
                     }}
                   />
                 </TableCell>
-                <TableCell>
-                  Name
-                </TableCell>
-                <TableCell>
-                  Email
-                </TableCell>
-                <TableCell>
-                  Location
-                </TableCell>
-                <TableCell>
-                  Phone
-                </TableCell>
-                <TableCell>
-                  Signed Up
-                </TableCell>
+                <TableCell>Usename</TableCell>
+                <TableCell>Full Name</TableCell>
+                <TableCell>Email</TableCell>
+                <TableCell>Location</TableCell>
+                <TableCell>Phone</TableCell>
+                <TableCell>Nationality</TableCell>
+                <TableCell>Status</TableCell>
+                <TableCell>Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -78,11 +74,7 @@ export const CustomersTable = (props) => {
                 // const createdAt = format(customer.createdAt, 'dd/MM/yyyy');
 
                 return (
-                  <TableRow
-                    hover
-                    key={customer.id}
-                    selected={isSelected}
-                  >
+                  <TableRow hover key={customer.id} selected={isSelected}>
                     <TableCell padding="checkbox">
                       <Checkbox
                         checked={isSelected}
@@ -96,30 +88,25 @@ export const CustomersTable = (props) => {
                       />
                     </TableCell>
                     <TableCell>
-                      <Stack
-                        alignItems="center"
-                        direction="row"
-                        spacing={2}
-                      >
-                        <Avatar src={customer.avatar}>
+                      <Stack alignItems="center" direction="row" spacing={2}>
+                        <Avatar
+                          src={
+                            "https://static.vecteezy.com/system/resources/previews/008/442/086/original/illustration-of-human-icon-user-symbol-icon-modern-design-on-blank-background-free-vector.jpg"
+                          }
+                        >
                           {getInitials(customer.name)}
                         </Avatar>
-                        <Typography variant="subtitle2">
-                          {customer.username}
-                        </Typography>
+                        <Typography variant="subtitle2">{customer.username}</Typography>
                       </Stack>
                     </TableCell>
+                    <TableCell>{customer.fullname}</TableCell>
+                    <TableCell>{customer.email}</TableCell>
+                    <TableCell>{customer.address}</TableCell>
+                    <TableCell>{customer.phoneNumber}</TableCell>
+                    <TableCell>{customer.nationality}</TableCell>
+                    <TableCell>{customer.status == 1 ? "Hoạt động" : "Ngừng hoặt động"}</TableCell>
                     <TableCell>
-                      {customer.email}
-                    </TableCell>
-                    <TableCell>
-                      {/* {customer.address.city}, {customer.address.state}, {customer.address.country} */}
-                    </TableCell>
-                    <TableCell>
-                      {customer.phone}
-                    </TableCell>
-                    <TableCell>
-                      {/* {createdAt} */}
+                      <button onClick={() => handleDelete(customer.id)}>Delete</button>
                     </TableCell>
                   </TableRow>
                 );
@@ -152,5 +139,5 @@ CustomersTable.propTypes = {
   onSelectOne: PropTypes.func,
   page: PropTypes.number,
   rowsPerPage: PropTypes.number,
-  selected: PropTypes.array
+  selected: PropTypes.array,
 };

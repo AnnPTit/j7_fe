@@ -18,7 +18,7 @@ const useCustomers = (data, page, rowsPerPage) => {
   return useMemo(() => {
     console.log("data : ", data);
     return applyPagination(data, page, rowsPerPage);
-  }, [data]);
+  }, [data, page, rowsPerPage]);
 };
 
 const useCustomerIds = (customers) => {
@@ -42,6 +42,17 @@ const Page = () => {
   const handleRowsPerPageChange = useCallback((event) => {
     setRowsPerPage(event.target.value);
   }, []);
+
+  // Delete Customer
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(`http://localhost:2003/api/customers/delete/${id}`);
+      const updatedData = data.filter((customer) => customer.id !== id);
+      setData(updatedData);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -121,6 +132,7 @@ const Page = () => {
               page={page}
               rowsPerPage={rowsPerPage}
               selected={customersSelection.selected}
+              onDelete={handleDelete} // Thêm prop onDelete và truyền giá trị của handleDelete vào đây
             />
           </Stack>
         </Container>
