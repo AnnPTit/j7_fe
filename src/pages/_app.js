@@ -14,6 +14,7 @@ const clientSideEmotionCache = createEmotionCache();
 
 const SplashScreen = () => null;
 
+
 const App = (props) => {
   const { Component, emotionCache = clientSideEmotionCache, pageProps } = props;
 
@@ -22,6 +23,9 @@ const App = (props) => {
   const getLayout = Component.getLayout ?? ((page) => page);
 
   const theme = createTheme();
+
+  
+
 
   return (
     <CacheProvider value={emotionCache}>

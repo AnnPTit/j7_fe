@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState, useEffect } from "react";
 import axios from "axios";
 import Head from "next/head";
-import { subDays, subHours } from "date-fns";
+
 import ArrowDownOnSquareIcon from "@heroicons/react/24/solid/ArrowDownOnSquareIcon";
 import ArrowUpOnSquareIcon from "@heroicons/react/24/solid/ArrowUpOnSquareIcon";
 import PlusIcon from "@heroicons/react/24/solid/PlusIcon";
@@ -11,8 +11,7 @@ import { Layout as DashboardLayout } from "src/layouts/dashboard/layout";
 import { CustomersTable } from "src/sections/customer/customers-table";
 import { CustomersSearch } from "src/sections/customer/customers-search";
 import { applyPagination } from "src/utils/apply-pagination";
-
-
+import InputCustomer from "src/components/InputCustomer/InputCustomer";
 
 const useCustomers = (data, page, rowsPerPage) => {
   return useMemo(() => {
@@ -34,6 +33,7 @@ const Page = () => {
   const customers = useCustomers(data, page, rowsPerPage);
   const customersIds = useCustomerIds(customers);
   const customersSelection = useSelection(customersIds);
+  const [inputModal, setInputModal] = useState(false);
 
   const handlePageChange = useCallback((event, value) => {
     setPage(value);
@@ -43,6 +43,9 @@ const Page = () => {
     setRowsPerPage(event.target.value);
   }, []);
 
+  const openModelInput = () => {
+    setInputModal(!inputModal);
+  };
   // Delete Customer
   const handleDelete = async (id) => {
     try {
@@ -57,12 +60,27 @@ const Page = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
+        console.log(accessToken);
+        axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
+
         const response = await axios.get("http://localhost:2003/api/customers/load"); // Thay đổi URL API của bạn tại đây
         setData(response.data);
       } catch (error) {
-        console.log(error);
+        if (error.response) {
+          // Xử lý response lỗi
+          if (error.response.status === 403) {
+            alert("Bạn không có quyền truy cập vào trang này");
+            window.location.href = "/auth/login"; // Thay đổi "/dang-nhap" bằng đường dẫn đến trang đăng nhập của bạn
+          } else {
+            alert("Có lỗi xảy ra trong quá trình gọi API");
+          }
+        } else {
+          console.log("Không thể kết nối đến API");
+        }
       }
     };
+
     fetchData();
   }, []);
 
@@ -108,6 +126,7 @@ const Page = () => {
               </Stack>
               <div>
                 <Button
+                  onClick={openModelInput}
                   startIcon={
                     <SvgIcon fontSize="small">
                       <PlusIcon />
@@ -120,6 +139,7 @@ const Page = () => {
               </div>
             </Stack>
             <CustomersSearch />
+            {inputModal && <InputCustomer />}
             <CustomersTable
               count={data.length}
               items={customers}
