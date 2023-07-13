@@ -142,6 +142,8 @@ export const AuthProvider = (props) => {
       })
       .catch((error) => {
         console.error(error);
+        window.location.href = "/auth/login";
+        alert("Account invalid !");
       });
 
     const user = {
