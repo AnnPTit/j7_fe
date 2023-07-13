@@ -20,7 +20,7 @@ import {
 import { Scrollbar } from "src/components/scrollbar";
 import { getInitials } from "src/utils/get-initials";
 
-export const FloorTable = (props) => {
+export const OrderTable = (props) => {
   const {
     count = 0,
     items = [],
@@ -61,57 +61,61 @@ export const FloorTable = (props) => {
                     }}
                   />
                 </TableCell>
-                <TableCell>Floor Code</TableCell>
-                <TableCell>Floor Name</TableCell>
-                <TableCell>Note</TableCell>
+                <TableCell>Order Code</TableCell>
+                <TableCell>Book Room</TableCell>
+                <TableCell>Account</TableCell>
+                <TableCell>Staff</TableCell>
+                <TableCell>Customer</TableCell>
                 <TableCell>Created At</TableCell>
+                <TableCell>Total Money</TableCell>
+                <TableCell>Note</TableCell>
                 <TableCell>Status</TableCell>
                 <TableCell>Actions</TableCell>
               </TableRow>
             </TableHead>
             
             <TableBody>
-              {items.map((floor) => {
-                const isSelected = selected.includes(floor.id);
-                const created = moment(floor.createAt).format("DD/MM/YYYY - hh:mm:ss");
-                const alertDelete = () => {
-                  Swal.fire({
-                    title: 'Are you sure?',
-                    text: "You won't be able to revert this!",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Yes, delete it!'
-                  }).then((result) => {
-                    if (result.isConfirmed) {
-                      Swal.fire(
-                        'Deleted!',
-                        'Your data has been deleted.',
-                        'success'
-                      )
-                      handleDelete(floor.id);
-                      toast.success("Delete Successfully!");
-                    }
-                  })
-                }
+              {/* {items.map((order) => {
+                const isSelected = selected.includes(order.id);
+                const created = moment(order.createAt).format("DD/MM/YYYY - hh:mm:ss");
+                // const alertDelete = () => {
+                //   Swal.fire({
+                //     title: 'Are you sure?',
+                //     text: "You won't be able to revert this!",
+                //     icon: 'warning',
+                //     showCancelButton: true,
+                //     confirmButtonColor: '#3085d6',
+                //     cancelButtonColor: '#d33',
+                //     confirmButtonText: 'Yes, delete it!'
+                //   }).then((result) => {
+                //     if (result.isConfirmed) {
+                //       Swal.fire(
+                //         'Deleted!',
+                //         'Your data has been deleted.',
+                //         'success'
+                //       )
+                //       handleDelete(floor.id);
+                //       toast.success("Delete Successfully!");
+                //     }
+                //   })
+                // }
               
                 return (
-                  <TableRow hover key={floor.id} selected={isSelected}>
+                  <TableRow hover key={order.id} selected={isSelected}>
                     <TableCell padding="checkbox">
                       <Checkbox
                         checked={isSelected}
                         onChange={(event) => {
                           if (event.target.checked) {
-                            onSelectOne?.(floor.id);
+                            onSelectOne?.(order.id);
                           } else {
-                            onDeselectOne?.(floor.id);
+                            onDeselectOne?.(order.id);
                           }
                         }}
                       />
                       
                     </TableCell>
-                    <TableCell>{floor.floorCode}</TableCell>
+                    <TableCell>{order.orderCode}</TableCell>
                     <TableCell>{floor.floorName}</TableCell>
                     <TableCell>{floor.note}</TableCell>
                     <TableCell>{created}</TableCell>
@@ -123,7 +127,7 @@ export const FloorTable = (props) => {
                     </TableCell>
                   </TableRow>
                 );
-              })}
+              })} */}
             </TableBody>
           </Table>
         </Box>
@@ -141,7 +145,7 @@ export const FloorTable = (props) => {
   );
 };
 
-FloorTable.propTypes = {
+OrderTable.propTypes = {
   count: PropTypes.number,
   items: PropTypes.array,
   onDeselectAll: PropTypes.func,

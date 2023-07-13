@@ -28,6 +28,15 @@ export const items = [
     )
   },
   {
+    title: 'Manager Order',
+    path: '/order',
+    icon: (
+      <SvgIcon fontSize="small">
+        <ShoppingBagIcon />
+      </SvgIcon>
+    )
+  },
+  {
     title: 'Floor',
     path: '/floor',
     icon: (
