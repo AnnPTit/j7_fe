@@ -8,32 +8,31 @@ import PlusIcon from "@heroicons/react/24/solid/PlusIcon";
 import { Box, Button, Container, Link, Stack, SvgIcon, Typography } from "@mui/material";
 import { useSelection } from "src/hooks/use-selection";
 import { Layout as DashboardLayout } from "src/layouts/dashboard/layout";
-import { FloorTable } from "src/sections/floor/floor-table";
-import { FloorSearch } from "src/sections/floor/floor-search";
+import { OrderTable } from "src/sections/order/order-table";
+import { OrderSearch } from "src/sections/order/order-search";
 import { applyPagination } from "src/utils/apply-pagination";
 import "bootstrap/dist/css/bootstrap.min.css";
-import InputFloor from "src/components/InputFloor/InputFloor";
 
-const useFloor = (data, page, rowsPerPage) => {
+const useOrder = (data, page, rowsPerPage) => {
   return useMemo(() => {
     console.log("data : ", data);
     return applyPagination(data, page, rowsPerPage);
   }, [data, page, rowsPerPage]);
 };
 
-const useFloorIds = (floor) => {
+const useOrderIds = (order) => {
   return useMemo(() => {
-    return floor.map((floor) => floor.id);
-  }, [floor]);
+    return order.map((order) => order.id);
+  }, [order]);
 };
 
 const Page = () => {
   const [data, setData] = useState([]);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  const floor = useFloor(data, page, rowsPerPage);
-  const floorIds = useFloorIds(floor);
-  const floorSelection = useSelection(floorIds);
+  const order = useOrder(data, page, rowsPerPage);
+  const orderIds = useOrderIds(order);
+  const orderSelection = useSelection(orderIds);
   const [inputModal, setInputModal] = useState(false);
 
   const handlePageChange = useCallback((event, value) => {
@@ -48,11 +47,11 @@ const Page = () => {
     setInputModal(!inputModal);
   };
 
-  // Delete floor
+  // Delete order
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:2003/api/floor/delete/${id}`);
-      const updatedData = data.filter((floor) => floor.id !== id);
+      await axios.delete(`http://localhost:2003/api/order/delete/${id}`);
+      const updatedData = data.filter((order) => order.id !== id);
       setData(updatedData);
     } catch (error) {
       console.log(error);
@@ -66,7 +65,7 @@ const Page = () => {
         console.log(accessToken);
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
 
-        const response = await axios.get("http://localhost:2003/api/floor/load"); // Thay đổi URL API của bạn tại đây
+        const response = await axios.get("http://localhost:2003/api/order/load"); // Thay đổi URL API của bạn tại đây
         setData(response.data);
       } catch (error) {
         if (error.response) {
@@ -88,7 +87,7 @@ const Page = () => {
   return (
     <>
       <Head>
-        <title>Floor | Devias Kit</title>
+        <title>Order | Devias Kit</title>
       </Head>
       <Box
         component="main"
@@ -101,18 +100,8 @@ const Page = () => {
           <Stack spacing={3}>
             <Stack direction="row" justifyContent="space-between" spacing={4}>
               <Stack spacing={1}>
-                <Typography variant="h4">Floor</Typography>
+                <Typography variant="h4">Order</Typography>
                 <Stack alignItems="center" direction="row" spacing={1}>
-                  <Button
-                    color="inherit"
-                    startIcon={
-                      <SvgIcon fontSize="small">
-                        <ArrowUpOnSquareIcon />
-                      </SvgIcon>
-                    }
-                  >
-                    Import
-                  </Button>
                   <Button
                     color="inherit"
                     startIcon={
@@ -125,33 +114,21 @@ const Page = () => {
                   </Button>
                 </Stack>
               </Stack>
-              <div>
-                <Button onClick={openModelInput}
-                  startIcon={
-                    <SvgIcon fontSize="small">
-                      <PlusIcon />
-                    </SvgIcon>
-                  }
-                  variant="contained"
-                >
-                  Add
-                </Button>
-              </div>
+              
             </Stack>
-            <FloorSearch />
-            {inputModal && <InputFloor />}
-            <FloorTable
+            <OrderSearch />
+            <OrderTable
               count={data.length}
-              items={floor}
-              onDeselectAll={floorSelection.handleDeselectAll}
-              onDeselectOne={floorSelection.handleDeselectOne}
+              items={order}
+              onDeselectAll={orderSelection.handleDeselectAll}
+              onDeselectOne={orderSelection.handleDeselectOne}
               onPageChange={handlePageChange}
               onRowsPerPageChange={handleRowsPerPageChange}
-              onSelectAll={floorSelection.handleSelectAll}
-              onSelectOne={floorSelection.handleSelectOne}
+              onSelectAll={orderSelection.handleSelectAll}
+              onSelectOne={orderSelection.handleSelectOne}
               page={page}
               rowsPerPage={rowsPerPage}
-              selected={floorSelection.selected}
+              selected={orderSelection.selected}
               onDelete={handleDelete} // Thêm prop onDelete và truyền giá trị của handleDelete vào đây
             />
           </Stack>
