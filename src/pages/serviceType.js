@@ -10,6 +10,7 @@ import { ServiceType } from "src/sections/serviceType/serviceType-table";
 import { ServiceTypeSearch } from "src/sections/serviceType/serviceType-search";
 import { applyPagination } from "src/utils/apply-pagination";
 import InputServiceType from "src/components/inputServiceType/inputServiceType";
+import Pagination from "src/components/Pagination";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 const useCustomers = (data, page, rowsPerPage) => {
@@ -33,6 +34,9 @@ const Page = () => {
   const customersIds = useCustomerIds(customers);
   const customersSelection = useSelection(customersIds);
   const [inputModal, setInputModal] = useState(false);
+  const [pageNumber, setPageNumber] = useState(0);
+
+  const [totalPages, setTotalPages] = useState(0);
 
   const handlePageChange = useCallback((event, value) => {
     setPage(value);
@@ -63,8 +67,12 @@ const Page = () => {
         console.log(accessToken);
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
 
-        const response = await axios.get("http://localhost:2003/api/service-type/load"); // Thay đổi URL API của bạn tại đây
-        console.log(response);
+        const response = await axios.get(
+          `http://localhost:2003/api/service-type/load?current_page=${pageNumber}`
+        ); // Thay đổi URL API của bạn tại đây
+        console.log(response.data);
+        setTotalPages(response.data.totalPages);
+
         setData(response.data.content);
       } catch (error) {
         if (error.response) {
@@ -82,7 +90,7 @@ const Page = () => {
     };
 
     fetchData();
-  }, []);
+  }, [pageNumber]);
 
   return (
     <>
@@ -101,28 +109,7 @@ const Page = () => {
             <Stack direction="row" justifyContent="space-between" spacing={4}>
               <Stack spacing={1}>
                 <Typography variant="h4">Service Type</Typography>
-                <Stack alignItems="center" direction="row" spacing={1}>
-                  {/* <Button
-                    color="inherit"
-                    startIcon={
-                      <SvgIcon fontSize="small">
-                        <ArrowUpOnSquareIcon />
-                      </SvgIcon>
-                    }
-                  >
-                    Import
-                  </Button>
-                  <Button
-                    color="inherit"
-                    startIcon={
-                      <SvgIcon fontSize="small">
-                        <ArrowDownOnSquareIcon />
-                      </SvgIcon>
-                    }
-                  >
-                    Export
-                  </Button> */}
-                </Stack>
+                <Stack alignItems="center" direction="row" spacing={1}></Stack>
               </Stack>
               <div>
                 <Button
@@ -140,21 +127,31 @@ const Page = () => {
             </Stack>
             <ServiceTypeSearch />
             {inputModal && <InputServiceType />}
-            <ServiceType
-              count={data.length}
-              items={customers}
-              onDeselectAll={customersSelection.handleDeselectAll}
-              onDeselectOne={customersSelection.handleDeselectOne}
-              onPageChange={handlePageChange}
-              onRowsPerPageChange={handleRowsPerPageChange}
-              onSelectAll={customersSelection.handleSelectAll}
-              onSelectOne={customersSelection.handleSelectOne}
-              page={page}
-              rowsPerPage={rowsPerPage}
-              selected={customersSelection.selected}
-              onDelete={handleDelete} // Thêm prop onDelete và truyền giá trị của handleDelete vào đây
-            />
+            <div style={{ minHeight: 500 }}>
+              {" "}
+              <ServiceType
+                count={data.length}
+                items={customers}
+                onDeselectAll={customersSelection.handleDeselectAll}
+                onDeselectOne={customersSelection.handleDeselectOne}
+                onPageChange={handlePageChange}
+                onRowsPerPageChange={handleRowsPerPageChange}
+                onSelectAll={customersSelection.handleSelectAll}
+                onSelectOne={customersSelection.handleSelectOne}
+                page={page}
+                rowsPerPage={rowsPerPage}
+                selected={customersSelection.selected}
+                onDelete={handleDelete} // Thêm prop onDelete và truyền giá trị của handleDelete vào đây
+                setPageNumber={setPageNumber}
+              />
+            </div>
           </Stack>
+
+          <Pagination
+            pageNumber={pageNumber}
+            totalPages={totalPages}
+            setPageNumber={setPageNumber}
+          />
         </Container>
       </Box>
     </>

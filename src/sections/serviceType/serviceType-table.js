@@ -1,7 +1,7 @@
 import PropTypes from "prop-types";
-import Swal from 'sweetalert2'
+import Swal from "sweetalert2";
 import { ToastContainer, toast } from "react-toastify";
-import 'react-toastify/dist/ReactToastify.css';
+import "react-toastify/dist/ReactToastify.css";
 import {
   Avatar,
   Box,
@@ -66,32 +66,28 @@ export const ServiceType = (props) => {
                 <TableCell>Actions</TableCell>
               </TableRow>
             </TableHead>
-            
+
             <TableBody>
               {items.map((serviceType) => {
                 const isSelected = selected.includes(serviceType.id);
                 const alertDelete = () => {
                   Swal.fire({
-                    title: 'Are you sure?',
+                    title: "Are you sure?",
                     text: "You won't be able to revert this!",
-                    icon: 'warning',
+                    icon: "warning",
                     showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Yes, delete it!'
+                    confirmButtonColor: "#3085d6",
+                    cancelButtonColor: "#d33",
+                    confirmButtonText: "Yes, delete it!",
                   }).then((result) => {
                     if (result.isConfirmed) {
-                      Swal.fire(
-                        'Deleted!',
-                        'Your data has been deleted.',
-                        'success'
-                      )
+                      Swal.fire("Deleted!", "Your data has been deleted.", "success");
                       handleDelete(serviceType.id);
                       toast.success("Delete Successfully!");
                     }
-                  })
-                }
-              
+                  });
+                };
+
                 return (
                   <TableRow hover key={serviceType.id} selected={isSelected}>
                     <TableCell padding="checkbox">
@@ -105,15 +101,16 @@ export const ServiceType = (props) => {
                           }
                         }}
                       />
-                      
                     </TableCell>
                     <TableCell>{serviceType.serviceTypeCode}</TableCell>
                     <TableCell>{serviceType.serviceTypeName}</TableCell>
                     <TableCell>{serviceType.description}</TableCell>
                     <TableCell>
                       <button className="btn btn-primary">Edit</button>
-                      <button className="btn btn-danger m-xl-2" onClick={alertDelete}>Delete</button>
-                      <ToastContainer/>
+                      <button className="btn btn-danger m-xl-2" onClick={alertDelete}>
+                        Delete
+                      </button>
+                      <ToastContainer />
                     </TableCell>
                   </TableRow>
                 );
@@ -122,15 +119,56 @@ export const ServiceType = (props) => {
           </Table>
         </Box>
       </Scrollbar>
-      <TablePagination
-        component="div"
-        count={count}
-        onPageChange={onPageChange}
-        onRowsPerPageChange={onRowsPerPageChange}
-        page={page}
-        rowsPerPage={rowsPerPage}
-        rowsPerPageOptions={[5, 10, 25]}
-      />
+      {/* 
+      <div>
+        <nav aria-label="...">
+          <ul className="pagination">
+            <li className="page-item disabled">
+              <button className="page-link">Previous</button>
+            </li>
+            <li className="page-item">
+              <button
+                className="page-link"
+                onClick={() => {
+                  props.setPageNumber(0);
+                }}
+              >
+                1
+              </button>
+            </li>
+            <li className="page-item active" aria-current="page">
+              <button
+                className="page-link"
+                onClick={() => {
+                  props.setPageNumber(1);
+                }}
+              >
+                2
+              </button>
+            </li>
+            <li className="page-item">
+              <button
+                className="page-link"
+                onClick={() => {
+                  props.setPageNumber(2);
+                }}
+              >
+                3
+              </button>
+            </li>
+            <li className="page-item">
+              <button
+                className="page-link"
+                onClick={() => {
+                  props.setPageNumber(3);
+                }}
+              >
+                Next
+              </button>
+            </li>
+          </ul>
+        </nav>
+      </div> */}
     </Card>
   );
 };
