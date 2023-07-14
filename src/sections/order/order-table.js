@@ -48,35 +48,20 @@ export const OrderTable = (props) => {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell padding="checkbox">
-                  <Checkbox
-                    checked={selectedAll}
-                    indeterminate={selectedSome}
-                    onChange={(event) => {
-                      if (event.target.checked) {
-                        onSelectAll?.();
-                      } else {
-                        onDeselectAll?.();
-                      }
-                    }}
-                  />
-                </TableCell>
                 <TableCell>Order Code</TableCell>
                 <TableCell>Book Room</TableCell>
-                <TableCell>Account</TableCell>
                 <TableCell>Staff</TableCell>
                 <TableCell>Customer</TableCell>
-                <TableCell>Created At</TableCell>
                 <TableCell>Total Money</TableCell>
                 <TableCell>Note</TableCell>
+                <TableCell>Created At</TableCell>
                 <TableCell>Status</TableCell>
-                <TableCell>Actions</TableCell>
+                {/* <TableCell>Actions</TableCell> */}
               </TableRow>
             </TableHead>
             
             <TableBody>
-              {/* {items.map((order) => {
-                const isSelected = selected.includes(order.id);
+              {items.map((order) => {
                 const created = moment(order.createAt).format("DD/MM/YYYY - hh:mm:ss");
                 // const alertDelete = () => {
                 //   Swal.fire({
@@ -101,33 +86,23 @@ export const OrderTable = (props) => {
                 // }
               
                 return (
-                  <TableRow hover key={order.id} selected={isSelected}>
-                    <TableCell padding="checkbox">
-                      <Checkbox
-                        checked={isSelected}
-                        onChange={(event) => {
-                          if (event.target.checked) {
-                            onSelectOne?.(order.id);
-                          } else {
-                            onDeselectOne?.(order.id);
-                          }
-                        }}
-                      />
-                      
-                    </TableCell>
+                  <TableRow hover key={order.id}>
                     <TableCell>{order.orderCode}</TableCell>
-                    <TableCell>{floor.floorName}</TableCell>
-                    <TableCell>{floor.note}</TableCell>
+                    <TableCell>{order.bookRoom.bookRoomName}</TableCell>
+                    <TableCell>{order.account.fullname}</TableCell>
+                    <TableCell>{order.customer.fullname}</TableCell>
+                    <TableCell>{order.totalMoney}</TableCell>
+                    <TableCell>{order.note}</TableCell>
                     <TableCell>{created}</TableCell>
-                    <TableCell>{floor.status == 1 ? 'Active' : 'Unactive'}</TableCell>
-                    <TableCell>
+                    <TableCell>{order.status == 1 ? 'Active' : 'Unactive'}</TableCell>
+                    {/* <TableCell>
                       <button className="btn btn-primary">Edit</button>
-                      <button className="btn btn-danger m-xl-2" onClick={alertDelete}>Delete</button>
+                      <button className="btn btn-danger m-xl-2">Delete</button>
                       <ToastContainer/>
-                    </TableCell>
+                    </TableCell> */}
                   </TableRow>
                 );
-              })} */}
+              })}
             </TableBody>
           </Table>
         </Box>
