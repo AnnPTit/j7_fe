@@ -1,6 +1,7 @@
 import classNames from "classnames/bind";
 import style from "./inputServiceType.module.scss";
 import axios from "axios";
+import { ToastContainer, toast } from "react-toastify";
 
 const cx = classNames.bind(style);
 const handleSubmit = async (event) => {
@@ -10,11 +11,9 @@ const handleSubmit = async (event) => {
   const serviceTypeNameInpt = document.querySelector('input[name="serviceTypeName"]');
   const descriptionInpt = document.querySelector('input[name="description"]');
 
-
   const serviceTypeCode = serviceTypeCodeInpt?.value;
   const serviceTypeName = serviceTypeNameInpt?.value;
   const description = descriptionInpt?.value;
-
 
   // Tạo payload dữ liệu để gửi đến API
   const payload = {
@@ -37,11 +36,13 @@ const handleSubmit = async (event) => {
     axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
 
     const response = await axios.post("http://localhost:2003/api/service-type/save", payload); // Gọi API /api/service-type/save với payload và access token
+    toast.success("Add Successfully!");
     console.log(response); //
 
     if (response.status === 200) {
       // Xử lý khi API thành công
       console.log("API call successful");
+
       window.location.href = "/serviceType";
       // Thực hiện các hành động khác sau khi API thành công
     } else {
@@ -56,6 +57,17 @@ const handleSubmit = async (event) => {
       if (error.response.status === 403) {
         alert("Bạn không có quyền truy cập vào trang này");
         window.location.href = "/auth/login"; // Chuyển hướng đến trang đăng nhập
+      } else if (error.response.status === 400) {
+        console.log(error.response);
+        // alert(error.response.data.serviceTypeCode);
+        if (
+          error.response.data.serviceTypeCode == undefined &&
+          error.response.data.serviceTypeName == undefined
+        ) {
+          toast.error(error.response.data);
+        }
+        toast.error(error.response.data.serviceTypeCode);
+        toast.error(error.response.data.serviceTypeName);
       } else {
         alert("Có lỗi xảy ra trong quá trình gọi API");
       }
@@ -90,8 +102,7 @@ function InputServiceType() {
               <label>Description</label>
             </div>
           </div>
-          
-    
+
           <div className={cx("form-row submit-btn")}>
             <div className={cx("input-data")}>
               <div className={cx("inner")}>

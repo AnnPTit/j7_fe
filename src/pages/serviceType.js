@@ -29,6 +29,7 @@ const useCustomerIds = (customers) => {
 const Page = () => {
   const [data, setData] = useState([]);
   const [page, setPage] = useState(0);
+  const [dataChange, setDataChange] = useState(false);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const customers = useCustomers(data, page, rowsPerPage);
   const customersIds = useCustomerIds(customers);
@@ -53,8 +54,7 @@ const Page = () => {
   const handleDelete = async (id) => {
     try {
       await axios.delete(`http://localhost:2003/api/service-type/delete/${id}`);
-      const updatedData = data.filter((customer) => customer.id !== id);
-      setData(updatedData);
+      setDataChange(!dataChange);
     } catch (error) {
       console.log(error);
     }
@@ -90,7 +90,7 @@ const Page = () => {
     };
 
     fetchData();
-  }, [pageNumber, data]);
+  }, [pageNumber, dataChange]);
 
   return (
     <>
