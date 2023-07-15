@@ -90,7 +90,7 @@ const Page = () => {
     };
 
     fetchData();
-  }, [pageNumber]);
+  }, [pageNumber, data]);
 
   return (
     <>
