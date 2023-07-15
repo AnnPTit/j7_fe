@@ -36,7 +36,9 @@ const handleSubmit = async (event) => {
     axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
 
     const response = await axios.post("http://localhost:2003/api/service-type/save", payload); // Gọi API /api/service-type/save với payload và access token
-    toast.success("Add Successfully!");
+    toast.success("Add Successfully!", {
+      position: toast.POSITION.BOTTOM_RIGHT,
+    });
     console.log(response); //
 
     if (response.status === 200) {
@@ -66,8 +68,12 @@ const handleSubmit = async (event) => {
         ) {
           toast.error(error.response.data);
         }
-        toast.error(error.response.data.serviceTypeCode);
-        toast.error(error.response.data.serviceTypeName);
+        toast.error(error.response.data.serviceTypeCode, {
+          position: toast.POSITION.BOTTOM_RIGHT,
+        });
+        toast.error(error.response.data.serviceTypeName, {
+          position: toast.POSITION.BOTTOM_RIGHT,
+        });
       } else {
         alert("Có lỗi xảy ra trong quá trình gọi API");
       }

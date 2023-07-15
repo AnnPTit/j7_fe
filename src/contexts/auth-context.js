@@ -127,7 +127,6 @@ export const AuthProvider = (props) => {
   };
 
   const signIn = async (email, password) => {
-    console.log("hello");
     axios
       .post("http://localhost:2003/api/login", {
         username: email,
