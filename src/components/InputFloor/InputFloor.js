@@ -6,7 +6,29 @@ import { ToastContainer, toast } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 
 const cx = classNames.bind(style);
-const handleSubmit = async (event) => {
+
+// const alertSave = () => {
+//   Swal.fire({
+//     title: 'Are you sure?',
+//     text: "You won't be able to revert this!",
+//     icon: 'info',
+//     showCancelButton: true,
+//     confirmButtonColor: '#3085d6',
+//     cancelButtonColor: '#d33',
+//     confirmButtonText: 'Yes, add!'
+//   }).then((result) => {
+//     if (result.isConfirmed) {
+//       Swal.fire(
+//         'Added!',
+//         'Your data has been added.',
+//         'success'
+//       )
+//       toast.success("Add Successfully!");
+//     }
+//   })
+// }
+
+const handleSubmit = async (event) => {    
   event.preventDefault(); // Ngăn chặn sự kiện submit mặc định
   // Lấy giá trị từ các trường nhập liệu
   const floorCodeInput = document.querySelector('input[name="floorCode"]');
@@ -38,13 +60,13 @@ const handleSubmit = async (event) => {
     axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
 
     const response = await axios.post("http://localhost:2003/api/floor/save", payload); // Gọi API /api/customers/save với payload và access token
-    console.log(response); //
-    toast.success("Add Successfully!");
+    console.log(response); 
 
     if (response.status === 200) {
       // Xử lý khi API thành công
       console.log("API call successful");
       window.location.href = "/floor";
+      toast.success("Add Successfully!");
       // Thực hiện các hành động khác sau khi API thành công
     } else {
       // Xử lý khi API gặp lỗi
@@ -67,28 +89,6 @@ const handleSubmit = async (event) => {
   }
 };
 
-const alertSave = () => {
-  Swal.fire({
-    title: 'Are you sure?',
-    text: "You won't be able to revert this!",
-    icon: 'info',
-    showCancelButton: true,
-    confirmButtonColor: '#3085d6',
-    cancelButtonColor: '#d33',
-    confirmButtonText: 'Yes, add!'
-  }).then((result) => {
-    if (result.isConfirmed) {
-      Swal.fire(
-        'Added!',
-        'Your data has been added.',
-        'success'
-      )
-      handleSubmit;
-      toast.success("Add Successfully!");
-    }
-  })
-}
-
 function InputFloor() {
   return (
     <div className={cx("wrapper")}>
@@ -108,8 +108,8 @@ function InputFloor() {
             </div>
           </div>
           <div className={cx("form-row")}>
-            <div className={cx("input-data textarea")}>
-              <textarea rows="8" cols="80" required name="note"></textarea>
+            <div className={cx("input-data")}>
+              <input rows="8" type="textarea" cols="80" name="note"></input>
               <br />
               <div className={cx("underline")}></div>
               <label>Note</label>
