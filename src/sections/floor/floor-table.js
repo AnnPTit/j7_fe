@@ -1,9 +1,13 @@
+import { useCallback, useMemo, useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import moment from "moment";
-import Swal from 'sweetalert2'
+import axios from "axios";
+import Swal from "sweetalert2";
 import { ToastContainer, toast } from "react-toastify";
-import 'react-toastify/dist/ReactToastify.css';
+import "react-toastify/dist/ReactToastify.css";
 import {
+  Input,
+  TextField,
   Avatar,
   Box,
   Card,
@@ -37,6 +41,25 @@ export const FloorTable = (props) => {
 
   const selectedSome = selected.length > 0 && selected.length < items.length;
   const selectedAll = items.length > 0 && selected.length === items.length;
+
+  const floorCodeInput = document.querySelector('input[name="floorCode"]');
+  const floorNameInput = document.querySelector('input[name="floorName"]');
+  const noteInput = document.querySelector('input[name="note"]');
+
+  const floorCode = floorCodeInput?.value;
+  const floorName = floorNameInput?.value;
+  const note = noteInput?.value;
+
+  const payload = {
+    floorCode,
+    floorName,
+    note,
+  };
+  console.log(payload);
+
+  const [floorData, setFloorData] = useState([payload]);
+  const [editState, setEditState] = useState(-1);
+
   const handleDelete = (id) => {
     props.onDelete(id);
   };
@@ -48,19 +71,6 @@ export const FloorTable = (props) => {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell padding="checkbox">
-                  <Checkbox
-                    checked={selectedAll}
-                    indeterminate={selectedSome}
-                    onChange={(event) => {
-                      if (event.target.checked) {
-                        onSelectAll?.();
-                      } else {
-                        onDeselectAll?.();
-                      }
-                    }}
-                  />
-                </TableCell>
                 <TableCell>Floor Code</TableCell>
                 <TableCell>Floor Name</TableCell>
                 <TableCell>Note</TableCell>
@@ -69,76 +79,142 @@ export const FloorTable = (props) => {
                 <TableCell>Actions</TableCell>
               </TableRow>
             </TableHead>
-            
+
             <TableBody>
-              {items.map((floor) => {
-                const isSelected = selected.includes(floor.id);
-                const created = moment(floor.createAt).format("DD/MM/YYYY - hh:mm:ss");
+              {items.map((floor, floor2) => {
+                const created = moment(floor.createAt).format("DD/MM/YYYY - HH:mm:ss");
                 const alertDelete = () => {
                   Swal.fire({
-                    title: 'Are you sure?',
+                    title: "Are you sure?",
                     text: "You won't be able to revert this!",
-                    icon: 'warning',
+                    icon: "warning",
                     showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Yes, delete it!'
+                    confirmButtonColor: "#3085d6",
+                    cancelButtonColor: "#d33",
+                    confirmButtonText: "Yes, delete it!",
                   }).then((result) => {
                     if (result.isConfirmed) {
-                      Swal.fire(
-                        'Deleted!',
-                        'Your data has been deleted.',
-                        'success'
-                      )
+                      Swal.fire("Deleted!", "Your data has been deleted.", "success");
                       handleDelete(floor.id);
                       toast.success("Delete Successfully!");
                     }
-                  })
-                }
-              
-                return (
-                  <TableRow hover key={floor.id} selected={isSelected}>
-                    <TableCell padding="checkbox">
-                      <Checkbox
-                        checked={isSelected}
-                        onChange={(event) => {
-                          if (event.target.checked) {
-                            onSelectOne?.(floor.id);
-                          } else {
-                            onDeselectOne?.(floor.id);
-                          }
-                        }}
-                      />
-                      
-                    </TableCell>
+                  });
+                };
+                return editState === floor.id ? (
+                  <EditFloor floor={floor} floorData={floorData} setFloorData={setFloorData} />
+                ) : (
+                  <TableRow hover key={floor2.id}>
                     <TableCell>{floor.floorCode}</TableCell>
                     <TableCell>{floor.floorName}</TableCell>
                     <TableCell>{floor.note}</TableCell>
                     <TableCell>{created}</TableCell>
-                    <TableCell>{floor.status == 1 ? 'Active' : 'Unactive'}</TableCell>
+                    <TableCell>{floor.status == 1 ? "Active" : "Unactive"}</TableCell>
                     <TableCell>
-                      <button className="btn btn-primary">Edit</button>
-                      <button className="btn btn-danger m-xl-2" onClick={alertDelete}>Delete</button>
-                      <ToastContainer/>
+                      <button className="btn btn-primary" onClick={() => handleEdit(floor.id)}>
+                        Edit
+                      </button>
+                      <button className="btn btn-danger m-xl-2" onClick={alertDelete}>
+                        Delete
+                      </button>
+                      <ToastContainer />
                     </TableCell>
                   </TableRow>
                 );
+                function EditFloor({ floor, floorData, setFloorData }) {
+                  const [editedFloor, setEditedFloor] = useState({ ...floor });
+
+                  function handleFloorCode(event) {
+                    const name = event.target.value;
+                    setEditedFloor((prevFloor) => ({ ...prevFloor, floorCode: name }));
+                  }
+
+                  function handleFloorName(event) {
+                    const name = event.target.value;
+                    setEditedFloor((prevFloor) => ({ ...prevFloor, floorName: name }));
+                  }
+
+                  function handleNote(event) {
+                    const note = event.target.value;
+                    setEditedFloor((prevFloor) => ({ ...prevFloor, note: note }));
+                  }
+
+                  // Tương tự cho các trường dữ liệu khác
+                  const handleUpdate = async () => {
+                    try {
+                      await axios.put(`http://localhost:2003/api/floor/update/${editedFloor.id}`, editedFloor);
+                      const updatedData = floorData.map((f) => (f.id === editedFloor.id ? editedFloor : f));
+                      setFloorData(updatedData);
+                      window.location.href = "/floor";
+                    } catch (error) {
+                      console.error(error);
+                    }
+                  };
+
+                  const alertEdit = () => {
+                    Swal.fire({
+                      title: "Are you sure?",
+                      icon: "info",
+                      showCancelButton: true,
+                      confirmButtonColor: "#3085d6",
+                      cancelButtonColor: "#d33",
+                      confirmButtonText: "Yes, edit it!",
+                    }).then((result) => {
+                      if (result.isConfirmed) {
+                        Swal.fire("Edited!", "Your data has been edited.", "success");
+                        handleUpdate();
+                        toast.success("Edit Successfully!");
+                      }
+                    });
+                  };
+
+                  return (
+                    <TableRow>
+                      <TableCell>
+                        <Input
+                          onChange={handleFloorCode}
+                          name="floorCode"
+                          value={editedFloor.floorCode}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Input
+                          onChange={handleFloorName}
+                          name="floorName"
+                          value={editedFloor.floorName}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Input onChange={handleNote} name="note" value={editedFloor.note} />
+                      </TableCell>
+                      <TableCell>{created}</TableCell>
+                      <TableCell>{floor.status == 1 ? "Active" : "Unactive"}</TableCell>
+                      <TableCell>
+                        <button className="btn btn-primary" onClick={alertEdit}>
+                          Update
+                        </button>
+                        <button className="btn btn-danger m-xl-2" onClick={handldeCancel}>
+                          Cancel
+                        </button>
+                        <ToastContainer />
+                      </TableCell>
+                    </TableRow>
+                  );
+                }
               })}
             </TableBody>
           </Table>
         </Box>
       </Scrollbar>
-      <TablePagination
-        component="div"
-        count={count}
-        onPageChange={onPageChange}
-        onRowsPerPageChange={onRowsPerPageChange}
-        page={page}
-        rowsPerPage={rowsPerPage}
-        rowsPerPageOptions={[5, 10, 25]}
-      />
     </Card>
   );
+
+  function handleEdit(id) {
+    setEditState(id);
+  }
+
+  function handldeCancel() {
+    setEditState(false);
+  }
 };
 
 FloorTable.propTypes = {
