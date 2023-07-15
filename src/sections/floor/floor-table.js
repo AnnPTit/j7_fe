@@ -7,6 +7,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import {
   Input,
+  TextField,
   Avatar,
   Box,
   Card,
@@ -22,7 +23,6 @@ import {
 } from "@mui/material";
 import { Scrollbar } from "src/components/scrollbar";
 import { getInitials } from "src/utils/get-initials";
-import { Form } from "formik";
 
 export const FloorTable = (props) => {
   const {
@@ -55,19 +55,10 @@ export const FloorTable = (props) => {
     floorName,
     note,
   };
-  // console.log(payload);
+  console.log(payload);
 
-  // const [floorData, setFloorData] = useState({floorCode: '', floorName: '', note: ''});
+  const [floorData, setFloorData] = useState([payload]);
   const [editState, setEditState] = useState(-1);
-
-  const handleUpdateFloor = async (id) => {
-    try {
-      await axios.put(`http://localhost:2003/api/floor/update/${id}`, payload);
-      window.location.href = "/floor";
-    } catch (error) {
-      console.error(error);
-    }
-  };
 
   const handleDelete = (id) => {
     props.onDelete(id);
@@ -109,8 +100,10 @@ export const FloorTable = (props) => {
                     }
                   });
                 };
-                return editState === floor.id ? (<EditFloor />) : (
-                  <TableRow hover key={floor.id}>
+                return editState === floor.id ? (
+                  <EditFloor floor={floor} floorData={floorData} setFloorData={setFloorData} />
+                ) : (
+                  <TableRow hover key={floor2.id}>
                     <TableCell>{floor.floorCode}</TableCell>
                     <TableCell>{floor.floorName}</TableCell>
                     <TableCell>{floor.note}</TableCell>
@@ -127,22 +120,81 @@ export const FloorTable = (props) => {
                     </TableCell>
                   </TableRow>
                 );
-              function EditFloor() {
-                  // function handleFloorName(event) {
-                  //     const name = event.target.value;
-                  //     const updatedData = data.map((d) => d.id === floor.id ? {...d, floorName:name} : d);
-                  //     setData(updatedData);
-                  // }
+                function EditFloor({ floor, floorData, setFloorData }) {
+                  const [editedFloor, setEditedFloor] = useState({ ...floor });
+
+                  function handleFloorCode(event) {
+                    const name = event.target.value;
+                    setEditedFloor((prevFloor) => ({ ...prevFloor, floorCode: name }));
+                  }
+
+                  function handleFloorName(event) {
+                    const name = event.target.value;
+                    setEditedFloor((prevFloor) => ({ ...prevFloor, floorName: name }));
+                  }
+
+                  function handleNote(event) {
+                    const note = event.target.value;
+                    setEditedFloor((prevFloor) => ({ ...prevFloor, note: note }));
+                  }
+
+                  // Tương tự cho các trường dữ liệu khác
+                  const handleUpdate = async () => {
+                    try {
+                      await axios.put(`http://localhost:2003/api/floor/update/${editedFloor.id}`, editedFloor);
+                      const updatedData = floorData.map((f) => (f.id === editedFloor.id ? editedFloor : f));
+                      setFloorData(updatedData);
+                      window.location.href = "/floor";
+                    } catch (error) {
+                      console.error(error);
+                    }
+                  };
+
+                  const alertEdit = () => {
+                    Swal.fire({
+                      title: "Are you sure?",
+                      icon: "info",
+                      showCancelButton: true,
+                      confirmButtonColor: "#3085d6",
+                      cancelButtonColor: "#d33",
+                      confirmButtonText: "Yes, edit it!",
+                    }).then((result) => {
+                      if (result.isConfirmed) {
+                        Swal.fire("Edited!", "Your data has been edited.", "success");
+                        handleUpdate();
+                        toast.success("Edit Successfully!");
+                      }
+                    });
+                  };
+
                   return (
-                    <TableRow hover key={floor2.id}>
-                      <TableCell><Input name="floorCode" value={floor2.floorCode}></Input></TableCell>
-                      <TableCell><Input name="floorName" value={floor2.floorName}></Input></TableCell>
-                      <TableCell><Input name="note" value={floor2.note}></Input></TableCell>
-                      <TableCell>{created}</TableCell>
-                      <TableCell>{floor2.status == 1 ? "Active" : "Unactive"}</TableCell>
+                    <TableRow>
                       <TableCell>
-                        <button className="btn btn-primary" onClick={() => handleUpdateFloor(floor2.id)}>Update</button>
-                        <button className="btn btn-danger m-xl-2" onClick={handldeCancel}>Cancel</button>
+                        <Input
+                          onChange={handleFloorCode}
+                          name="floorCode"
+                          value={editedFloor.floorCode}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Input
+                          onChange={handleFloorName}
+                          name="floorName"
+                          value={editedFloor.floorName}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Input onChange={handleNote} name="note" value={editedFloor.note} />
+                      </TableCell>
+                      <TableCell>{created}</TableCell>
+                      <TableCell>{floor.status == 1 ? "Active" : "Unactive"}</TableCell>
+                      <TableCell>
+                        <button className="btn btn-primary" onClick={alertEdit}>
+                          Update
+                        </button>
+                        <button className="btn btn-danger m-xl-2" onClick={handldeCancel}>
+                          Cancel
+                        </button>
                         <ToastContainer />
                       </TableCell>
                     </TableRow>
@@ -153,24 +205,9 @@ export const FloorTable = (props) => {
           </Table>
         </Box>
       </Scrollbar>
-      <TablePagination
-        component="div"
-        count={count}
-        onPageChange={onPageChange}
-        onRowsPerPageChange={onRowsPerPageChange}
-        page={page}
-        rowsPerPage={rowsPerPage}
-        rowsPerPageOptions={[5, 10, 25]}
-      />
     </Card>
   );
 
-  function handleUpdate() {
-    return (
-      setEditState(-1)
-    )
-  }
-  
   function handleEdit(id) {
     setEditState(id);
   }
@@ -179,7 +216,6 @@ export const FloorTable = (props) => {
     setEditState(false);
   }
 };
-
 
 FloorTable.propTypes = {
   count: PropTypes.number,

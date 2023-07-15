@@ -11,6 +11,7 @@ import { Layout as DashboardLayout } from "src/layouts/dashboard/layout";
 import { OrderTable } from "src/sections/order/order-table";
 import { OrderSearch } from "src/sections/order/order-search";
 import { applyPagination } from "src/utils/apply-pagination";
+import Pagination from "src/components/Pagination";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 const useOrder = (data, page, rowsPerPage) => {
@@ -34,6 +35,8 @@ const Page = () => {
   const orderIds = useOrderIds(order);
   const orderSelection = useSelection(orderIds);
   const [inputModal, setInputModal] = useState(false);
+  const [pageNumber, setPageNumber] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
 
   const handlePageChange = useCallback((event, value) => {
     setPage(value);
@@ -65,8 +68,11 @@ const Page = () => {
         console.log(accessToken);
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
 
-        const response = await axios.get("http://localhost:2003/api/order/load"); // Thay đổi URL API của bạn tại đây
-        setData(response.data);
+        const response = await axios.get(
+          `http://localhost:2003/api/order/load?current_page=${pageNumber}`
+        ); // Thay đổi URL API của bạn tại đây
+        setTotalPages(response.data.totalPages);
+        setData(response.data.content);
       } catch (error) {
         if (error.response) {
           // Xử lý response lỗi
@@ -82,7 +88,7 @@ const Page = () => {
       }
     };
     fetchData();
-  }, []);
+  }, [pageNumber]);
 
   return (
     <>
@@ -114,24 +120,33 @@ const Page = () => {
                   </Button>
                 </Stack>
               </Stack>
-              
             </Stack>
             <OrderSearch />
-            <OrderTable
-              count={data.length}
-              items={order}
-              onDeselectAll={orderSelection.handleDeselectAll}
-              onDeselectOne={orderSelection.handleDeselectOne}
-              onPageChange={handlePageChange}
-              onRowsPerPageChange={handleRowsPerPageChange}
-              onSelectAll={orderSelection.handleSelectAll}
-              onSelectOne={orderSelection.handleSelectOne}
-              page={page}
-              rowsPerPage={rowsPerPage}
-              selected={orderSelection.selected}
-              onDelete={handleDelete} // Thêm prop onDelete và truyền giá trị của handleDelete vào đây
-            />
+            <div style={{ minHeight: 500 }}>
+              {" "}
+              <OrderTable
+                count={data.length}
+                items={order}
+                onDeselectAll={orderSelection.handleDeselectAll}
+                onDeselectOne={orderSelection.handleDeselectOne}
+                onPageChange={handlePageChange}
+                onRowsPerPageChange={handleRowsPerPageChange}
+                onSelectAll={orderSelection.handleSelectAll}
+                onSelectOne={orderSelection.handleSelectOne}
+                page={page}
+                rowsPerPage={rowsPerPage}
+                selected={orderSelection.selected}
+                onDelete={handleDelete} // Thêm prop onDelete và truyền giá trị của handleDelete vào đây
+                setPageNumber={setPageNumber}
+              />
+            </div>
           </Stack>
+
+          <Pagination
+            pageNumber={pageNumber}
+            totalPages={totalPages}
+            setPageNumber={setPageNumber}
+          />
         </Container>
       </Box>
     </>

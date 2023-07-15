@@ -1,9 +1,7 @@
 import { useCallback, useMemo, useState, useEffect } from "react";
 import axios from "axios";
 import Head from "next/head";
-import { subDays, subHours } from "date-fns";
-import ArrowDownOnSquareIcon from "@heroicons/react/24/solid/ArrowDownOnSquareIcon";
-import ArrowUpOnSquareIcon from "@heroicons/react/24/solid/ArrowUpOnSquareIcon";
+
 import PlusIcon from "@heroicons/react/24/solid/PlusIcon";
 import { Box, Button, Container, Link, Stack, SvgIcon, Typography } from "@mui/material";
 import { useSelection } from "src/hooks/use-selection";
@@ -11,8 +9,9 @@ import { Layout as DashboardLayout } from "src/layouts/dashboard/layout";
 import { FloorTable } from "src/sections/floor/floor-table";
 import { FloorSearch } from "src/sections/floor/floor-search";
 import { applyPagination } from "src/utils/apply-pagination";
-import "bootstrap/dist/css/bootstrap.min.css";
 import InputFloor from "src/components/InputFloor/InputFloor";
+import Pagination from "src/components/Pagination";
+import "bootstrap/dist/css/bootstrap.min.css";
 
 const useFloor = (data, page, rowsPerPage) => {
   return useMemo(() => {
@@ -35,6 +34,8 @@ const Page = () => {
   const floorIds = useFloorIds(floor);
   const floorSelection = useSelection(floorIds);
   const [inputModal, setInputModal] = useState(false);
+  const [pageNumber, setPageNumber] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
 
   const handlePageChange = useCallback((event, value) => {
     setPage(value);
@@ -66,8 +67,11 @@ const Page = () => {
         console.log(accessToken);
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
 
-        const response = await axios.get("http://localhost:2003/api/floor/load"); // Thay đổi URL API của bạn tại đây
-        setData(response.data);
+        const response = await axios.get(
+          `http://localhost:2003/api/floor/load?current_page=${pageNumber}`
+        ); // Thay đổi URL API của bạn tại đây
+        setTotalPages(response.data.totalPages);
+        setData(response.data.content);
       } catch (error) {
         if (error.response) {
           // Xử lý response lỗi
@@ -83,7 +87,7 @@ const Page = () => {
       }
     };
     fetchData();
-  }, []);
+  }, [pageNumber]);
 
   return (
     <>
@@ -102,6 +106,7 @@ const Page = () => {
             <Stack direction="row" justifyContent="space-between" spacing={4}>
               <Stack spacing={1}>
                 <Typography variant="h4">Floor</Typography>
+                <Stack alignItems="center" direction="row" spacing={1}></Stack>
               </Stack>
               <div>
                 <Button
@@ -119,21 +124,31 @@ const Page = () => {
             </Stack>
             <FloorSearch />
             {inputModal && <InputFloor />}
-            <FloorTable
-              count={data.length}
-              items={floor}
-              onDeselectAll={floorSelection.handleDeselectAll}
-              onDeselectOne={floorSelection.handleDeselectOne}
-              onPageChange={handlePageChange}
-              onRowsPerPageChange={handleRowsPerPageChange}
-              onSelectAll={floorSelection.handleSelectAll}
-              onSelectOne={floorSelection.handleSelectOne}
-              page={page}
-              rowsPerPage={rowsPerPage}
-              selected={floorSelection.selected}
-              onDelete={handleDelete} // Thêm prop onDelete và truyền giá trị của handleDelete vào đây
-            />
+            <div style={{ minHeight: 500 }}>
+              {" "}
+              <FloorTable
+                count={data.length}
+                items={floor}
+                onDeselectAll={floorSelection.handleDeselectAll}
+                onDeselectOne={floorSelection.handleDeselectOne}
+                onPageChange={handlePageChange}
+                onRowsPerPageChange={handleRowsPerPageChange}
+                onSelectAll={floorSelection.handleSelectAll}
+                onSelectOne={floorSelection.handleSelectOne}
+                page={page}
+                rowsPerPage={rowsPerPage}
+                selected={floorSelection.selected}
+                onDelete={handleDelete} // Thêm prop onDelete và truyền giá trị của handleDelete vào đây
+                setPageNumber={setPageNumber}
+              />
+            </div>
           </Stack>
+
+          <Pagination
+            pageNumber={pageNumber}
+            totalPages={totalPages}
+            setPageNumber={setPageNumber}
+          />
         </Container>
       </Box>
     </>

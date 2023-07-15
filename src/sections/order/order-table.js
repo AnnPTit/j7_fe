@@ -86,7 +86,8 @@ export const OrderTable = (props) => {
                 // }
               
                 return (
-                  <TableRow hover key={order.id}>
+                  <TableRow hover
+                   key={order.id}>
                     <TableCell>{order.orderCode}</TableCell>
                     <TableCell>{order.bookRoom.bookRoomName}</TableCell>
                     <TableCell>{order.account.fullname}</TableCell>
@@ -107,15 +108,6 @@ export const OrderTable = (props) => {
           </Table>
         </Box>
       </Scrollbar>
-      <TablePagination
-        component="div"
-        count={count}
-        onPageChange={onPageChange}
-        onRowsPerPageChange={onRowsPerPageChange}
-        page={page}
-        rowsPerPage={rowsPerPage}
-        rowsPerPageOptions={[5, 10, 25]}
-      />
     </Card>
   );
 };
