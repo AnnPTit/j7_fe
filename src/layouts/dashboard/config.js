@@ -22,7 +22,6 @@ export const items = [
   },
   {
     title: "Customers",
-    path: "/customers",
     icon: (
       <Tippy content="Hello">
         <SvgIcon fontSize="small">
@@ -30,6 +29,20 @@ export const items = [
         </SvgIcon>
       </Tippy>
     ),
+    type: "collapse",
+    children: [
+      {
+        title: "Floor",
+        path: "/floor",
+        icon: (
+          <SvgIcon fontSize="small">
+            <ChartBarIcon />
+          </SvgIcon>
+        ),
+        type: "item",
+      },
+      // Thêm các mục con khác tại đây
+    ],
   },
   {
     title: "Manager Order",
@@ -43,6 +56,15 @@ export const items = [
   {
     title: "Room",
     path: "/room",
+    icon: (
+      <SvgIcon fontSize="small">
+        <CogIcon />
+      </SvgIcon>
+    ),
+  },
+  {
+    title: "TypeRoom",
+    path: "/typeRoom",
     icon: (
       <SvgIcon fontSize="small">
         <LockClosedIcon />

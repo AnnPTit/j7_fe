@@ -5,16 +5,7 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import {
-  Input,
-  Box,
-  Card,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow
-} from "@mui/material";
+import { Input, Box, Card, Table, TableBody, TableCell, TableHead, TableRow } from "@mui/material";
 import { Scrollbar } from "src/components/scrollbar";
 
 export const FloorTable = (props) => {
@@ -35,7 +26,6 @@ export const FloorTable = (props) => {
   const [floorData, setFloorData] = useState([payload]);
   const [editState, setEditState] = useState(-1);
 
-  
   const handleDelete = (id) => {
     props.onDelete(id);
   };
@@ -55,7 +45,7 @@ export const FloorTable = (props) => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {items.map((floor, floor2) => {
+              {items.map((floor) => {
                 const created = moment(floor.createAt).format("DD/MM/YYYY - HH:mm:ss");
                 const alertDelete = () => {
                   Swal.fire({
@@ -75,9 +65,14 @@ export const FloorTable = (props) => {
                   });
                 };
                 return editState === floor.id ? (
-                  <EditFloor floor={floor} floorData={floorData} setFloorData={setFloorData} />
+                  <EditFloor
+                    key={floor.id}
+                    floor={floor}
+                    floorData={floorData}
+                    setFloorData={setFloorData}
+                  />
                 ) : (
-                  <TableRow hover key={floor2.id}>
+                  <TableRow hover key={floor.id}>
                     <TableCell>{floor.floorCode}</TableCell>
                     <TableCell>{floor.floorName}</TableCell>
                     <TableCell>{floor.note}</TableCell>
