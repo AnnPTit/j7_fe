@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState, useEffect } from "react";
+import { useState } from "react";
 import PropTypes from "prop-types";
 import moment from "moment";
 import axios from "axios";
@@ -7,45 +7,21 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import {
   Input,
-  TextField,
-  Avatar,
   Box,
   Card,
-  Checkbox,
-  Stack,
   Table,
   TableBody,
   TableCell,
   TableHead,
-  TablePagination,
-  TableRow,
-  Typography,
+  TableRow
 } from "@mui/material";
 import { Scrollbar } from "src/components/scrollbar";
-import { getInitials } from "src/utils/get-initials";
 
 export const FloorTable = (props) => {
-  const {
-    count = 0,
-    items = [],
-    onDeselectAll,
-    onDeselectOne,
-    onPageChange = () => {},
-    onRowsPerPageChange,
-    onSelectAll,
-    onSelectOne,
-    page = 0,
-    rowsPerPage = 0,
-    selected = [],
-  } = props;
-
-  const selectedSome = selected.length > 0 && selected.length < items.length;
-  const selectedAll = items.length > 0 && selected.length === items.length;
-
+  const { items = [] } = props;
   const floorCodeInput = document.querySelector('input[name="floorCode"]');
   const floorNameInput = document.querySelector('input[name="floorName"]');
   const noteInput = document.querySelector('input[name="note"]');
-
   const floorCode = floorCodeInput?.value;
   const floorName = floorNameInput?.value;
   const note = noteInput?.value;
@@ -56,14 +32,13 @@ export const FloorTable = (props) => {
     note,
   };
   console.log(payload);
-
   const [floorData, setFloorData] = useState([payload]);
   const [editState, setEditState] = useState(-1);
 
+  
   const handleDelete = (id) => {
     props.onDelete(id);
   };
-
   return (
     <Card>
       <Scrollbar>
@@ -79,7 +54,6 @@ export const FloorTable = (props) => {
                 <TableCell>Actions</TableCell>
               </TableRow>
             </TableHead>
-
             <TableBody>
               {items.map((floor, floor2) => {
                 const created = moment(floor.createAt).format("DD/MM/YYYY - HH:mm:ss");
@@ -141,8 +115,13 @@ export const FloorTable = (props) => {
                   // Tương tự cho các trường dữ liệu khác
                   const handleUpdate = async () => {
                     try {
-                      await axios.put(`http://localhost:2003/api/floor/update/${editedFloor.id}`, editedFloor);
-                      const updatedData = floorData.map((f) => (f.id === editedFloor.id ? editedFloor : f));
+                      await axios.put(
+                        `http://localhost:2003/api/floor/update/${editedFloor.id}`,
+                        editedFloor
+                      );
+                      const updatedData = floorData.map((f) =>
+                        f.id === editedFloor.id ? editedFloor : f
+                      );
                       setFloorData(updatedData);
                       window.location.href = "/floor";
                     } catch (error) {

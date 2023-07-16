@@ -12,6 +12,7 @@ import { applyPagination } from "src/utils/apply-pagination";
 import InputServiceType from "src/components/inputServiceType/inputServiceType";
 import Pagination from "src/components/Pagination";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { te } from "date-fns/locale";
 
 const useCustomers = (data, page, rowsPerPage) => {
   return useMemo(() => {
@@ -36,16 +37,10 @@ const Page = () => {
   const customersSelection = useSelection(customersIds);
   const [inputModal, setInputModal] = useState(false);
   const [pageNumber, setPageNumber] = useState(0);
+  const [textSearch, setTextSearch] = useState("");
 
   const [totalPages, setTotalPages] = useState(0);
-
-  const handlePageChange = useCallback((event, value) => {
-    setPage(value);
-  }, []);
-
-  const handleRowsPerPageChange = useCallback((event) => {
-    setRowsPerPage(event.target.value);
-  }, []);
+  const [totalElements, setTotalElements] = useState(0);
 
   const openModelInput = () => {
     setInputModal(!inputModal);
@@ -60,6 +55,39 @@ const Page = () => {
     }
   };
 
+  // Tim kiem
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
+        console.log(accessToken);
+        axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
+
+        const response = await axios.get(
+          `http://localhost:2003/api/service-type/search?key=${encodeURIComponent(textSearch)}`
+        ); // Thay đổi URL API của bạn tại đây
+        console.log(response.data);
+        setTotalPages(response.data.totalPages);
+        setTotalElements(response.data.totalElements);
+        setData(response.data.content);
+      } catch (error) {
+        if (error.response) {
+          // Xử lý response lỗi
+          if (error.response.status === 403) {
+            alert("Bạn không có quyền truy cập vào trang này");
+            window.location.href = "/auth/login"; // Thay đổi "/dang-nhap" bằng đường dẫn đến trang đăng nhập của bạn
+          } else {
+            alert("Có lỗi xảy ra trong quá trình gọi API");
+          }
+        } else {
+          console.log("Không thể kết nối đến API");
+        }
+      }
+    };
+
+    fetchData();
+  }, [textSearch]);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -72,7 +100,7 @@ const Page = () => {
         ); // Thay đổi URL API của bạn tại đây
         console.log(response.data);
         setTotalPages(response.data.totalPages);
-
+        setTotalElements(response.data.totalElements);
         setData(response.data.content);
       } catch (error) {
         if (error.response) {
@@ -125,24 +153,17 @@ const Page = () => {
                 </Button>
               </div>
             </Stack>
-            <ServiceTypeSearch />
+            <ServiceTypeSearch textSearch={textSearch} setTextSearch={setTextSearch} />
             {inputModal && <InputServiceType />}
             <div style={{ minHeight: 500 }}>
               {" "}
               <ServiceType
-                count={data.length}
                 items={customers}
-                onDeselectAll={customersSelection.handleDeselectAll}
-                onDeselectOne={customersSelection.handleDeselectOne}
-                onPageChange={handlePageChange}
-                onRowsPerPageChange={handleRowsPerPageChange}
-                onSelectAll={customersSelection.handleSelectAll}
-                onSelectOne={customersSelection.handleSelectOne}
-                page={page}
-                rowsPerPage={rowsPerPage}
                 selected={customersSelection.selected}
                 onDelete={handleDelete} // Thêm prop onDelete và truyền giá trị của handleDelete vào đây
                 setPageNumber={setPageNumber}
+                totalElements={totalElements}
+                pageNumber={pageNumber}
               />
             </div>
           </Stack>

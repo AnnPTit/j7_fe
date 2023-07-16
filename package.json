@@ -23,6 +23,7 @@
     "@mui/material": "5.11.10",
     "@mui/system": "5.11.9",
     "@mui/x-date-pickers": "5.0.19",
+    "@tippyjs/react": "^4.2.6",
     "apexcharts": "3.37.0",
     "axios": "^1.4.0",
     "bootstrap": "^5.3.0",

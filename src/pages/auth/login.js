@@ -3,7 +3,6 @@ import Head from "next/head";
 import NextLink from "next/link";
 import { useRouter } from "next/navigation";
 import { useFormik } from "formik";
-import * as Yup from "yup";
 import {
   Alert,
   Box,
@@ -29,17 +28,7 @@ const Page = () => {
       password: "123",
       submit: null,
     },
-    // validationSchema: Yup.object({
-    //   email: Yup
-    //     .string()
-    //     .email('Must be a valid email')
-    //     .max(255)
-    //     .required('Email is required'),
-    //   password: Yup
-    //     .string()
-    //     .max(255)
-    //     .required('Password is required')
-    // }),
+
     onSubmit: async (values, helpers) => {
       try {
         await auth.signIn(values.email, values.password);

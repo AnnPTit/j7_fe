@@ -87,7 +87,7 @@ function InputServiceType() {
   return (
     <div className={cx("wrapper")}>
       <div className={cx("container")}>
-        <div className={cx("text")}>Contact us Form</div>
+        <div className={cx("text")}>Service Type</div>
         <form action="/api/service-type/save" method="post">
           <div className={cx("form-row")}>
             <div className={cx("input-data")}>

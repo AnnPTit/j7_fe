@@ -13,6 +13,9 @@ import {
   Typography,
   useMediaQuery,
 } from "@mui/material";
+import "bootstrap/dist/css/bootstrap.min.css";
+import Tippy from "@tippyjs/react";
+
 import { Logo } from "src/components/logo";
 import { Scrollbar } from "src/components/scrollbar";
 import { items } from "./config";
@@ -114,6 +117,7 @@ export const SideNav = (props) => {
             })}
           </Stack>
         </Box>
+
         <Divider sx={{ borderColor: "neutral.700" }} />
         <Box
           sx={{

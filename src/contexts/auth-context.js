@@ -138,22 +138,21 @@ export const AuthProvider = (props) => {
         window.sessionStorage.setItem("authenticated", "true");
         localStorage.setItem("accessToken", accessToken); // Lưu access token vào localStorage
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
+        const user = {
+          email: email,
+          password: password,
+        };
+
+        dispatch({
+          type: HANDLERS.SIGN_IN,
+          payload: user,
+        });
       })
       .catch((error) => {
         console.error(error);
         window.location.href = "/auth/login";
         alert("Account invalid !");
       });
-
-    const user = {
-      email: email,
-      password: password,
-    };
-
-    dispatch({
-      type: HANDLERS.SIGN_IN,
-      payload: user,
-    });
   };
 
   const signUp = async (email, name, password) => {

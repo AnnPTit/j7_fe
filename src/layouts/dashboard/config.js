@@ -8,6 +8,7 @@ import UserPlusIcon from "@heroicons/react/24/solid/UserPlusIcon";
 import UsersIcon from "@heroicons/react/24/solid/UsersIcon";
 import XCircleIcon from "@heroicons/react/24/solid/XCircleIcon";
 import { SvgIcon } from "@mui/material";
+import Tippy from "@tippyjs/react";
 
 export const items = [
   {
@@ -23,9 +24,11 @@ export const items = [
     title: "Customers",
     path: "/customers",
     icon: (
-      <SvgIcon fontSize="small">
-        <UsersIcon />
-      </SvgIcon>
+      <Tippy content="Hello">
+        <SvgIcon fontSize="small">
+          <UsersIcon />
+        </SvgIcon>
+      </Tippy>
     ),
   },
   {

@@ -2,40 +2,12 @@ import PropTypes from "prop-types";
 import Swal from "sweetalert2";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import {
-  Avatar,
-  Box,
-  Card,
-  Checkbox,
-  Stack,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TablePagination,
-  TableRow,
-  Typography,
-} from "@mui/material";
+import { Box, Card, Table, TableBody, TableCell, TableHead, TableRow } from "@mui/material";
 import { Scrollbar } from "src/components/scrollbar";
-import { getInitials } from "src/utils/get-initials";
 
 export const ServiceType = (props) => {
-  const {
-    count = 0,
-    items = [],
-    onDeselectAll,
-    onDeselectOne,
-    onPageChange = () => {},
-    onRowsPerPageChange,
-    onSelectAll,
-    onSelectOne,
-    page = 0,
-    rowsPerPage = 0,
-    selected = [],
-  } = props;
+  const { items = [], selected = [] } = props;
 
-  const selectedSome = selected.length > 0 && selected.length < items.length;
-  const selectedAll = items.length > 0 && selected.length === items.length;
   const handleDelete = (id) => {
     props.onDelete(id);
   };
@@ -47,19 +19,7 @@ export const ServiceType = (props) => {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell padding="checkbox">
-                  <Checkbox
-                    checked={selectedAll}
-                    indeterminate={selectedSome}
-                    onChange={(event) => {
-                      if (event.target.checked) {
-                        onSelectAll?.();
-                      } else {
-                        onDeselectAll?.();
-                      }
-                    }}
-                  />
-                </TableCell>
+                <TableCell padding="checkbox">STT</TableCell>
                 <TableCell>ServiceType Code</TableCell>
                 <TableCell>ServiceType Name</TableCell>
                 <TableCell>Description</TableCell>
@@ -68,7 +28,7 @@ export const ServiceType = (props) => {
             </TableHead>
 
             <TableBody>
-              {items.map((serviceType) => {
+              {items.map((serviceType, index) => {
                 const isSelected = selected.includes(serviceType.id);
                 const alertDelete = () => {
                   Swal.fire({
@@ -89,18 +49,11 @@ export const ServiceType = (props) => {
                 };
 
                 return (
-                  <TableRow hover key={serviceType.id} selected={isSelected}>
+                  <TableRow key={serviceType.id} selected={isSelected}>
                     <TableCell padding="checkbox">
-                      <Checkbox
-                        checked={isSelected}
-                        onChange={(event) => {
-                          if (event.target.checked) {
-                            onSelectOne?.(serviceType.id);
-                          } else {
-                            onDeselectOne?.(serviceType.id);
-                          }
-                        }}
-                      />
+                      <div key={index}>
+                        <span>{index + props.pageNumber * 5 + 1}</span>
+                      </div>
                     </TableCell>
                     <TableCell>{serviceType.serviceTypeCode}</TableCell>
                     <TableCell>{serviceType.serviceTypeName}</TableCell>
@@ -119,56 +72,6 @@ export const ServiceType = (props) => {
           </Table>
         </Box>
       </Scrollbar>
-      {/* 
-      <div>
-        <nav aria-label="...">
-          <ul className="pagination">
-            <li className="page-item disabled">
-              <button className="page-link">Previous</button>
-            </li>
-            <li className="page-item">
-              <button
-                className="page-link"
-                onClick={() => {
-                  props.setPageNumber(0);
-                }}
-              >
-                1
-              </button>
-            </li>
-            <li className="page-item active" aria-current="page">
-              <button
-                className="page-link"
-                onClick={() => {
-                  props.setPageNumber(1);
-                }}
-              >
-                2
-              </button>
-            </li>
-            <li className="page-item">
-              <button
-                className="page-link"
-                onClick={() => {
-                  props.setPageNumber(2);
-                }}
-              >
-                3
-              </button>
-            </li>
-            <li className="page-item">
-              <button
-                className="page-link"
-                onClick={() => {
-                  props.setPageNumber(3);
-                }}
-              >
-                Next
-              </button>
-            </li>
-          </ul>
-        </nav>
-      </div> */}
     </Card>
   );
 };
