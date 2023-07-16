@@ -55,7 +55,7 @@ export const FloorTable = (props) => {
     floorName,
     note,
   };
-  console.log(payload);
+  // console.log(payload);
 
   const [floorData, setFloorData] = useState([payload]);
   const [editState, setEditState] = useState(-1);
@@ -81,7 +81,7 @@ export const FloorTable = (props) => {
             </TableHead>
 
             <TableBody>
-              {items.map((floor, floor2) => {
+              {items.map((floor) => {
                 const created = moment(floor.createAt).format("DD/MM/YYYY - HH:mm:ss");
                 const alertDelete = () => {
                   Swal.fire({
@@ -101,9 +101,9 @@ export const FloorTable = (props) => {
                   });
                 };
                 return editState === floor.id ? (
-                  <EditFloor floor={floor} floorData={floorData} setFloorData={setFloorData} />
+                  <EditFloor key={floor.id} floor={floor} floorData={floorData} setFloorData={setFloorData} />
                 ) : (
-                  <TableRow hover key={floor2.id}>
+                  <TableRow hover key={floor.id}>
                     <TableCell>{floor.floorCode}</TableCell>
                     <TableCell>{floor.floorName}</TableCell>
                     <TableCell>{floor.note}</TableCell>
