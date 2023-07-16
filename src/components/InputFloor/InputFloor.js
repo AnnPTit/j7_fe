@@ -7,27 +7,6 @@ import 'react-toastify/dist/ReactToastify.css';
 
 const cx = classNames.bind(style);
 
-// const alertSave = () => {
-//   Swal.fire({
-//     title: 'Are you sure?',
-//     text: "You won't be able to revert this!",
-//     icon: 'info',
-//     showCancelButton: true,
-//     confirmButtonColor: '#3085d6',
-//     cancelButtonColor: '#d33',
-//     confirmButtonText: 'Yes, add!'
-//   }).then((result) => {
-//     if (result.isConfirmed) {
-//       Swal.fire(
-//         'Added!',
-//         'Your data has been added.',
-//         'success'
-//       )
-//       toast.success("Add Successfully!");
-//     }
-//   })
-// }
-
 const handleSubmit = async (event) => {    
   event.preventDefault(); // Ngăn chặn sự kiện submit mặc định
   // Lấy giá trị từ các trường nhập liệu
@@ -89,12 +68,33 @@ const handleSubmit = async (event) => {
   }
 };
 
+const alertSave = () => {
+  Swal.fire({
+    title: 'Are you sure?',
+    icon: 'info',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+    confirmButtonText: 'Yes, add!'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      handleSubmit();
+      Swal.fire(
+        'Added!',
+        'Your data has been added.',
+        'success'
+      )
+      toast.success("Add Successfully!");
+    }
+  })
+}
+
 function InputFloor() {
   return (
     <div className={cx("wrapper")}>
       <div className={cx("container")}>
         <div className={cx("text")}>Floor</div>
-        <form action="/api/floor/save" method="POST">
+        <form>
           <div className={cx("form-row")}>
             <div className={cx("input-data")}>
               <input type="text" required name="floorCode" />
@@ -119,7 +119,7 @@ function InputFloor() {
           <div className={cx("form-row submit-btn")}>
             <div className={cx("input-data")}>
               <div className={cx("inner")}>
-                <button className={cx("input-btn")} onClick={handleSubmit}>
+                <button className={cx("input-btn")} onClick={alertSave}>
                   Save
                 </button>
                 <ToastContainer/>
