@@ -1,13 +1,13 @@
 import classNames from "classnames/bind";
 import style from "./InputFloor.module.scss";
 import axios from "axios";
-import Swal from 'sweetalert2'
+import Swal from "sweetalert2";
 import { ToastContainer, toast } from "react-toastify";
-import 'react-toastify/dist/ReactToastify.css';
+import "react-toastify/dist/ReactToastify.css";
 
 const cx = classNames.bind(style);
 
-const handleSubmit = async (event) => {    
+const handleSubmit = async (event) => {
   event.preventDefault(); // Ngăn chặn sự kiện submit mặc định
   // Lấy giá trị từ các trường nhập liệu
   const floorCodeInput = document.querySelector('input[name="floorCode"]');
@@ -39,7 +39,7 @@ const handleSubmit = async (event) => {
     axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
 
     const response = await axios.post("http://localhost:2003/api/floor/save", payload); // Gọi API /api/customers/save với payload và access token
-    console.log(response); 
+    console.log(response);
 
     if (response.status === 200) {
       // Xử lý khi API thành công
@@ -59,6 +59,21 @@ const handleSubmit = async (event) => {
       if (error.response.status === 403) {
         alert("Bạn không có quyền truy cập vào trang này");
         window.location.href = "/auth/login"; // Chuyển hướng đến trang đăng nhập
+      } else if (error.response.status === 400) {
+        console.log(error.response);
+        // alert(error.response.data.serviceTypeCode);
+        if (
+          error.response.data.floorCode == undefined &&
+          error.response.data.floorName == undefined
+        ) {
+          toast.error(error.response.data);
+        }
+        toast.error(error.response.data.floorCode, {
+          position: toast.POSITION.BOTTOM_RIGHT,
+        });
+        toast.error(error.response.data.floorName, {
+          position: toast.POSITION.BOTTOM_RIGHT,
+        });
       } else {
         alert("Có lỗi xảy ra trong quá trình gọi API");
       }
@@ -70,24 +85,20 @@ const handleSubmit = async (event) => {
 
 const alertSave = () => {
   Swal.fire({
-    title: 'Are you sure?',
-    icon: 'info',
+    title: "Are you sure?",
+    icon: "info",
     showCancelButton: true,
-    confirmButtonColor: '#3085d6',
-    cancelButtonColor: '#d33',
-    confirmButtonText: 'Yes, add!'
+    confirmButtonColor: "#3085d6",
+    cancelButtonColor: "#d33",
+    confirmButtonText: "Yes, add!",
   }).then((result) => {
     if (result.isConfirmed) {
       handleSubmit();
-      Swal.fire(
-        'Added!',
-        'Your data has been added.',
-        'success'
-      )
+      Swal.fire("Added!", "Your data has been added.", "success");
       toast.success("Add Successfully!");
     }
-  })
-}
+  });
+};
 
 function InputFloor() {
   return (
@@ -108,21 +119,20 @@ function InputFloor() {
             </div>
           </div>
           <div className={cx("form-row")}>
-            <div className={cx("input-data")}>
-              <input rows="8" type="textarea" cols="80" name="note"></input>
+            <div className={cx("input-data textarea")}>
+              <textarea rows="8" cols="80" name="note"></textarea>
               <br />
               <div className={cx("underline")}></div>
-              <label>Note</label>
               <br />
             </div>
           </div>
           <div className={cx("form-row submit-btn")}>
             <div className={cx("input-data")}>
               <div className={cx("inner")}>
-                <button className={cx("input-btn")} onClick={alertSave}>
+                <button className={cx("input-btn")} onClick={handleSubmit}>
                   Save
                 </button>
-                <ToastContainer/>
+                <ToastContainer />
               </div>
             </div>
           </div>

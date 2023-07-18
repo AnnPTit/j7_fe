@@ -12,7 +12,6 @@ import { applyPagination } from "src/utils/apply-pagination";
 import InputServiceType from "src/components/inputServiceType/inputServiceType";
 import Pagination from "src/components/Pagination";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { te } from "date-fns/locale";
 
 const useCustomers = (data, page, rowsPerPage) => {
   return useMemo(() => {

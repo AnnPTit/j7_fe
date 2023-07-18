@@ -53,17 +53,14 @@ export const RoomTable = (props) => {
                 <TableCell>Type Room</TableCell>
                 <TableCell>Floor</TableCell>
                 <TableCell>Note</TableCell>
-                <TableCell>Create At</TableCell>
-                <TableCell>Update At</TableCell>
                 <TableCell>Status</TableCell>
                 <TableCell>Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {items.map((room) => {
-                // const birthday = format(customer.birthday, 'dd/MM/yyyy');
-                const created = moment(room.createAt).format("DD/MM/YYYY - HH:mm:ss");
-                const updated = moment(room.updateAt).format("DD/MM/YYYY - HH:mm:ss");
+                // const created = moment(room.createAt).format("DD/MM/YYYY - HH:mm:ss");
+                // const updated = moment(room.updateAt).format("DD/MM/YYYY - HH:mm:ss");
                 const alertDelete = () => {
                   Swal.fire({
                     title: "Are you sure?",
@@ -89,8 +86,6 @@ export const RoomTable = (props) => {
                     <TableCell>{room.typeRoom.typeRoomName}</TableCell>
                     <TableCell>{room.floor.floorName}</TableCell>
                     <TableCell>{room.note}</TableCell>
-                    <TableCell>{created}</TableCell>
-                    <TableCell>{updated}</TableCell>
                     <TableCell>{room.status == 1 ? "Active" : "Unactive"}</TableCell>
                     <TableCell>
                     <button className="btn btn-primary">
