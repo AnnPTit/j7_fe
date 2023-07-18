@@ -157,11 +157,10 @@ function InputTypeRoom() {
             </div>
           </div>
           <div className={cx("form-row")}>
-            <div className={cx("input-data")}>
-              <input rows="8" type="textarea" cols="80" name="note"></input>
+            <div className={cx("input-data textarea")}>
+              <textarea rows="6" cols="50" name="note"></textarea>
               <br />
               <div className={cx("underline")}></div>
-              <label>Ghi chú</label>
               <br />
             </div>
           </div>
