@@ -6,13 +6,12 @@ import PlusIcon from "@heroicons/react/24/solid/PlusIcon";
 import { Box, Button, Container, Stack, SvgIcon, Typography } from "@mui/material";
 import { useSelection } from "src/hooks/use-selection";
 import { Layout as DashboardLayout } from "src/layouts/dashboard/layout";
-import { ServiceType } from "src/sections/serviceType/serviceType-table";
-import { ServiceTypeSearch } from "src/sections/serviceType/serviceType-search";
+import { ServiceSearch } from "src/sections/service/service-search";
+import { Service } from "src/sections/service/service-table";
 import { applyPagination } from "src/utils/apply-pagination";
-import InputServiceType from "src/components/inputServiceType/inputServiceType";
+import InputService from "src/components/inputService/inputService";
 import Pagination from "src/components/Pagination";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { te } from "date-fns/locale";
 
 const useCustomers = (data, page, rowsPerPage) => {
   return useMemo(() => {
@@ -45,10 +44,10 @@ const Page = () => {
   const openModelInput = () => {
     setInputModal(!inputModal);
   };
-  // Delete Customer
+  // Delete
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:2003/api/admin/service-type/delete/${id}`);
+      await axios.delete(`http://localhost:2003/api/admin/service/delete/${id}`);
       setDataChange(!dataChange);
     } catch (error) {
       console.log(error);
@@ -64,7 +63,7 @@ const Page = () => {
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
 
         const response = await axios.get(
-          `http://localhost:2003/api/admin/service-type/search?key=${encodeURIComponent(textSearch)}`
+          `http://localhost:2003/api/admin/service/search?key=${encodeURIComponent(textSearch)}`
         ); // Thay đổi URL API của bạn tại đây
         console.log(response.data);
         setTotalPages(response.data.totalPages);
@@ -96,7 +95,7 @@ const Page = () => {
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
 
         const response = await axios.get(
-          `http://localhost:2003/api/admin/service-type/load?current_page=${pageNumber}`
+          `http://localhost:2003/api/admin/service/load?current_page=${pageNumber}`
         ); // Thay đổi URL API của bạn tại đây
         console.log(response.data);
         setTotalPages(response.data.totalPages);
@@ -123,7 +122,7 @@ const Page = () => {
   return (
     <>
       <Head>
-        <title>Service Type | Hotel Finder</title>
+        <title>Service | Hotel Finder</title>
       </Head>
       <Box
         component="main"
@@ -136,7 +135,7 @@ const Page = () => {
           <Stack spacing={3}>
             <Stack direction="row" justifyContent="space-between" spacing={4}>
               <Stack spacing={1}>
-                <Typography variant="h4">Service Type</Typography>
+                <Typography variant="h4">Service </Typography>
                 <Stack alignItems="center" direction="row" spacing={1}></Stack>
               </Stack>
               <div>
@@ -153,11 +152,11 @@ const Page = () => {
                 </Button>
               </div>
             </Stack>
-            <ServiceTypeSearch textSearch={textSearch} setTextSearch={setTextSearch} />
-            {inputModal && <InputServiceType />}
+            <ServiceSearch textSearch={textSearch} setTextSearch={setTextSearch} />
+            {inputModal && <InputService />}
             <div style={{ minHeight: 500 }}>
               {" "}
-              <ServiceType
+              <Service
                 items={customers}
                 selected={customersSelection.selected}
                 onDelete={handleDelete} // Thêm prop onDelete và truyền giá trị của handleDelete vào đây

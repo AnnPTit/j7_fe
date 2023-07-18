@@ -1,5 +1,6 @@
 import ChartBarIcon from "@heroicons/react/24/solid/ChartBarIcon";
 import Bars3Icon from "@heroicons/react/24/solid/Bars3Icon";
+import DocumentIcon from "@heroicons/react/24/solid/DocumentIcon";
 import CogIcon from "@heroicons/react/24/solid/CogIcon";
 import LockClosedIcon from "@heroicons/react/24/solid/LockClosedIcon";
 import ShoppingBagIcon from "@heroicons/react/24/solid/ShoppingBagIcon";
@@ -30,19 +31,6 @@ export const items = [
       </Tippy>
     ),
     type: "collapse",
-    children: [
-      {
-        title: "Floor",
-        path: "/floor",
-        icon: (
-          <SvgIcon fontSize="small">
-            <ChartBarIcon />
-          </SvgIcon>
-        ),
-        type: "item",
-      },
-      // Thêm các mục con khác tại đây
-    ],
   },
   {
     title: "Manager Order",
@@ -77,6 +65,15 @@ export const items = [
     icon: (
       <SvgIcon fontSize="small">
         <ChartBarIcon />
+      </SvgIcon>
+    ),
+  },
+  {
+    title: "Service",
+    path: "/service",
+    icon: (
+      <SvgIcon fontSize="small">
+        <DocumentIcon />
       </SvgIcon>
     ),
   },
