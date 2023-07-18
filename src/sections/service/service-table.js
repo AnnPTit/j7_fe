@@ -1,36 +1,33 @@
 import { useState } from "react";
-import PropTypes from "prop-types";
-import moment from "moment";
 import axios from "axios";
+import PropTypes from "prop-types";
 import Swal from "sweetalert2";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { Input, Box, Card, Table, TableBody, TableCell, TableHead, TableRow } from "@mui/material";
 import { Scrollbar } from "src/components/scrollbar";
+import { Input, Box, Card, Table, TableBody, TableCell, TableHead, TableRow } from "@mui/material";
 
-export const FloorTable = (props) => {
+export const Service = (props) => {
   const { items = [], selected = [] } = props;
-
-  const floorCodeInput = document.querySelector('input[name="floorCode"]');
-  const floorNameInput = document.querySelector('input[name="floorName"]');
-  const noteInput = document.querySelector('input[name="note"]');
-
-  const floorCode = floorCodeInput?.value;
-  const floorName = floorNameInput?.value;
-  const note = noteInput?.value;
+  const serviceCodeInput = document.querySelector('input[name="serviceCode"]');
+  const serviceNameInput = document.querySelector('input[name="serviceName"]');
+  const descriptionInput = document.querySelector('input[name="description"]');
+  const serviceCode = serviceCodeInput?.value;
+  const serviceName = serviceNameInput?.value;
+  const description = descriptionInput?.value;
 
   const payload = {
-    floorCode,
-    floorName,
-    note,
+    serviceCode,
+    serviceName,
+    description,
   };
-  console.log(payload);
-  const [floorData, setFloorData] = useState([payload]);
+  const [serviceData, setServiceData] = useState([payload]);
   const [editState, setEditState] = useState(-1);
 
   const handleDelete = (id) => {
     props.onDelete(id);
   };
+
   return (
     <Card>
       <Scrollbar>
@@ -39,17 +36,18 @@ export const FloorTable = (props) => {
             <TableHead>
               <TableRow>
                 <TableCell padding="checkbox">STT</TableCell>
-                <TableCell>Floor Code</TableCell>
-                <TableCell>Floor Name</TableCell>
-                <TableCell>Note</TableCell>
-                <TableCell>Status</TableCell>
+                <TableCell>Service Code</TableCell>
+                <TableCell>Service Name</TableCell>
+                <TableCell>Service Type</TableCell>
+                <TableCell>Unit</TableCell>
+                <TableCell>Description</TableCell>
                 <TableCell>Actions</TableCell>
               </TableRow>
             </TableHead>
+
             <TableBody>
-              {items.map((floor, index) => {
-                const isSelected = selected.includes(floor.id);
-                // const created = moment(floor.createAt).format("DD/MM/YYYY - HH:mm:ss");
+              {items.map((service, index) => {
+                const isSelected = selected.includes(service.id);
                 const alertDelete = () => {
                   Swal.fire({
                     title: "Are you sure?",
@@ -62,31 +60,39 @@ export const FloorTable = (props) => {
                   }).then((result) => {
                     if (result.isConfirmed) {
                       Swal.fire("Deleted!", "Your data has been deleted.", "success");
-                      handleDelete(floor.id);
+                      handleDelete(service.id);
                       toast.success("Delete Successfully!");
                     }
                   });
                 };
-                return editState === floor.id ? (
-                  <EditFloor
-                    key={floor.id}
-                    floor={floor}
-                    floorData={floorData}
-                    setFloorData={setFloorData}
+
+                return editState === service.id ? (
+                  <EditService
+                    key={service.id}
+                    service={service}
+                    serviceData={serviceData}
+                    setServiceData={setServiceData}
                   />
                 ) : (
-                  <TableRow key={floor.id} selected={isSelected}>
+                  <TableRow key={service.id} selected={isSelected}>
                     <TableCell padding="checkbox">
                       <div key={index}>
                         <span>{index + props.pageNumber * 5 + 1}</span>
                       </div>
                     </TableCell>
-                    <TableCell>{floor.floorCode}</TableCell>
-                    <TableCell>{floor.floorName}</TableCell>
-                    <TableCell>{floor.note}</TableCell>
-                    <TableCell>{floor.status == 1 ? "Active" : "Unactive"}</TableCell>
+                    <TableCell>{service.serviceCode}</TableCell>
+                    <TableCell>{service.serviceName}</TableCell>
                     <TableCell>
-                      <button className="btn btn-primary" onClick={() => handleEdit(floor.id)}>
+                      {service.serviceType && service.serviceType.serviceTypeName
+                        ? service.serviceType.serviceTypeName
+                        : "Null"}
+                    </TableCell>
+                    <TableCell>
+                      {service.unit && service.unit.unitName ? service.unit.unitName : "NULL"}
+                    </TableCell>
+                    <TableCell>{service.description}</TableCell>
+                    <TableCell>
+                      <button className="btn btn-primary" onClick={() => handleEdit(service.id)}>
                         Edit
                       </button>
                       <button className="btn btn-danger m-xl-2" onClick={alertDelete}>
@@ -96,36 +102,49 @@ export const FloorTable = (props) => {
                     </TableCell>
                   </TableRow>
                 );
-                function EditFloor({ floor, floorData, setFloorData }) {
-                  const [editedFloor, setEditedFloor] = useState({ ...floor });
+                function EditService({ service, serviceData, setServiceData }) {
+                  const [editedService, setEditedService] = useState({ ...service });
 
-                  function handleFloorCode(event) {
+                  function handleServiceCode(event) {
                     const name = event.target.value;
-                    setEditedFloor((prevFloor) => ({ ...prevFloor, floorCode: name }));
+                    setEditedService((prevService) => ({
+                      ...prevService,
+                      serviceCode: name,
+                    }));
                   }
 
-                  function handleFloorName(event) {
+                  function handleServiceName(event) {
                     const name = event.target.value;
-                    setEditedFloor((prevFloor) => ({ ...prevFloor, floorName: name }));
+                    setEditedService((prevService) => ({
+                      ...prevService,
+                      serviceName: name,
+                    }));
                   }
 
                   function handleNote(event) {
-                    const note = event.target.value;
-                    setEditedFloor((prevFloor) => ({ ...prevFloor, note: note }));
+                    const description = event.target.value;
+                    setEditedService((prevService) => ({
+                      ...prevService,
+                      description: description,
+                    }));
                   }
 
                   // Tương tự cho các trường dữ liệu khác
                   const handleUpdate = async () => {
                     try {
+                      const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
+                      console.log(accessToken);
+                      axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
+
                       await axios.put(
-                        `http://localhost:2003/api/floor/update/${editedFloor.id}`,
-                        editedFloor
+                        `http://localhost:2003/api/admin/admin/service/update/${editedService.id}`,
+                        editedService
                       );
-                      const updatedData = floorData.map((f) =>
-                        f.id === editedFloor.id ? editedFloor : f
+                      const updatedData = serviceData.map((f) =>
+                        f.id === editedService.id ? editedService : f
                       );
-                      setFloorData(updatedData);
-                      window.location.href = "/floor";
+                      setServiceData(updatedData);
+                      window.location.href = "/service";
                     } catch (error) {
                       console.error(error);
                     }
@@ -149,30 +168,30 @@ export const FloorTable = (props) => {
                   };
 
                   return (
-                    <TableRow selected={isSelected}>
-                      <TableCell padding="checkbox">
-                        <div key={index}>
-                          <span>{index + props.pageNumber * 5 + 1}</span>
-                        </div>
-                      </TableCell>
+                    <TableRow>
                       <TableCell>
                         <Input
-                          onChange={handleFloorCode}
-                          name="floorCode"
-                          value={editedFloor.floorCode}
+                          onChange={handleServiceCode}
+                          name="serviceCode"
+                          value={editedService.serviceCode}
                         />
                       </TableCell>
                       <TableCell>
                         <Input
-                          onChange={handleFloorName}
-                          name="floorName"
-                          value={editedFloor.floorName}
+                          onChange={handleServiceName}
+                          name="serviceName"
+                          value={editedService.serviceName}
                         />
                       </TableCell>
                       <TableCell>
-                        <Input onChange={handleNote} name="note" value={editedFloor.note} />
+                        <Input
+                          onChange={handleNote}
+                          name="description"
+                          value={editedService.description}
+                        />
                       </TableCell>
-                      <TableCell>{floor.status == 1 ? "Active" : "Unactive"}</TableCell>
+
+                      <TableCell>{service.status == 1 ? "Active" : "Unactive"}</TableCell>
                       <TableCell>
                         <button className="btn btn-primary" onClick={alertEdit}>
                           Update
@@ -192,7 +211,6 @@ export const FloorTable = (props) => {
       </Scrollbar>
     </Card>
   );
-
   function handleEdit(id) {
     setEditState(id);
   }
@@ -202,7 +220,7 @@ export const FloorTable = (props) => {
   }
 };
 
-FloorTable.propTypes = {
+Service.propTypes = {
   count: PropTypes.number,
   items: PropTypes.array,
   onDeselectAll: PropTypes.func,

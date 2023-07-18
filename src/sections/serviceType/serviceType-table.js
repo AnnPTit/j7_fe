@@ -1,12 +1,28 @@
+import { useState } from "react";
+import axios from "axios";
 import PropTypes from "prop-types";
 import Swal from "sweetalert2";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { Box, Card, Table, TableBody, TableCell, TableHead, TableRow } from "@mui/material";
 import { Scrollbar } from "src/components/scrollbar";
+import { Input, Box, Card, Table, TableBody, TableCell, TableHead, TableRow } from "@mui/material";
 
 export const ServiceType = (props) => {
   const { items = [], selected = [] } = props;
+  const serviceTypeCodeInput = document.querySelector('input[name="serviceTypeCode"]');
+  const serviceTypeNameInput = document.querySelector('input[name="serviceTypeName"]');
+  const descriptionInput = document.querySelector('input[name="description"]');
+  const serviceTypeCode = serviceTypeCodeInput?.value;
+  const serviceTypeName = serviceTypeNameInput?.value;
+  const description = descriptionInput?.value;
+
+  const payload = {
+    serviceTypeCode,
+    serviceTypeName,
+    description,
+  };
+  const [serviceTypeData, setServiceTypeData] = useState([payload]);
+  const [editState, setEditState] = useState(-1);
 
   const handleDelete = (id) => {
     props.onDelete(id);
@@ -48,7 +64,14 @@ export const ServiceType = (props) => {
                   });
                 };
 
-                return (
+                return editState === serviceType.id ? (
+                  <EditServiceType
+                    key={serviceType.id}
+                    serviceType={serviceType}
+                    serviceTypeData={serviceTypeData}
+                    setServiceTypeData={setServiceTypeData}
+                  />
+                ) : (
                   <TableRow key={serviceType.id} selected={isSelected}>
                     <TableCell padding="checkbox">
                       <div key={index}>
@@ -59,7 +82,12 @@ export const ServiceType = (props) => {
                     <TableCell>{serviceType.serviceTypeName}</TableCell>
                     <TableCell>{serviceType.description}</TableCell>
                     <TableCell>
-                      <button className="btn btn-primary">Edit</button>
+                      <button
+                        className="btn btn-primary"
+                        onClick={() => handleEdit(serviceType.id)}
+                      >
+                        Edit
+                      </button>
                       <button className="btn btn-danger m-xl-2" onClick={alertDelete}>
                         Delete
                       </button>
@@ -67,6 +95,108 @@ export const ServiceType = (props) => {
                     </TableCell>
                   </TableRow>
                 );
+                function EditServiceType({ serviceType, serviceTypeData, setServiceTypeData }) {
+                  const [editedServiceType, setEditedServiceType] = useState({ ...serviceType });
+
+                  function handleServiceTypeCode(event) {
+                    const name = event.target.value;
+                    setEditedServiceType((prevServiceType) => ({
+                      ...prevServiceType,
+                      serviceTypeCode: name,
+                    }));
+                  }
+
+                  function handleServiceTypeName(event) {
+                    const name = event.target.value;
+                    setEditedServiceType((prevServiceType) => ({
+                      ...prevServiceType,
+                      serviceTypeName: name,
+                    }));
+                  }
+
+                  function handleNote(event) {
+                    const description = event.target.value;
+                    setEditedServiceType((prevServiceType) => ({
+                      ...prevServiceType,
+                      description: description,
+                    }));
+                  }
+
+                  // Tương tự cho các trường dữ liệu khác
+                  const handleUpdate = async () => {
+                    try {
+                      const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
+                      console.log(accessToken);
+                      axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
+
+                      await axios.put(
+                        `http://localhost:2003/api/service-type/update/${editedServiceType.id}`,
+                        editedServiceType
+                      );
+                      const updatedData = serviceTypeData.map((f) =>
+                        f.id === editedServiceType.id ? editedServiceType : f
+                      );
+                      setServiceTypeData(updatedData);
+                      window.location.href = "/serviceType";
+                    } catch (error) {
+                      console.error(error);
+                    }
+                  };
+
+                  const alertEdit = () => {
+                    Swal.fire({
+                      title: "Are you sure?",
+                      icon: "info",
+                      showCancelButton: true,
+                      confirmButtonColor: "#3085d6",
+                      cancelButtonColor: "#d33",
+                      confirmButtonText: "Yes, edit it!",
+                    }).then((result) => {
+                      if (result.isConfirmed) {
+                        Swal.fire("Edited!", "Your data has been edited.", "success");
+                        handleUpdate();
+                        toast.success("Edit Successfully!");
+                      }
+                    });
+                  };
+
+                  return (
+                    <TableRow>
+                      <TableCell>
+                        <Input
+                          onChange={handleServiceTypeCode}
+                          name="serviceTypeCode"
+                          value={editedServiceType.serviceTypeCode}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Input
+                          onChange={handleServiceTypeName}
+                          name="serviceTypeName"
+                          value={editedServiceType.serviceTypeName}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Input
+                          onChange={handleNote}
+                          name="description"
+                          value={editedServiceType.description}
+                        />
+                      </TableCell>
+
+                      <TableCell>{serviceType.status == 1 ? "Active" : "Unactive"}</TableCell>
+                      <TableCell>
+                        <button className="btn btn-primary" onClick={alertEdit}>
+                          Update
+                        </button>
+                        <button className="btn btn-danger m-xl-2" onClick={handldeCancel}>
+                          Cancel
+                        </button>
+                        <ToastContainer />
+                      </TableCell>
+                    </TableRow>
+                  );
+                }
               })}
             </TableBody>
           </Table>
@@ -74,6 +204,13 @@ export const ServiceType = (props) => {
       </Scrollbar>
     </Card>
   );
+  function handleEdit(id) {
+    setEditState(id);
+  }
+
+  function handldeCancel() {
+    setEditState(false);
+  }
 };
 
 ServiceType.propTypes = {

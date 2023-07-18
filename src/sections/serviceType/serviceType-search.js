@@ -5,7 +5,6 @@ export const ServiceTypeSearch = ({ textSearch, setTextSearch }) => (
   <Card sx={{ p: 2 }}>
     <OutlinedInput
       value={textSearch}
-      defaultValue=""
       fullWidth
       placeholder="Search Service Type"
       sx={{ maxWidth: 500 }}

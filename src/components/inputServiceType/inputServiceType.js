@@ -35,7 +35,7 @@ const handleSubmit = async (event) => {
 
     axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
 
-    const response = await axios.post("http://localhost:2003/api/service-type/save", payload); // Gọi API /api/service-type/save với payload và access token
+    const response = await axios.post("http://localhost:2003/api/admin/service-type/save", payload); // Gọi API /api/service-type/save với payload và access token
     toast.success("Add Successfully!", {
       position: toast.POSITION.BOTTOM_RIGHT,
     });
@@ -88,7 +88,7 @@ function InputServiceType() {
     <div className={cx("wrapper")}>
       <div className={cx("container")}>
         <div className={cx("text")}>Service Type</div>
-        <form action="/api/service-type/save" method="post">
+        <form action="/api/admin/service-type/save" method="post">
           <div className={cx("form-row")}>
             <div className={cx("input-data")}>
               <input type="text" required name="serviceTypeCode" />
