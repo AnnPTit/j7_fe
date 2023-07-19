@@ -1,11 +1,22 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import PropTypes from "prop-types";
 import Swal from "sweetalert2";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Scrollbar } from "src/components/scrollbar";
-import { Input, Box, Card, Table, TableBody, TableCell, TableHead, TableRow } from "@mui/material";
+import {
+  Input,
+  Box,
+  Card,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  Select,
+  MenuItem,
+} from "@mui/material";
 
 export const Service = (props) => {
   const { items = [], selected = [] } = props;
@@ -16,6 +27,9 @@ export const Service = (props) => {
   const serviceName = serviceNameInput?.value;
   const description = descriptionInput?.value;
 
+  const [serviceTypeU, setServiceTypeU] = useState([]);
+  const [unit, setUnit] = useState([]);
+
   const payload = {
     serviceCode,
     serviceName,
@@ -23,6 +37,31 @@ export const Service = (props) => {
   };
   const [serviceData, setServiceData] = useState([payload]);
   const [editState, setEditState] = useState(-1);
+  useEffect(() => {
+    // Định nghĩa hàm fetchData bên trong useEffect
+    async function fetchData() {
+      try {
+        const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
+        // Kiểm tra xem accessToken có tồn tại không
+        if (!accessToken) {
+          alert("Bạn chưa đăng nhập");
+          return;
+        }
+        axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
+        const response = await axios.get("http://localhost:2003/api/admin/service-type/getAll");
+        const response2 = await axios.get("http://localhost:2003/api/admin/unit/getAll");
+        console.log(response.data);
+        console.log(response2.data);
+        setServiceTypeU(response.data);
+        setUnit(response2.data);
+      } catch (error) {
+        console.log(error);
+      }
+    }
+
+    // Gọi hàm fetchData ngay lập tức
+    fetchData();
+  }, []);
 
   const handleDelete = (id) => {
     props.onDelete(id);
@@ -40,6 +79,7 @@ export const Service = (props) => {
                 <TableCell>Service Name</TableCell>
                 <TableCell>Service Type</TableCell>
                 <TableCell>Unit</TableCell>
+                <TableCell>Price</TableCell>
                 <TableCell>Description</TableCell>
                 <TableCell>Actions</TableCell>
               </TableRow>
@@ -88,8 +128,9 @@ export const Service = (props) => {
                         : "Null"}
                     </TableCell>
                     <TableCell>
-                      {service.unit && service.unit.unitName ? service.unit.unitName : "NULL"}
+                      {service.unit && service.unit.unitName ? service.unit.unitName : "Null"}
                     </TableCell>
+                    <TableCell>{service.price}</TableCell>
                     <TableCell>{service.description}</TableCell>
                     <TableCell>
                       <button className="btn btn-primary" onClick={() => handleEdit(service.id)}>
@@ -102,8 +143,11 @@ export const Service = (props) => {
                     </TableCell>
                   </TableRow>
                 );
+
                 function EditService({ service, serviceData, setServiceData }) {
                   const [editedService, setEditedService] = useState({ ...service });
+
+                  console.log(editedService);
 
                   function handleServiceCode(event) {
                     const name = event.target.value;
@@ -121,11 +165,40 @@ export const Service = (props) => {
                     }));
                   }
 
-                  function handleNote(event) {
+                  function handleDescription(event) {
                     const description = event.target.value;
                     setEditedService((prevService) => ({
                       ...prevService,
                       description: description,
+                    }));
+                  }
+                  function handlePrice(event) {
+                    const price = event.target.value;
+                    setEditedService((prevService) => ({
+                      ...prevService,
+                      price: price,
+                    }));
+                  }
+                  function handleServiceType(event) {
+                    const selectedId = event.target.value; // Lấy ra id của phần tử được chọn trong dropdown
+                    // Tìm kiếm đối tượng serviceType tương ứng với selectedId trong mảng serviceTypeU (nếu cần)
+                    const selectedServiceType = serviceTypeU.find(
+                      (serviceType) => serviceType.id === selectedId
+                    );
+                    // alert(selectedServiceType.serviceTypeName); // Hiển thị id bằng cách sử dụng hàm alert hoặc làm bất kỳ xử lý nào bạn muốn với selectedId ở đây
+                    setEditedService((prevService) => ({
+                      ...prevService,
+                      serviceType: selectedServiceType,
+                    }));
+                  }
+                  function handleUnit(event) {
+                    const selectedId = event.target.value; // Lấy ra id của phần tử được chọn trong dropdown
+                    // Tìm kiếm đối tượng serviceType tương ứng với selectedId trong mảng serviceTypeU (nếu cần)
+                    const selectedUnit = unit.find((unit) => unit.id === selectedId);
+                    alert(selectedUnit.unitName); // Hiển thị id bằng cách sử dụng hàm alert hoặc làm bất kỳ xử lý nào bạn muốn với selectedId ở đây
+                    setEditedService((prevService) => ({
+                      ...prevService,
+                      unit: selectedUnit,
                     }));
                   }
 
@@ -137,7 +210,7 @@ export const Service = (props) => {
                       axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
 
                       await axios.put(
-                        `http://localhost:2003/api/admin/admin/service/update/${editedService.id}`,
+                        `http://localhost:2003/api/admin/service/update/${editedService.id}`,
                         editedService
                       );
                       const updatedData = serviceData.map((f) =>
@@ -169,6 +242,7 @@ export const Service = (props) => {
 
                   return (
                     <TableRow>
+                      <TableCell></TableCell>
                       <TableCell>
                         <Input
                           onChange={handleServiceCode}
@@ -184,8 +258,38 @@ export const Service = (props) => {
                         />
                       </TableCell>
                       <TableCell>
+                        <Select
+                          name="serviceType"
+                          value={editedService.serviceType.id} // Đảm bảo rằng giá trị value của Select là id của editedService.serviceType
+                          onChange={handleServiceType} // Sử dụng onChange thay vì onClick để xử lý sự kiện khi người dùng chọn một tùy chọn mới
+                        >
+                          {serviceTypeU.map((serviceType) => (
+                            <MenuItem key={serviceType.id} value={serviceType.id}>
+                              {serviceType.serviceTypeName}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </TableCell>
+                      <TableCell>
+                        <Select
+                          name="unit"
+                          value={editedService.unit.id} // Đảm bảo rằng giá trị value của Select là id của editedService.serviceType
+                          onChange={handleUnit} // Sử dụng onChange thay vì onClick để xử lý sự kiện khi người dùng chọn một tùy chọn mới
+                        >
+                          {unit.map((unit) => (
+                            <MenuItem key={unit.id} value={unit.id}>
+                              {unit.unitName}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </TableCell>
+
+                      <TableCell>
+                        <Input onChange={handlePrice} name="price" value={editedService.price} />
+                      </TableCell>
+                      <TableCell>
                         <Input
-                          onChange={handleNote}
+                          onChange={handleDescription}
                           name="description"
                           value={editedService.description}
                         />
