@@ -9,10 +9,12 @@ import { Input, Box, Card, Table, TableBody, TableCell, TableHead, TableRow } fr
 import { Scrollbar } from "src/components/scrollbar";
 
 export const FloorTable = (props) => {
-  const { items = [] } = props;
+  const { items = [], selected = [] } = props;
+
   const floorCodeInput = document.querySelector('input[name="floorCode"]');
   const floorNameInput = document.querySelector('input[name="floorName"]');
   const noteInput = document.querySelector('input[name="note"]');
+
   const floorCode = floorCodeInput?.value;
   const floorName = floorNameInput?.value;
   const note = noteInput?.value;
@@ -36,17 +38,18 @@ export const FloorTable = (props) => {
           <Table>
             <TableHead>
               <TableRow>
+                <TableCell padding="checkbox">STT</TableCell>
                 <TableCell>Floor Code</TableCell>
                 <TableCell>Floor Name</TableCell>
                 <TableCell>Note</TableCell>
-                <TableCell>Created At</TableCell>
                 <TableCell>Status</TableCell>
                 <TableCell>Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {items.map((floor) => {
-                const created = moment(floor.createAt).format("DD/MM/YYYY - HH:mm:ss");
+              {items.map((floor, index) => {
+                const isSelected = selected.includes(floor.id);
+                // const created = moment(floor.createAt).format("DD/MM/YYYY - HH:mm:ss");
                 const alertDelete = () => {
                   Swal.fire({
                     title: "Are you sure?",
@@ -72,11 +75,15 @@ export const FloorTable = (props) => {
                     setFloorData={setFloorData}
                   />
                 ) : (
-                  <TableRow hover key={floor.id}>
+                  <TableRow key={floor.id} selected={isSelected}>
+                    <TableCell padding="checkbox">
+                      <div key={index}>
+                        <span>{index + props.pageNumber * 5 + 1}</span>
+                      </div>
+                    </TableCell>
                     <TableCell>{floor.floorCode}</TableCell>
                     <TableCell>{floor.floorName}</TableCell>
                     <TableCell>{floor.note}</TableCell>
-                    <TableCell>{created}</TableCell>
                     <TableCell>{floor.status == 1 ? "Active" : "Unactive"}</TableCell>
                     <TableCell>
                       <button className="btn btn-primary" onClick={() => handleEdit(floor.id)}>
@@ -142,7 +149,12 @@ export const FloorTable = (props) => {
                   };
 
                   return (
-                    <TableRow>
+                    <TableRow selected={isSelected}>
+                      <TableCell padding="checkbox">
+                        <div key={index}>
+                          <span>{index + props.pageNumber * 5 + 1}</span>
+                        </div>
+                      </TableCell>
                       <TableCell>
                         <Input
                           onChange={handleFloorCode}
@@ -160,7 +172,6 @@ export const FloorTable = (props) => {
                       <TableCell>
                         <Input onChange={handleNote} name="note" value={editedFloor.note} />
                       </TableCell>
-                      <TableCell>{created}</TableCell>
                       <TableCell>{floor.status == 1 ? "Active" : "Unactive"}</TableCell>
                       <TableCell>
                         <button className="btn btn-primary" onClick={alertEdit}>

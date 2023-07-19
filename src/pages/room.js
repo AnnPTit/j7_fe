@@ -12,6 +12,7 @@ import { RoomTable } from "src/sections/room/room-table";
 import { RoomSearch } from "src/sections/room/room-search";
 import { applyPagination } from "src/utils/apply-pagination";
 import "bootstrap/dist/css/bootstrap.min.css";  
+import InputRoom from "src/components/InputRoom/InputRoom";
 // import InputCustomer from "src/components/InputCustomer/InputCustomer";
 
 const useRoom = (data, page, rowsPerPage) => {
@@ -118,7 +119,7 @@ const Page = () => {
               </div>
             </Stack>
             <RoomSearch />
-            {/* {inputModal && <InputCustomer />} */}
+            {inputModal && <InputRoom />}
             <RoomTable
               count={data.length}
               items={room}
