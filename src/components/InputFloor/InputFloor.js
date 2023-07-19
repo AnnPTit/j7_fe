@@ -12,7 +12,7 @@ const handleSubmit = async (event) => {
   // Lấy giá trị từ các trường nhập liệu
   const floorCodeInput = document.querySelector('input[name="floorCode"]');
   const floorNameInput = document.querySelector('input[name="floorName"]');
-  const noteInput = document.querySelector('input[name="note"]');
+  const noteInput = document.querySelector('textarea[name="note"]');
 
   const floorCode = floorCodeInput?.value;
   const floorName = floorNameInput?.value;
@@ -44,7 +44,7 @@ const handleSubmit = async (event) => {
     if (response.status === 200) {
       // Xử lý khi API thành công
       console.log("API call successful");
-      window.location.href = "/floor";
+      // window.location.href = "/floor";
       toast.success("Add Successfully!");
       // Thực hiện các hành động khác sau khi API thành công
     } else {

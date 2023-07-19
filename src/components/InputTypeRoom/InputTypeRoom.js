@@ -6,24 +6,6 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const cx = classNames.bind(style);
-
-const alertSave = () => {
-  Swal.fire({
-    title: "Are you sure?",
-    icon: "info",
-    showCancelButton: true,
-    confirmButtonColor: "#3085d6",
-    cancelButtonColor: "#d33",
-    confirmButtonText: "Yes, add!",
-  }).then((result) => {
-    if (result.isConfirmed) {
-      Swal.fire("Added!", "Your data has been added.", "success");
-      handleSubmit();
-      toast.success("Add Successfully!");
-    }
-  });
-};
-
 const handleSubmit = async (event) => {
   event.preventDefault(); // Ngăn chặn sự kiện submit mặc định
   // Lấy giá trị từ các trường nhập liệu
@@ -35,7 +17,7 @@ const handleSubmit = async (event) => {
   const pricePerNighttimeInput = document.querySelector('input[name="pricePerNighttime"]');
   const priceOvertimeInput = document.querySelector('input[name="priceOvertime"]');
   const capacityInput = document.querySelector('input[name="capacity"]');
-  const noteInput = document.querySelector('input[name="note"]');
+  const noteInput = document.querySelector('textarea[name="note"]');
 
   const typeRoomCode = typeRoomCodeInput?.value;
   const typeRoomName = typeRoomNameInput?.value;
@@ -167,7 +149,7 @@ function InputTypeRoom() {
           <div className={cx("form-row submit-btn")}>
             <div className={cx("input-data")}>
               <div className={cx("inner")}>
-                <button className={cx("input-btn")} onClick={alertSave}>
+                <button className={cx("input-btn")} onClick={handleSubmit}>
                   Save
                 </button>
                 <ToastContainer />
