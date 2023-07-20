@@ -75,6 +75,21 @@ const handleSubmit = async (event) => {
       if (error.response.status === 403) {
         alert("Bạn không có quyền truy cập vào trang này");
         window.location.href = "/auth/login"; // Chuyển hướng đến trang đăng nhập
+      } else if (error.response.status === 400) {
+        console.log(error.response);
+        // alert(error.response.data.typeRoomCode);
+        if (
+          error.response.data.typeRoomCode == undefined &&
+          error.response.data.typeRoomName == undefined
+        ) {
+          toast.error(error.response.data);
+        }
+        toast.error(error.response.data.typeRoomCode, {
+          position: toast.POSITION.BOTTOM_RIGHT,
+        });
+        toast.error(error.response.data.typeRoomName, {
+          position: toast.POSITION.BOTTOM_RIGHT,
+        });
       } else {
         alert("Có lỗi xảy ra trong quá trình gọi API");
       }

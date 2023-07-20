@@ -96,7 +96,9 @@ function InputRoom() {
       axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
       axios.defaults.headers.post["Content-Type"] = "multipart/form-data"; // Set the content type to 'multipart/form-data'
 
-      const response = await axios.post("http://localhost:2003/api/room/save", formData); // Gọi API /api/room-type/save với payload và access token
+      const response = await axios.post("http://localhost:2003/api/room/save", formData, {
+        headers: { "Content-Type": undefined },
+      }); // Gọi API /api/room-type/save với payload và access token
       toast.success("Add Successfully!", {
         position: toast.POSITION.BOTTOM_RIGHT,
       });
@@ -155,7 +157,7 @@ function InputRoom() {
       <div className={cx("container")}>
         <div className={cx("text")}>Room</div>
         <ToastContainer />
-        <form>
+        <form encType="multipart/form-data">
           <div className={cx("form-row")}>
             <div className={cx("input-data")}>
               <input type="text" required name="roomCode" />
