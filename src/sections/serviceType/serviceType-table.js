@@ -162,6 +162,11 @@ export const ServiceType = (props) => {
 
                   return (
                     <TableRow>
+                         <TableCell padding="checkbox">
+                      <div key={index}>
+                        <span>{index + props.pageNumber * 5 + 1}</span>
+                      </div>
+                    </TableCell>
                       <TableCell>
                         <Input
                           onChange={handleServiceTypeCode}

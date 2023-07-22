@@ -88,8 +88,10 @@ export const AccountTable = (props) => {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>AccountCode</TableCell>
+                <TableCell padding="checkbox">STT</TableCell>
+                <TableCell>Account Code</TableCell>
                 <TableCell>Full Name</TableCell>
+                <TableCell>Gender</TableCell>
                 <TableCell>Birthday</TableCell>
                 <TableCell>Phone</TableCell>
                 <TableCell>Citizen Id</TableCell>
@@ -100,8 +102,9 @@ export const AccountTable = (props) => {
             </TableHead>
 
             <TableBody>
-              {items.map((account) => {
+              {items.map((account, index) => {
                 const birthday = moment(account.birthday).format("DD/MM/YYYY");
+                const isSelected = selected.includes(account.id);
                 const alertDelete = () => {
                   Swal.fire({
                     title: "Are you sure?",
@@ -120,11 +123,21 @@ export const AccountTable = (props) => {
                   });
                 };
                 return editState === account.id ? (
-                  <EditAccount key={account.id} account={account} accountData={accountData} setAccountData={setAccountData} />
+                  <EditAccount
+                    key={account.id}
+                    account={account}
+                    accountData={accountData}
+                    setAccountData={setAccountData} />
                 ) : (
-                  <TableRow hover key={account.id}>
+                  <TableRow hover key={account.id} selected={isSelected}>
+                    <TableCell padding="checkbox">
+                      <div key={index}>
+                        <span>{index + props.pageNumber * 5 + 1}</span>
+                      </div>
+                    </TableCell>
                     <TableCell>{account.accountCode}</TableCell>
                     <TableCell>{account.fullname}</TableCell>
+                    <TableCell>{account.gender ? "Nam" : "Nữ"}</TableCell>
                     <TableCell>{birthday}</TableCell>
                     <TableCell>{account.phoneNumber}</TableCell>
                     <TableCell>{account.citizenId}</TableCell>
@@ -155,6 +168,11 @@ export const AccountTable = (props) => {
                     setEditedAccount((prevAccount) => ({ ...prevAccount, fullname: name }));
                   }
 
+                  function handleGender(event) {
+                    const name = event.target.value;
+                    setEditedAccount((prevAccount) => ({ ...prevAccount, gender: name }));
+                  }
+
                   function handleBirthday(event) {
                     const name = event.target.value;
                     setEditedAccount((prevAccount) => ({ ...prevAccount, birthday: name }));
@@ -175,15 +193,12 @@ export const AccountTable = (props) => {
                     setEditedAccount((prevAccount) => ({ ...prevAccount, email: name }));
                   }
 
-                  function handlePosition(event) {
-                    const name = event.target.value;
-                    setEditedAccount((prevAccount) => ({ ...prevAccount, position: name }));
-                  }
+
 
                   // Tương tự cho các trường dữ liệu khác
                   const handleUpdate = async () => {
                     try {
-                      await axios.put(`http://localhost:2003/api/account/update/${editedAccount.id}`, editedAccount);
+                      await axios.put(`http://localhost:2003/api/admin/account/update/${editedAccount.id}`, editedAccount);
                       const updatedData = accountData.map((f) => (f.id === editedAccount.id ? editedAccount : f));
                       setAccountData(updatedData);
                       window.location.href = "/account";
@@ -211,6 +226,11 @@ export const AccountTable = (props) => {
 
                   return (
                     <TableRow>
+                      <TableCell padding="checkbox">
+                        <div key={index}>
+                          <span>{index + props.pageNumber * 5 + 1}</span>
+                        </div>
+                      </TableCell>
                       <TableCell>
                         <Input
                           onChange={handleAccountCode}
@@ -226,7 +246,26 @@ export const AccountTable = (props) => {
                         />
                       </TableCell>
                       <TableCell>
-                        <Input
+                        <TableCell>
+                          Nam
+                          <Input type="radio"
+                            onChange={handleGender}
+                            name="gender"
+                            value="true"
+                            aria-label="Nam"
+                          />
+                        </TableCell>
+                        <TableCell>
+                          Nu
+                          <Input type="radio"
+                            onChange={handleGender}
+                            name="gender"
+                            value="false"
+                          />
+                        </TableCell>
+                      </TableCell>
+                      <TableCell>
+                        <Input type="Date"
                           onChange={handleBirthday}
                           name="birthday"
                           value={editedAccount.birthday}
@@ -253,13 +292,7 @@ export const AccountTable = (props) => {
                           value={editedAccount.email}
                         />
                       </TableCell>
-                      <TableCell>
-                        <Input
-                          onChange={handlePosition}
-                          name="position"
-                          value={editedAccount.position}
-                        />
-                      </TableCell>
+                      <TableCell>{account.position.positionName}</TableCell>
                       <TableCell>{account.status == 1 ? "Hoạt động" : "Unactive"}</TableCell>
                       <TableCell>
                         <button className="btn btn-primary" onClick={alertEdit}>

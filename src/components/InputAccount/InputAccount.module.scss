@@ -127,3 +127,18 @@ form .form-row .textarea {
   border-radius: 20px;
   background: -webkit-linear-gradient(right, #56d8e4, #9f01ea, #56d8e4, #9f01ea);
 }
+
+.horizontal-radio {
+  display: flex;
+  flex-direction: row;
+}
+
+.horizontal-radio div {
+  display: flex;
+  align-items: center;
+  margin-right: 20px; /* Optional: Add some spacing between radio buttons and labels */
+}
+
+.horizontal-radio input[type="radio"] {
+  transform: translateY(1px); /* Optional: Adjust vertical alignment */
+}

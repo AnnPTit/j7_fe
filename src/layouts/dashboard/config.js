@@ -106,15 +106,6 @@ export const items = [
     ),
   },
   {
-    title: "Account",
-    path: "/account",
-    icon: (
-      <SvgIcon fontSize="small">
-        <UserIcon />
-      </SvgIcon>
-    ),
-  },
-  {
     title: "Settings",
     path: "/settings",
     icon: (

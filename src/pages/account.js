@@ -36,6 +36,9 @@ const Page = () => {
   const [pageNumber, setPageNumber] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
 
+  const [textSearch, setTextSearch] = useState("");
+  const [totalElements, setTotalElements] = useState(0);
+
   const handlePageChange = useCallback((event, value) => {
     setPage(value);
   }, []);
@@ -51,13 +54,46 @@ const Page = () => {
   // Delete
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:2003/api/account/delete/${id}`);
+      await axios.delete(`http://localhost:2003/api/admin/account/delete/${id}`);
       const updatedData = data.filter((account) => account.id !== id);
       setData(updatedData);
     } catch (error) {
       console.log(error);
     }
   };
+
+    // Tim kiem
+    useEffect(() => {
+      const fetchData = async () => {
+        try {
+          const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
+          console.log(accessToken);
+          axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
+  
+          const response = await axios.get(
+            `http://localhost:2003/api/admin/account/search?key=${encodeURIComponent(textSearch)}`
+          ); // Thay đổi URL API của bạn tại đây
+          console.log(response.data);
+          setTotalPages(response.data.totalPages);
+          setTotalElements(response.data.totalElements);
+          setData(response.data.content);
+        } catch (error) {
+          if (error.response) {
+            // Xử lý response lỗi
+            if (error.response.status === 403) {
+              alert("Bạn không có quyền truy cập vào trang này");
+              window.location.href = "/auth/login"; // Thay đổi "/dang-nhap" bằng đường dẫn đến trang đăng nhập của bạn
+            } else {
+              alert("Có lỗi xảy ra trong quá trình gọi API");
+            }
+          } else {
+            console.log("Không thể kết nối đến API");
+          }
+        }
+      };
+  
+      fetchData();
+    }, [textSearch]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -67,7 +103,7 @@ const Page = () => {
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
 
         const response = await axios.get(
-          `http://localhost:2003/api/account/load?current_page=${pageNumber}`
+          `http://localhost:2003/api/admin/account/load?current_page=${pageNumber}`
         ); // Thay đổi URL API của bạn tại đây
         setTotalPages(response.data.totalPages);
         setData(response.data.content);
@@ -121,24 +157,17 @@ const Page = () => {
                 </Button>
               </div>
             </Stack>
-            <AccountSearch />
+            <AccountSearch textSearch={textSearch} setTextSearch={setTextSearch} />
             {inputModal && <InputAccount />}
             <div style={{ minHeight: 500 }}>
               {" "}
               <AccountTable
-                count={data.length}
                 items={account}
-                onDeselectAll={accountSelection.handleDeselectAll}
-                onDeselectOne={accountSelection.handleDeselectOne}
-                onPageChange={handlePageChange}
-                onRowsPerPageChange={handleRowsPerPageChange}
-                onSelectAll={accountSelection.handleSelectAll}
-                onSelectOne={accountSelection.handleSelectOne}
-                page={page}
-                rowsPerPage={rowsPerPage}
                 selected={accountSelection.selected}
                 onDelete={handleDelete} // Thêm prop onDelete và truyền giá trị của handleDelete vào đây
                 setPageNumber={setPageNumber}
+                totalElements={totalElements}
+                pageNumber={pageNumber}
               />
             </div>
           </Stack>
