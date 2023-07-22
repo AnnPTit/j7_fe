@@ -10,6 +10,7 @@ import UsersIcon from "@heroicons/react/24/solid/UsersIcon";
 import XCircleIcon from "@heroicons/react/24/solid/XCircleIcon";
 import { SvgIcon } from "@mui/material";
 import Tippy from "@tippyjs/react";
+import React, { useState } from "react";
 
 export const items = [
   {
@@ -23,6 +24,7 @@ export const items = [
   },
   {
     title: "Customers",
+    path: "/customers",
     icon: (
       <Tippy content="Hello">
         <SvgIcon fontSize="small">
@@ -30,7 +32,6 @@ export const items = [
         </SvgIcon>
       </Tippy>
     ),
-    type: "collapse",
   },
   {
     title: "Manager Order",
@@ -76,6 +77,17 @@ export const items = [
         <DocumentIcon />
       </SvgIcon>
     ),
+    children: [
+      {
+        title: "Service",
+        path: "/service/aaa",
+        icon: (
+          <SvgIcon fontSize="small">
+            <DocumentIcon />
+          </SvgIcon>
+        ),
+      },
+    ],
   },
   {
     title: "ServiceType",

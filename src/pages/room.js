@@ -2,8 +2,6 @@ import { useCallback, useMemo, useState, useEffect } from "react";
 import axios from "axios";
 import Head from "next/head";
 
-import ArrowDownOnSquareIcon from "@heroicons/react/24/solid/ArrowDownOnSquareIcon";
-import ArrowUpOnSquareIcon from "@heroicons/react/24/solid/ArrowUpOnSquareIcon";
 import PlusIcon from "@heroicons/react/24/solid/PlusIcon";
 import { Box, Button, Container, Stack, SvgIcon, Typography } from "@mui/material";
 import { useSelection } from "src/hooks/use-selection";
@@ -11,9 +9,9 @@ import { Layout as DashboardLayout } from "src/layouts/dashboard/layout";
 import { RoomTable } from "src/sections/room/room-table";
 import { RoomSearch } from "src/sections/room/room-search";
 import { applyPagination } from "src/utils/apply-pagination";
-import "bootstrap/dist/css/bootstrap.min.css";  
+import Pagination from "src/components/Pagination";
+import "bootstrap/dist/css/bootstrap.min.css";
 import InputRoom from "src/components/InputRoom/InputRoom";
-// import InputCustomer from "src/components/InputCustomer/InputCustomer";
 
 const useRoom = (data, page, rowsPerPage) => {
   return useMemo(() => {
@@ -22,7 +20,7 @@ const useRoom = (data, page, rowsPerPage) => {
   }, [data, page, rowsPerPage]);
 };
 
-const useCustomerIds = (room) => {
+const useRoomIds = (room) => {
   return useMemo(() => {
     return room.map((room) => room.id);
   }, [room]);
@@ -31,19 +29,15 @@ const useCustomerIds = (room) => {
 const Page = () => {
   const [data, setData] = useState([]);
   const [page, setPage] = useState(0);
+  const [dataChange, setDataChange] = useState(false);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const room = useRoom(data, page, rowsPerPage);
-  const customersIds = useCustomerIds(room);
-  const customersSelection = useSelection(customersIds);
+  const roomIds = useRoomIds(room);
+  const roomSelection = useSelection(roomIds);
   const [inputModal, setInputModal] = useState(false);
-
-  const handlePageChange = useCallback((event, value) => {
-    setPage(value);
-  }, []);
-
-  const handleRowsPerPageChange = useCallback((event) => {
-    setRowsPerPage(event.target.value);
-  }, []);
+  const [pageNumber, setPageNumber] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
 
   const openModelInput = () => {
     setInputModal(!inputModal);
@@ -52,8 +46,7 @@ const Page = () => {
   const handleDelete = async (id) => {
     try {
       await axios.delete(`http://localhost:2003/api/room/delete/${id}`);
-      const updatedData = data.filter((room) => room.id !== id);
-      setData(updatedData);
+      setDataChange(!dataChange);
     } catch (error) {
       console.log(error);
     }
@@ -66,8 +59,13 @@ const Page = () => {
         console.log(accessToken);
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
 
-        const response = await axios.get("http://localhost:2003/api/room/load"); // Thay đổi URL API của bạn tại đây
-        setData(response.data);
+        const response = await axios.get(
+          `http://localhost:2003/api/room/load?current_page=${pageNumber}`
+        ); // Thay đổi URL API của bạn tại đây
+        console.log(response.data);
+        setTotalPages(response.data.totalPages);
+        setTotalElements(response.data.totalElements);
+        setData(response.data.content);
       } catch (error) {
         if (error.response) {
           // Xử lý response lỗi
@@ -84,7 +82,7 @@ const Page = () => {
     };
 
     fetchData();
-  }, []);
+  }, [pageNumber, dataChange]);
 
   return (
     <>
@@ -120,21 +118,23 @@ const Page = () => {
             </Stack>
             <RoomSearch />
             {inputModal && <InputRoom />}
-            <RoomTable
-              count={data.length}
-              items={room}
-              onDeselectAll={customersSelection.handleDeselectAll}
-              onDeselectOne={customersSelection.handleDeselectOne}
-              onPageChange={handlePageChange}
-              onRowsPerPageChange={handleRowsPerPageChange}
-              onSelectAll={customersSelection.handleSelectAll}
-              onSelectOne={customersSelection.handleSelectOne}
-              page={page}
-              rowsPerPage={rowsPerPage}
-              selected={customersSelection.selected}
-              onDelete={handleDelete} // Thêm prop onDelete và truyền giá trị của handleDelete vào đây
-            />
+            <div style={{ minHeight: 500 }}>
+              {" "}
+              <RoomTable
+                items={room}
+                selected={roomSelection.selected}
+                onDelete={handleDelete} // Thêm prop onDelete và truyền giá trị của handleDelete vào đây
+                setPageNumber={setPageNumber}
+                totalElements={totalElements}
+                pageNumber={pageNumber} // Thêm prop onDelete và truyền giá trị của handleDelete vào đây
+              />
+            </div>
           </Stack>
+          <Pagination
+            pageNumber={pageNumber}
+            totalPages={totalPages}
+            setPageNumber={setPageNumber}
+          />
         </Container>
       </Box>
     </>
