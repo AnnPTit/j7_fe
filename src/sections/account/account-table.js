@@ -251,8 +251,7 @@ export const AccountTable = (props) => {
                           <Input type="radio"
                             onChange={handleGender}
                             name="gender"
-                            value="true"
-                            aria-label="Nam"
+                            value={editedAccount.gender === true ? "checked":""}
                           />
                         </TableCell>
                         <TableCell>
@@ -260,7 +259,7 @@ export const AccountTable = (props) => {
                           <Input type="radio"
                             onChange={handleGender}
                             name="gender"
-                            value="false"
+                            value={editedAccount.gender === false ? "checked":""}
                           />
                         </TableCell>
                       </TableCell>
@@ -270,6 +269,7 @@ export const AccountTable = (props) => {
                           name="birthday"
                           value={editedAccount.birthday}
                         />
+                        
                       </TableCell>
                       <TableCell>
                         <Input

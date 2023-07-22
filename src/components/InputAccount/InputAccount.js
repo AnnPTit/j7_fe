@@ -144,13 +144,13 @@ function InputAccount() {
           <div className={cx("form-row")}>
             <div className={cx("input", "horizontal-radio", "col-6")}>
               <label>Gender</label>
-              <div class="">
-                <input class="form-check" type="radio" required name="gender" value="true" checked="true" />
-                <label class="form-check">nam</label>
+              <div className="">
+                <input className="form-check" type="radio" required name="gender" value={true} defaultChecked/>
+                <label className="form-check">nam</label>
               </div>
-              <div class="">
-                <input class="form-check" type="radio" required name="gender" value="" />
-                <label class="form-check">nữ</label>
+              <div className="">
+                <input className="form-check" type="radio" required name="gender" value={false} />
+                <label className="form-check">nữ</label>
               </div>
             </div>
             <div className={cx("input-data", "col")}>
