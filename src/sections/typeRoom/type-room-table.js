@@ -227,7 +227,6 @@ export const TypeRoomTable = (props) => {
                     <TableRow>
                       <TableCell>
                         <Input
-                          onChange={handleTypeRoomCode}
                           name="typeRoomCode"
                           value={editedTypeRoom.typeRoomCode}
                         />

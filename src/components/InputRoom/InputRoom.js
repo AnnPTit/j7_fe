@@ -83,8 +83,6 @@ function InputRoom() {
       formData.append("photos", newPhotos[i]);
     }
 
-    console.log("formData: ", formData);
-
     try {
       const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
       // Kiểm tra xem accessToken có tồn tại không
@@ -94,7 +92,7 @@ function InputRoom() {
       }
 
       axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
-      axios.defaults.headers.post["Content-Type"] = "multipart/form-data"; // Set the content type to 'multipart/form-data'
+      axios.defaults.headers.post["Content-Type"] = undefined;
 
       const response = await axios.post("http://localhost:2003/api/room/save", formData, {
         headers: { "Content-Type": undefined },
@@ -103,6 +101,7 @@ function InputRoom() {
         position: toast.POSITION.BOTTOM_RIGHT,
       });
       console.log(response); //
+      console.log("formData: ", formData);
 
       if (response.status === 200) {
         // Xử lý khi API thành công

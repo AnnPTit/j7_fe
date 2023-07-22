@@ -21,19 +21,9 @@ import { Scrollbar } from "src/components/scrollbar";
 import { getInitials } from "src/utils/get-initials";
 
 export const RoomTable = (props) => {
-  const {
-    count = 0,
-    items = [],
-    onDeselectAll,
-    onDeselectOne,
-    onPageChange = () => {},
-    onRowsPerPageChange,
-    onSelectAll,
-    onSelectOne,
-    page = 0,
-    rowsPerPage = 0,
-    selected = [],
-  } = props;
+  const { items = [], selected = [] } = props;
+
+  const imageUrlBase = "http://localhost:2003";
 
   const selectedSome = selected.length > 0 && selected.length < items.length;
   const selectedAll = items.length > 0 && selected.length === items.length;
@@ -48,7 +38,9 @@ export const RoomTable = (props) => {
           <Table>
             <TableHead>
               <TableRow>
+                <TableCell padding="checkbox">STT</TableCell>
                 <TableCell>Room Code</TableCell>
+                <TableCell>Image</TableCell>
                 <TableCell>Room Name</TableCell>
                 <TableCell>Type Room</TableCell>
                 <TableCell>Floor</TableCell>
@@ -58,7 +50,7 @@ export const RoomTable = (props) => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {items.map((room) => {
+              {items.map((room, index) => {
                 // const created = moment(room.createAt).format("DD/MM/YYYY - HH:mm:ss");
                 // const updated = moment(room.updateAt).format("DD/MM/YYYY - HH:mm:ss");
                 const alertDelete = () => {
@@ -78,19 +70,34 @@ export const RoomTable = (props) => {
                     }
                   });
                 };
-                
+
                 return (
                   <TableRow hover key={room.id}>
+                    <TableCell padding="checkbox">
+                      <div key={index}>
+                        <span>{index + props.pageNumber * 5 + 1}</span>
+                      </div>
+                    </TableCell>
                     <TableCell>{room.roomCode}</TableCell>
+                    <TableCell>
+                      <Stack alignItems="center" direction="row" spacing={2}>
+                        {room.photoList.length > 0 && ( // Check if photoList is not empty
+                          <img
+                            key={room.photoList[0].id} // Use key from the first photo
+                            src={`${imageUrlBase}${room.photoList[0].url}`} // Use URL from the first photo
+                            width={100}
+                            height={100}
+                          />
+                        )}
+                      </Stack>
+                    </TableCell>
                     <TableCell>{room.roomName}</TableCell>
                     <TableCell>{room.typeRoom.typeRoomName}</TableCell>
                     <TableCell>{room.floor.floorName}</TableCell>
                     <TableCell>{room.note}</TableCell>
                     <TableCell>{room.status == 1 ? "Active" : "Unactive"}</TableCell>
                     <TableCell>
-                    <button className="btn btn-primary">
-                        Edit
-                      </button>
+                      <button className="btn btn-primary">Edit</button>
                       <button className="btn btn-danger m-xl-2" onClick={alertDelete}>
                         Delete
                       </button>
@@ -103,15 +110,6 @@ export const RoomTable = (props) => {
           </Table>
         </Box>
       </Scrollbar>
-      <TablePagination
-        component="div"
-        count={count}
-        onPageChange={onPageChange}
-        onRowsPerPageChange={onRowsPerPageChange}
-        page={page}
-        rowsPerPage={rowsPerPage}
-        rowsPerPageOptions={[5, 10, 25]}
-      />
     </Card>
   );
 };

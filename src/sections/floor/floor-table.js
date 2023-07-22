@@ -157,13 +157,6 @@ export const FloorTable = (props) => {
                       </TableCell>
                       <TableCell>
                         <Input
-                          onChange={handleFloorCode}
-                          name="floorCode"
-                          value={editedFloor.floorCode}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Input
                           onChange={handleFloorName}
                           name="floorName"
                           value={editedFloor.floorName}
