@@ -63,7 +63,9 @@ const Page = () => {
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
 
         const response = await axios.get(
-          `http://localhost:2003/api/admin/service-type/search?key=${encodeURIComponent(textSearch)}`
+          `http://localhost:2003/api/admin/service-type/search?key=${encodeURIComponent(
+            textSearch
+          )}`
         ); // Thay đổi URL API của bạn tại đây
         console.log(response.data);
         setTotalPages(response.data.totalPages);

@@ -84,7 +84,7 @@ export const RoomTable = (props) => {
                         {room.photoList.length > 0 && ( // Check if photoList is not empty
                           <img
                             key={room.photoList[0].id} // Use key from the first photo
-                            src={`${imageUrlBase}${room.photoList[0].url}`} // Use URL from the first photo
+                            src={`${room.photoList[0].url}`} // Use URL from the first photo
                             width={100}
                             height={100}
                           />

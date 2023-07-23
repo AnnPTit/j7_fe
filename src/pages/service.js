@@ -13,6 +13,8 @@ import { applyPagination } from "src/utils/apply-pagination";
 import InputService from "src/components/inputService/inputService";
 import Pagination from "src/components/Pagination";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { SideNavItem } from "src/layouts/dashboard/side-nav-item";
+import { usePathname } from "next/navigation";
 
 const useCustomers = (data, page, rowsPerPage) => {
   return useMemo(() => {
@@ -35,7 +37,7 @@ const Page = () => {
   const customers = useCustomers(data, page, rowsPerPage);
   const customersIds = useCustomerIds(customers);
   const customersSelection = useSelection(customersIds);
-  const [inputModal, setInputModal] = useState(false);
+  // const [inputModal, setInputModal] = useState(false);
   const [pageNumber, setPageNumber] = useState(0);
   // Search
   const [textSearch, setTextSearch] = useState("");
@@ -48,13 +50,26 @@ const Page = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
 
+  const pathname = usePathname();
+
+  const item = {
+    title: "Add",
+    path: "input/inputService/inputService",
+    icon: (
+      <SvgIcon fontSize="small">
+        <PlusIcon />
+      </SvgIcon>
+    ),
+  };
+  const active = item.path ? pathname === item.path : false;
+
   const openModelInput = () => {
-    setInputModal(!inputModal);
+    // setInputModal(!inputModal);
   };
   // Delete
   const handleDelete = async (id) => {
     try {
-      // await axios.delete(`http://localhost:2003/api/admin/service/delete/${id}`);
+      await axios.delete(`http://localhost:2003/api/admin/service/delete/${id}`);
       console.log(id);
       setDataChange(!dataChange);
     } catch (error) {
@@ -151,17 +166,17 @@ const Page = () => {
                 <Stack alignItems="center" direction="row" spacing={1}></Stack>
               </Stack>
               <div>
-                <Button
-                  onClick={openModelInput}
-                  startIcon={
-                    <SvgIcon fontSize="small">
-                      <PlusIcon />
-                    </SvgIcon>
-                  }
-                  variant="contained"
-                >
-                  Add
-                </Button>
+                <SideNavItem
+                  style={{ backgroundColor: "red" }}
+                  active={active}
+                  disabled={item.disabled}
+                  external={item.external}
+                  icon={item.icon}
+                  key={item.title}
+                  path={item.path}
+                  title={item.title}
+                  btn={true}
+                />
               </div>
             </Stack>
             <ServiceSearch textSearch={textSearch} setTextSearch={setTextSearch} />
@@ -181,7 +196,7 @@ const Page = () => {
               setServiceTypeChose={setServiceTypeChose}
               setUnitChose={setUnitChose}
             />
-            {inputModal && <InputService />}
+            {/* {inputModal && <InputService />} */}
             <div style={{ minHeight: 500 }}>
               {" "}
               <Service
