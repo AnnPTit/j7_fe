@@ -54,13 +54,13 @@ const handleSubmit = async (event) => {
 
     axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
 
-    const response = await axios.post("http://localhost:2003/api/type-room/save", payload); // Gọi API /api/customers/save với payload và access token
+    const response = await axios.post("http://localhost:2003/api/admin/type-room/save", payload); // Gọi API /api/customers/save với payload và access token
     console.log(response);
 
     if (response.status === 200) {
       // Xử lý khi API thành công
       console.log("API call successful");
-      window.location.href = "/typeRoom";
+      window.location.href = "/type-room";
       toast.success("Add Successfully!");
       // Thực hiện các hành động khác sau khi API thành công
     } else {

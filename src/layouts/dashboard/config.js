@@ -62,7 +62,7 @@ export const items = [
   },
   {
     title: "TypeRoom",
-    path: "/typeRoom",
+    path: "/type-room",
     icon: (
       <SvgIcon fontSize="small">
         <LockClosedIcon />

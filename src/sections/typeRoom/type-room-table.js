@@ -197,10 +197,10 @@ export const TypeRoomTable = (props) => {
                   // Tương tự cho các trường dữ liệu khác
                   const handleUpdate = async () => {
                     try {
-                      await axios.put(`http://localhost:2003/api/type-room/update/${editedTypeRoom.id}`, editedTypeRoom);
+                      await axios.put(`http://localhost:2003/api/admin/type-room/update/${editedTypeRoom.id}`, editedTypeRoom);
                       const updatedData = typeRoomData.map((f) => (f.id === editedTypeRoom.id ? editedTypeRoom : f));
                       setTypeRoomData(updatedData);
-                      window.location.href = "/typeRoom";
+                      window.location.href = "/type-room";
                     } catch (error) {
                       console.error(error);
                     }

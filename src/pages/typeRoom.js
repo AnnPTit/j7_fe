@@ -46,7 +46,7 @@ const Page = () => {
   // Delete typeRoom
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:2003/api/type-room/delete/${id}`);
+      await axios.delete(`http://localhost:2003/api/admin/type-room/delete/${id}`);
       setDataChange(!dataChange);
     } catch (error) {
       console.log(error);
@@ -62,7 +62,7 @@ const Page = () => {
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
 
         const response = await axios.get(
-          `http://localhost:2003/api/type-room/search?key=${encodeURIComponent(textSearch)}`
+          `http://localhost:2003/api/admin/type-room/search?key=${encodeURIComponent(textSearch)}`
         ); // Thay đổi URL API của bạn tại đây
         console.log(response.data);
         setTotalPages(response.data.totalPages);
@@ -93,7 +93,7 @@ const Page = () => {
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
 
         const response = await axios.get(
-          `http://localhost:2003/api/type-room/load?current_page=${pageNumber}`
+          `http://localhost:2003/api/admin/type-room/load?current_page=${pageNumber}`
         ); // Thay đổi URL API của bạn tại đây
         console.log(response.data);
         setTotalPages(response.data.totalPages);

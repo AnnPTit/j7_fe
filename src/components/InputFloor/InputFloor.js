@@ -38,7 +38,7 @@ const handleSubmit = async (event) => {
 
     axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
 
-    const response = await axios.post("http://localhost:2003/api/floor/save", payload); // Gọi API /api/customers/save với payload và access token
+    const response = await axios.post("http://localhost:2003/api/admin/floor/save", payload); // Gọi API /api/customers/save với payload và access token
     console.log(response);
 
     if (response.status === 200) {

@@ -53,7 +53,7 @@ const Page = () => {
   // Delete order
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:2003/api/order/delete/${id}`);
+      await axios.delete(`http://localhost:2003/api/admin/order/delete/${id}`);
       const updatedData = data.filter((order) => order.id !== id);
       setData(updatedData);
     } catch (error) {
@@ -69,7 +69,7 @@ const Page = () => {
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
 
         const response = await axios.get(
-          `http://localhost:2003/api/order/load?current_page=${pageNumber}`
+          `http://localhost:2003/api/admin/order/load?current_page=${pageNumber}`
         ); // Thay đổi URL API của bạn tại đây
         setTotalPages(response.data.totalPages);
         setData(response.data.content);

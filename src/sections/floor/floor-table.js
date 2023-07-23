@@ -118,7 +118,7 @@ export const FloorTable = (props) => {
                   const handleUpdate = async () => {
                     try {
                       await axios.put(
-                        `http://localhost:2003/api/floor/update/${editedFloor.id}`,
+                        `http://localhost:2003/api/admin/floor/update/${editedFloor.id}`,
                         editedFloor
                       );
                       const updatedData = floorData.map((f) =>

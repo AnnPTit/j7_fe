@@ -18,7 +18,7 @@ function InputRoom() {
 
   useEffect(() => {
     axios
-      .get("http://localhost:2003/api/floor/getList")
+      .get("http://localhost:2003/api/admin/floor/getList")
       .then((response) => {
         setFloors(response.data);
         console.log(response.data);
@@ -28,7 +28,7 @@ function InputRoom() {
       });
 
     axios
-      .get("http://localhost:2003/api/type-room/getList")
+      .get("http://localhost:2003/api/admin/type-room/getList")
       .then((response) => {
         setTypeRooms(response.data);
         console.log(response.data);
@@ -94,7 +94,7 @@ function InputRoom() {
       axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
       axios.defaults.headers.post["Content-Type"] = undefined;
 
-      const response = await axios.post("http://localhost:2003/api/room/save", formData, {
+      const response = await axios.post("http://localhost:2003/api/admin/room/save", formData, {
         headers: { "Content-Type": undefined },
       }); // Gọi API /api/room-type/save với payload và access token
       toast.success("Add Successfully!", {
