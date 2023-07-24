@@ -131,6 +131,7 @@ function UpdateRoom() {
   const [floor, setFloor] = useState([]);
   const router = useRouter(); // Sử dụng useRouter để truy cập router của Next.js
   const { id } = router.query; // Lấy thông tin từ URL qua router.query
+  const [roomImages, setRoomImages] = useState([]);
   const [roomUpdate, setRoomUpdate] = useState({
     id: "",
     roomCode: "",
@@ -164,6 +165,21 @@ function UpdateRoom() {
     // Gọi hàm fetchData ngay lập tức
     fetchData();
   }, []);
+  useEffect(() => {
+    async function fetchRoomImages() {
+      try {
+        const response = await axios.get(
+          `http://localhost:2003/api/admin/room/photo/${id}`
+        );
+        setRoomImages(response.data);
+      } catch (error) {
+        console.log("Error fetching room images:", error);
+      }
+    }
+
+    // Fetch room images
+    fetchRoomImages();
+  }, [id]);
   //Hàm detail
   useEffect(() => {
     // Định nghĩa hàm fetchData bên trong useEffect
@@ -288,7 +304,6 @@ function UpdateRoom() {
           </option>
         ))}
       </select>
-
       <br></br>
       <button
         className={(cx("input-btn"), "btn btn-primary")}
