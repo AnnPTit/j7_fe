@@ -158,7 +158,7 @@ const Page = () => {
           <Stack spacing={3}>
             <Stack direction="row" justifyContent="space-between" spacing={4}>
               <Stack spacing={1}>
-                <Typography variant="h4">Service </Typography>
+                <Typography variant="h4">Dịch Vụ </Typography>
                 <Stack alignItems="center" direction="row" spacing={1}></Stack>
               </Stack>
               <div>
@@ -182,7 +182,7 @@ const Page = () => {
               }}
             >
               {" "}
-              Filter:
+              Lọc:
             </p>
             <ServiceFilter
               serviceType={serviceType}

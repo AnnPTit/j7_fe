@@ -1,6 +1,8 @@
-import { useCallback, useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect } from "react";
 import axios from "axios";
 import Head from "next/head";
+import { usePathname } from "next/navigation";
+import { SideNavItem } from "src/layouts/dashboard/side-nav-item";
 
 import PlusIcon from "@heroicons/react/24/solid/PlusIcon";
 import { Box, Button, Container, Stack, SvgIcon, Typography } from "@mui/material";
@@ -9,7 +11,7 @@ import { Layout as DashboardLayout } from "src/layouts/dashboard/layout";
 import { ServiceType } from "src/sections/serviceType/serviceType-table";
 import { ServiceTypeSearch } from "src/sections/serviceType/serviceType-search";
 import { applyPagination } from "src/utils/apply-pagination";
-import InputServiceType from "src/components/inputServiceType/inputServiceType";
+import InputServiceType from "src/pages/input/inputServiceType/inputServiceType";
 import Pagination from "src/components/Pagination";
 import "bootstrap/dist/css/bootstrap.min.css";
 
@@ -41,9 +43,18 @@ const Page = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
 
-  const openModelInput = () => {
-    setInputModal(!inputModal);
+  const pathname = usePathname();
+  const item = {
+    title: "Add",
+    path: "input/inputServiceType/inputServiceType",
+    icon: (
+      <SvgIcon fontSize="small">
+        <PlusIcon />
+      </SvgIcon>
+    ),
   };
+  const active = item.path ? pathname === item.path : false;
+
   // Delete Customer
   const handleDelete = async (id) => {
     try {
@@ -137,21 +148,23 @@ const Page = () => {
           <Stack spacing={3}>
             <Stack direction="row" justifyContent="space-between" spacing={4}>
               <Stack spacing={1}>
-                <Typography variant="h4">Service Type</Typography>
+                <Typography variant="h4"> Loại dịch vụ</Typography>
                 <Stack alignItems="center" direction="row" spacing={1}></Stack>
               </Stack>
               <div>
-                <Button
-                  onClick={openModelInput}
-                  startIcon={
-                    <SvgIcon fontSize="small">
-                      <PlusIcon />
-                    </SvgIcon>
-                  }
-                  variant="contained"
-                >
-                  Add
-                </Button>
+                <div>
+                  <SideNavItem
+                    style={{ backgroundColor: "red" }}
+                    active={active}
+                    disabled={item.disabled}
+                    external={item.external}
+                    icon={item.icon}
+                    key={item.title}
+                    path={item.path}
+                    title={item.title}
+                    btn={true}
+                  />
+                </div>
               </div>
             </Stack>
             <ServiceTypeSearch textSearch={textSearch} setTextSearch={setTextSearch} />

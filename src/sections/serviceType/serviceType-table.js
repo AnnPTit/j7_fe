@@ -5,7 +5,19 @@ import Swal from "sweetalert2";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Scrollbar } from "src/components/scrollbar";
-import { Input, Box, Card, Table, TableBody, TableCell, TableHead, TableRow } from "@mui/material";
+import {
+  Input,
+  Box,
+  Card,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  SvgIcon,
+} from "@mui/material";
+import TrashIcon from "@heroicons/react/24/solid/TrashIcon";
+import Bars4Icon from "@heroicons/react/24/solid/Bars4Icon";
 
 export const ServiceType = (props) => {
   const { items = [], selected = [] } = props;
@@ -36,15 +48,16 @@ export const ServiceType = (props) => {
             <TableHead>
               <TableRow>
                 <TableCell padding="checkbox">STT</TableCell>
-                <TableCell>ServiceType Code</TableCell>
-                <TableCell>ServiceType Name</TableCell>
-                <TableCell>Description</TableCell>
-                <TableCell>Actions</TableCell>
+                <TableCell>Mã loại dịch vụ</TableCell>
+                <TableCell>Tên loại dịch vụ</TableCell>
+                <TableCell>Mô tả</TableCell>
+                <TableCell>Hành động </TableCell>
               </TableRow>
             </TableHead>
 
             <TableBody>
               {items.map((serviceType, index) => {
+                const hrefUpdate = `/update/updateServiceType/updateServiceType?id=${serviceType.id}`;
                 const isSelected = selected.includes(serviceType.id);
                 const alertDelete = () => {
                   Swal.fire({
@@ -82,14 +95,15 @@ export const ServiceType = (props) => {
                     <TableCell>{serviceType.serviceTypeName}</TableCell>
                     <TableCell>{serviceType.description}</TableCell>
                     <TableCell>
-                      <button
-                        className="btn btn-primary"
-                        onClick={() => handleEdit(serviceType.id)}
-                      >
-                        Edit
-                      </button>
+                      <a className="btn btn-info m-xl-2" href={hrefUpdate}>
+                        <SvgIcon fontSize="small">
+                          <Bars4Icon />
+                        </SvgIcon>
+                      </a>
                       <button className="btn btn-danger m-xl-2" onClick={alertDelete}>
-                        Delete
+                        <SvgIcon fontSize="small">
+                          <TrashIcon />
+                        </SvgIcon>
                       </button>
                       <ToastContainer />
                     </TableCell>
@@ -162,11 +176,11 @@ export const ServiceType = (props) => {
 
                   return (
                     <TableRow>
-                         <TableCell padding="checkbox">
-                      <div key={index}>
-                        <span>{index + props.pageNumber * 5 + 1}</span>
-                      </div>
-                    </TableCell>
+                      <TableCell padding="checkbox">
+                        <div key={index}>
+                          <span>{index + props.pageNumber * 5 + 1}</span>
+                        </div>
+                      </TableCell>
                       <TableCell>
                         <Input
                           onChange={handleServiceTypeCode}

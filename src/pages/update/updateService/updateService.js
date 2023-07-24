@@ -1,13 +1,132 @@
 import classNames from "classnames/bind";
+import "react-toastify/dist/ReactToastify.css";
 import style from "./updateService.module.scss";
 import { Layout as DashboardLayout } from "src/layouts/dashboard/layout";
 import axios from "axios";
-import { toast } from "react-toastify";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/router"; // Import useRouter từ Next.js
 import "bootstrap/dist/css/bootstrap.min.css";
+import { ToastContainer, toast } from "react-toastify";
+import Swal from "sweetalert2";
+import { useRouter } from "next/router";
 
 const cx = classNames.bind(style);
+const handleSubmit = async (event, id, serviceUpdate) => {
+  event.preventDefault(); // Ngăn chặn sự kiện submit mặc định
+  const unitIput = document.querySelector('select[name="unit"]');
+  const serviceTypeIput = document.querySelector('select[name="serviceType"]');
+  const unit = unitIput?.value;
+  const serviceType = serviceTypeIput?.value;
+
+  let unitObj = {
+    id: unit,
+  };
+
+  let serviceTypeObj = {
+    id: serviceType,
+  };
+
+  // Tạo payload dữ liệu để gửi đến API
+  const payload = {
+    ...serviceUpdate,
+    id: id,
+    serviceCode: serviceUpdate.serviceCode,
+    serviceName: serviceUpdate.serviceName,
+    description: serviceUpdate.description,
+    unit: unitObj,
+    serviceType: serviceTypeObj,
+    price: serviceUpdate.price,
+  };
+  console.log("payload ", payload);
+
+  try {
+    const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
+    // Kiểm tra xem accessToken có tồn tại không
+    if (!accessToken) {
+      alert("Bạn chưa đăng nhập");
+      return false;
+    }
+
+    axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
+    const response = await axios.put(
+      `http://localhost:2003/api/admin/service/update/${id}`,
+      payload
+    ); // Gọi API /api/service-type/save với payload và access token
+    toast.success("update Successfully!", {
+      position: toast.POSITION.BOTTOM_RIGHT,
+    });
+    console.log(response); //
+
+    if (response.status === 200) {
+      // Xử lý khi API thành công
+      console.log("API call successful");
+
+      window.location.href = "/service";
+      return true;
+      // Thực hiện các hành động khác sau khi API thành công
+    } else {
+      // Xử lý khi API gặp lỗi
+      console.log("API call failed");
+      return false;
+      // Thực hiện các hành động khác khi gọi API thất bại
+    }
+  } catch (error) {
+    // Xử lý khi có lỗi xảy ra trong quá trình gọi API
+    if (error.response) {
+      // Xử lý response lỗi
+      if (error.response.status === 403) {
+        alert("Bạn không có quyền truy cập vào trang này");
+        window.location.href = "/auth/login"; // Chuyển hướng đến trang đăng nhập
+        return false;
+      } else if (error.response.status === 400) {
+        console.log(error.response.data);
+
+        const isServiceNameError = error.response.data.serviceName === undefined;
+        const isServiceCodeError = error.response.data.serviceCode === undefined;
+        const isPriceError = error.response.data.price === undefined;
+
+        // Kiểm tra nếu tất cả các trường không bị thiếu, hiển thị thông báo lỗi cho cả 3 trường
+        if (!isServiceNameError && !isServiceCodeError && !isPriceError) {
+          toast.error(error.response.data.serviceName, {
+            position: toast.POSITION.BOTTOM_RIGHT,
+          });
+          toast.error(error.response.data.serviceCode, {
+            position: toast.POSITION.BOTTOM_RIGHT,
+          });
+          toast.error(error.response.data.price, {
+            position: toast.POSITION.BOTTOM_RIGHT,
+          });
+          return false;
+        } else {
+          // Nếu có ít nhất một trường bị thiếu, xóa thông báo lỗi cho trường đó nếu có
+          // và hiển thị thông báo lỗi cho các trường còn lại
+          if (!isServiceNameError) {
+            alert(error.response.data.serviceName);
+            toast.error(error.response.data.serviceName, {
+              position: toast.POSITION.BOTTOM_RIGHT,
+            });
+          }
+          if (!isServiceCodeError) {
+            toast.error(error.response.data.serviceCode, {
+              position: toast.POSITION.BOTTOM_RIGHT,
+            });
+          }
+          if (!isPriceError) {
+            toast.error(error.response.data.price, {
+              position: toast.POSITION.BOTTOM_RIGHT,
+            });
+          }
+          return false;
+        }
+      } else {
+        alert("Có lỗi xảy ra trong quá trình gọi API");
+        return false;
+      }
+    } else {
+      console.log("Không thể kết nối đến API");
+      return false;
+    }
+  }
+};
 
 function UpdateService() {
   const [serviceType, setServiceType] = useState([]);
@@ -24,7 +143,7 @@ function UpdateService() {
     price: "",
     createAt: "",
   });
-  // const [serviceName, setServiceName] = useState("");
+  // Lấy data cho combobox;
   useEffect(() => {
     // Định nghĩa hàm fetchData bên trong useEffect
     async function fetchData() {
@@ -48,7 +167,7 @@ function UpdateService() {
     // Gọi hàm fetchData ngay lập tức
     fetchData();
   }, []);
-
+  //Hàm detail
   useEffect(() => {
     // Định nghĩa hàm fetchData bên trong useEffect
     async function fetchData() {
@@ -75,97 +194,9 @@ function UpdateService() {
     fetchData();
   }, []);
 
-  const handleSubmit = async (event) => {
-    event.preventDefault(); // Ngăn chặn sự kiện submit mặc định
-    const unitIput = document.querySelector('select[name="unit"]');
-    const serviceTypeIput = document.querySelector('select[name="serviceType"]');
-    const unit = unitIput?.value;
-    const serviceType = serviceTypeIput?.value;
-
-    let unitObj = {
-      id: unit,
-    };
-
-    let serviceTypeObj = {
-      id: serviceType,
-    };
-
-    // Tạo payload dữ liệu để gửi đến API
-    const payload = {
-      id: id,
-      serviceCode: serviceUpdate.serviceCode,
-      serviceName: serviceUpdate.serviceName,
-      description: serviceUpdate.description,
-      unit: unitObj,
-      serviceType: serviceTypeObj,
-      price: serviceUpdate.price,
-      createAt: serviceUpdate.createAt,
-    };
-    console.log("payload ", payload);
-
-    try {
-      const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
-      // Kiểm tra xem accessToken có tồn tại không
-      if (!accessToken) {
-        alert("Bạn chưa đăng nhập");
-        return;
-      }
-
-      axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
-      const response = await axios.put(
-        `http://localhost:2003/api/admin/service/update/${id}`,
-        payload
-      ); // Gọi API /api/service-type/save với payload và access token
-      toast.success("Add Successfully!", {
-        position: toast.POSITION.BOTTOM_RIGHT,
-      });
-      console.log(response); //
-
-      if (response.status === 200) {
-        // Xử lý khi API thành công
-        console.log("API call successful");
-
-        window.location.href = "/service";
-        // Thực hiện các hành động khác sau khi API thành công
-      } else {
-        // Xử lý khi API gặp lỗi
-        console.log("API call failed");
-        // Thực hiện các hành động khác khi gọi API thất bại
-      }
-    } catch (error) {
-      // Xử lý khi có lỗi xảy ra trong quá trình gọi API
-      if (error.response) {
-        // Xử lý response lỗi
-        if (error.response.status === 403) {
-          alert("Bạn không có quyền truy cập vào trang này");
-          window.location.href = "/auth/login"; // Chuyển hướng đến trang đăng nhập
-        } else if (error.response.status === 400) {
-          console.log(error.response);
-
-          if (
-            error.response.data.price == undefined &&
-            error.response.data.serviceName == undefined
-          ) {
-            toast.error(error.response.data);
-          }
-          toast.error(error.response.data.price, {
-            position: toast.POSITION.BOTTOM_RIGHT,
-          });
-          toast.error(error.response.data.serviceName, {
-            position: toast.POSITION.BOTTOM_RIGHT,
-          });
-        } else {
-          alert("Có lỗi xảy ra trong quá trình gọi API");
-        }
-      } else {
-        console.log("Không thể kết nối đến API");
-      }
-    }
-  };
-
   return (
     <div className={cx("wrapper")}>
-      <h1>Update Service</h1>
+      <h1>Cập Nhật Dịch Vụ</h1>
       <div className="form-floating mb-3">
         <input
           className="form-control"
@@ -280,9 +311,31 @@ function UpdateService() {
       </select>
 
       <br></br>
-      <button className={(cx("input-btn"), "btn btn-primary")} onClick={handleSubmit}>
-        Submit
+      <button
+        className={(cx("input-btn"), "btn btn-primary")}
+        onClick={() => {
+          Swal.fire({
+            title: "Are you sure?",
+            text: "You won't be able to revert this!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Yes, Update it!",
+          }).then(async (result) => {
+            if (result.isConfirmed) {
+              const isSubmitSuccess = await handleSubmit(event, id, serviceUpdate);
+              if (isSubmitSuccess) {
+                Swal.fire("Update!", "Your data has been Update.", "success");
+                toast.success("Update Successfully!");
+              }
+            }
+          });
+        }}
+      >
+        Cập nhật
       </button>
+      <ToastContainer />
     </div>
   );
 }
