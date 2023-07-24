@@ -12,8 +12,11 @@ import {
   TableCell,
   TableHead,
   TableRow,
+  SvgIcon,
 } from "@mui/material";
 import { Scrollbar } from "src/components/scrollbar";
+import TrashIcon from "@heroicons/react/24/solid/TrashIcon";
+import Bars4Icon from "@heroicons/react/24/solid/Bars4Icon";
 
 export const RoomTable = (props) => {
   const { items = [], selected = [] } = props;
@@ -44,6 +47,7 @@ export const RoomTable = (props) => {
               {items.map((room, index) => {
                 // const created = moment(room.createAt).format("DD/MM/YYYY - HH:mm:ss");
                 // const updated = moment(room.updateAt).format("DD/MM/YYYY - HH:mm:ss");
+                const hrefUpdate = `/update/updateRoom/updateRoom?id=${room.id}`;
                 const alertDelete = () => {
                   Swal.fire({
                     title: "Are you sure?",
@@ -76,8 +80,8 @@ export const RoomTable = (props) => {
                           <img
                             key={room.photoList[0].id} // Use key from the first photo
                             src={`${room.photoList[0].url}`} // Use URL from the first photo
-                            width={100}
-                            height={100}
+                            width={200}
+                            height={200}
                           />
                         )}
                       </Stack>
@@ -88,9 +92,15 @@ export const RoomTable = (props) => {
                     <TableCell>{room.note}</TableCell>
                     <TableCell>{room.status == 1 ? "Active" : "Unactive"}</TableCell>
                     <TableCell>
-                      <button className="btn btn-primary">Edit</button>
+                    <a className="btn btn-info m-xl-2" href={hrefUpdate}>
+                        <SvgIcon fontSize="small">
+                          <Bars4Icon />
+                        </SvgIcon>
+                      </a>
                       <button className="btn btn-danger m-xl-2" onClick={alertDelete}>
-                        Delete
+                        <SvgIcon fontSize="small">
+                          <TrashIcon />
+                        </SvgIcon>
                       </button>
                       <ToastContainer />
                     </TableCell>

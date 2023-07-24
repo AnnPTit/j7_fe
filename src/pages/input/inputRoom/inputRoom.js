@@ -2,16 +2,17 @@ import classNames from "classnames/bind";
 import style from "./inputRoom.module.scss";
 import { Layout as DashboardLayout } from "src/layouts/dashboard/layout";
 import axios from "axios";
-import { toast } from "react-toastify";
-import { useEffect, useState } from "react";
+import { ToastContainer, toast } from "react-toastify";
+import { useEffect, useState, useRef } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import PlusIcon from "@heroicons/react/24/solid/PlusIcon";
 import { SvgIcon } from "@mui/material";
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
 import InputFloor from "src/components/InputFloor/InputFloor";
-import { width } from "@mui/system";
 import InputTypeRoom from "src/components/InputTypeRoom/InputTypeRoom";
+import Swal from "sweetalert2";
+import Card from "react-bootstrap/Card";
 
 const cx = classNames.bind(style);
 
@@ -28,6 +29,7 @@ function InputRoom() {
   const handleShowFloor = () => setShowFloor(true);
   const handleCloseTypeRoom = () => setShowTypeRoom(false);
   const handleShowTypeRoom = () => setShowTypeRoom(true);
+  const fileInputRef = useRef(null);
 
   const handleSubmit = async (event) => {
     event.preventDefault(); // Ngăn chặn sự kiện submit mặc định
@@ -86,7 +88,7 @@ function InputRoom() {
       axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
 
       const response = await axios.post("http://localhost:2003/api/admin/room/save", formData); // Gọi API /api/room-type/save với payload và access token
-      toast.success("Add Successfully!", {
+      toast.success("Thêm thành công!", {
         position: toast.POSITION.BOTTOM_RIGHT,
       });
       console.log(response); //
@@ -161,14 +163,40 @@ function InputRoom() {
     fetchData();
   }, []);
 
+  const handleDeleteImage = (index) => {
+    // Remove the image at the given index from both newPhotos and previewImages arrays
+    const updatedNewPhotos = [...newPhotos];
+    const updatedPreviewImages = [...previewImages];
+    updatedNewPhotos.splice(index, 1);
+    updatedPreviewImages.splice(index, 1);
+    setNewPhotos(updatedNewPhotos);
+    setPreviewImages(updatedPreviewImages);
+    if (updatedNewPhotos.length === 0) {
+      fileInputRef.current.value = "";
+    }
+    setSelectedImagesCount(updatedNewPhotos.length);
+  };
+
+  const [selectedImagesCount, setSelectedImagesCount] = useState(0);
+
+  const MAX_IMAGES = 6; // Maximum number of images allowed
+
   const handleFileChange = (event) => {
     const files = event.target.files;
     const images = Array.from(files);
 
-    setNewPhotos(images);
+    if (images.length + previewImages.length <= MAX_IMAGES) {
+      setNewPhotos(images);
 
-    const imagePreviews = images.map((image) => URL.createObjectURL(image));
-    setPreviewImages(imagePreviews);
+      const imagePreviews = images.map((image) => URL.createObjectURL(image));
+      setPreviewImages((prevImages) => [...prevImages, ...imagePreviews]);
+      setSelectedImagesCount((prevImages) => prevImages.length + imagePreviews.length);
+    } else {
+      // Notify user that maximum number of images is reached
+      toast.error(`You can only add up to ${MAX_IMAGES} images.`, {
+        position: toast.POSITION.BOTTOM_RIGHT,
+      });
+    }
   };
 
   return (
@@ -182,7 +210,7 @@ function InputRoom() {
       }}
     >
       <div className={cx("wrapper")}>
-        <h1 style={{ marginBottom: 50 }}>Add New Room</h1>
+        <h1 style={{ marginBottom: 50 }}>Thêm phòng mới</h1>
         <div className="d-flex mb-4">
           <div style={{ width: 490, marginRight: 23 }} className="form-floating">
             <input
@@ -219,25 +247,30 @@ function InputRoom() {
               </option>
             ))}
           </select>
-          <Button style={{marginRight: 20}} variant="primary" onClick={handleShowTypeRoom}>
+          <Button style={{ marginRight: 20 }} variant="primary" onClick={handleShowTypeRoom}>
             <SvgIcon fontSize="small">
               <PlusIcon />
             </SvgIcon>
           </Button>
-          <Modal show={showTypeRoom} onHide={handleCloseTypeRoom} backdrop="static" keyboard={false}>
-          <Modal.Header closeButton>
-            <Modal.Title>Loại phòng</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <InputTypeRoom />
-          </Modal.Body>
-          <Modal.Footer>
-            <Button variant="secondary" onClick={handleCloseTypeRoom}>
-              Close
-            </Button>
-            <Button variant="primary">Understood</Button>
-          </Modal.Footer>
-        </Modal>
+          <Modal
+            show={showTypeRoom}
+            onHide={handleCloseTypeRoom}
+            backdrop="static"
+            keyboard={false}
+          >
+            <Modal.Header closeButton>
+              <Modal.Title>Loại phòng</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+              <InputTypeRoom />
+            </Modal.Body>
+            <Modal.Footer>
+              <Button variant="secondary" onClick={handleCloseTypeRoom}>
+                Đóng
+              </Button>
+              <Button variant="primary">Thêm</Button>
+            </Modal.Footer>
+          </Modal>
           <select
             className="form-select"
             style={{ height: 50, width: 400 }}
@@ -265,14 +298,14 @@ function InputRoom() {
           </Modal.Body>
           <Modal.Footer>
             <Button variant="secondary" onClick={handleCloseFloor}>
-              Close
+              Đóng
             </Button>
-            <Button variant="primary">Understood</Button>
+            <Button variant="primary">Thêm</Button>
           </Modal.Footer>
         </Modal>
         <br></br>
         <div className="form-floating">
-        <textarea
+          <textarea
             className="form-control"
             id="floatingTextarea"
             placeholder="Description"
@@ -283,23 +316,82 @@ function InputRoom() {
         </div>
         <br></br>
         <div className="form-floating">
-          <input type="file" name="photos" multiple onChange={handleFileChange} />
+          {/* Hide the original file input */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            name="photos"
+            multiple
+            onChange={handleFileChange}
+            style={{ display: "none" }}
+          />
+          {/* Create a custom file input component */}
           <div>
+            <label htmlFor="photosInput">
+              {/* {selectedImagesCount} {selectedImagesCount === 1 ? "file" : "files"} selected */}
+            </label>
+            <input
+              id="photosInput"
+              type="button"
+              value="Choose Files"
+              onClick={() => fileInputRef.current.click()} // Trigger the hidden file input on button click
+            />
+          </div>
+          <div className="d-flex flex-wrap mb-4">
             {previewImages &&
               previewImages.map((image, index) => (
-                <img
-                  key={index}
-                  src={image}
-                  alt={`Photo ${index}`}
-                  style={{ width: "150px", height: "auto" }}
-                />
+                <Card key={index} style={{ width: 250, marginRight: 20, marginTop: 30 }}>
+                  <Card.Img src={image} alt={`Photo ${index}`} style={{ height: "200px" }} />
+                  <Card.Body style={{ padding: "0rem" }}>
+                    <button
+                      onClick={() => handleDeleteImage(index)}
+                      style={{
+                        background: "red",
+                        color: "white",
+                        borderRadius: "50%",
+                        width: "25px",
+                        height: "25px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        cursor: "pointer",
+                        position: "absolute",
+                        top: "5px",
+                        right: "5px",
+                      }}
+                    >
+                      X
+                    </button>
+                  </Card.Body>
+                </Card>
               ))}
           </div>
         </div>
         <br></br>
-        <button className={(cx("input-btn"), "btn btn-primary")} onClick={handleSubmit}>
-          Submit
+        <button
+          className={(cx("input-btn"), "btn btn-primary")}
+          onClick={() => {
+            Swal.fire({
+              title: "Bạn chắc chắn muốn thêm?",
+              icon: "warning",
+              showCancelButton: true,
+              confirmButtonColor: "#3085d6",
+              cancelButtonColor: "#d33",
+              confirmButtonText: "Thêm",
+            }).then(async (result) => {
+              if (result.isConfirmed) {
+                const isSubmitSuccess = await handleSubmit(event);
+                if (isSubmitSuccess) {
+                  Swal.fire("Add!", "Your data has been Add.", "success");
+                  toast.success("Thêm thành công!");
+                }
+              }
+            });
+          }}
+        >
+          Thêm
         </button>
+        <ToastContainer />
       </div>
     </div>
   );
