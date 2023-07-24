@@ -5,6 +5,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { ToastContainer, toast } from "react-toastify";
+import Swal from "sweetalert2";
 
 const cx = classNames.bind(style);
 const handleSubmit = async (event) => {
@@ -48,7 +49,7 @@ const handleSubmit = async (event) => {
     // Kiểm tra xem accessToken có tồn tại không
     if (!accessToken) {
       alert("Bạn chưa đăng nhập");
-      return;
+      return false;
     }
 
     axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
@@ -57,17 +58,21 @@ const handleSubmit = async (event) => {
     toast.success("Add Successfully!", {
       position: toast.POSITION.BOTTOM_RIGHT,
     });
-    console.log(response); //
+    console.log(response);
+
+    //
 
     if (response.status === 200) {
       // Xử lý khi API thành công
       console.log("API call successful");
 
       window.location.href = "/service";
+      return true;
       // Thực hiện các hành động khác sau khi API thành công
     } else {
       // Xử lý khi API gặp lỗi
       console.log("API call failed");
+      return false;
       // Thực hiện các hành động khác khi gọi API thất bại
     }
   } catch (error) {
@@ -95,6 +100,7 @@ const handleSubmit = async (event) => {
           toast.error(error.response.data.price, {
             position: toast.POSITION.BOTTOM_RIGHT,
           });
+          return false;
         } else {
           // Nếu có ít nhất một trường bị thiếu, xóa thông báo lỗi cho trường đó nếu có
           // và hiển thị thông báo lỗi cho các trường còn lại
@@ -113,12 +119,15 @@ const handleSubmit = async (event) => {
               position: toast.POSITION.BOTTOM_RIGHT,
             });
           }
+          return false;
         }
       } else {
         alert("Có lỗi xảy ra trong quá trình gọi API");
+        return false;
       }
     } else {
       console.log("Không thể kết nối đến API");
+      return false;
     }
   }
 };
@@ -126,7 +135,7 @@ const handleSubmit = async (event) => {
 function InputService() {
   const [serviceType, setServiceType] = useState([]);
   const [unit, setUnit] = useState([]);
-
+  // Hàm lấy loại dịch vụ và đơn vijtinhs
   useEffect(() => {
     // Định nghĩa hàm fetchData bên trong useEffect
     async function fetchData() {
@@ -155,7 +164,7 @@ function InputService() {
 
   return (
     <div className={cx("wrapper")}>
-      <h1>Add Service</h1>
+      <h1>Thêm Dịch Vụ</h1>
       <div className="form-floating mb-3">
         <input
           className="form-control"
@@ -216,8 +225,29 @@ function InputService() {
         ))}
       </select>
       <br></br>
-      <button className={(cx("input-btn"), "btn btn-primary")} onClick={handleSubmit}>
-        Update
+      <button
+        className={(cx("input-btn"), "btn btn-primary")}
+        onClick={() => {
+          Swal.fire({
+            title: "Are you sure?",
+            text: "You won't be able to revert this!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Yes, Add it!",
+          }).then(async (result) => {
+            if (result.isConfirmed) {
+              const isSubmitSuccess = await handleSubmit(event);
+              if (isSubmitSuccess) {
+                Swal.fire("Add!", "Your data has been Add.", "success");
+                toast.success("Add Successfully!");
+              }
+            }
+          });
+        }}
+      >
+        Thêm mới
       </button>
       <ToastContainer />
     </div>
