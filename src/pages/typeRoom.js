@@ -119,7 +119,7 @@ const Page = () => {
   return (
     <>
       <Head>
-        <title>TypeRoom | Devias Kit</title>
+        <title>TypeRoom |  Hotel Finder</title>
       </Head>
       <Box
         component="main"

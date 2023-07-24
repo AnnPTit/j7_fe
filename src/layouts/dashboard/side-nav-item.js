@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import { Box, ButtonBase } from "@mui/material";
 
 export const SideNavItem = (props) => {
-  const { active = false, disabled, external, icon, path, title, btn, onUpdate } = props;
+  const { active = false, disabled, external, icon, path, title, btn } = props;
   const linkProps = path
     ? external
       ? {
@@ -16,13 +16,6 @@ export const SideNavItem = (props) => {
           href: path,
         }
     : {};
-  const handleUpdate = () => {
-    // Gọi hàm xử lý cập nhật dữ liệu đã được truyền vào thông qua prop onUpdate
-    // Trong trường hợp này, chúng ta không cần truyền ID vào handleUpdate vì ID đã được lấy từ props khi component được gọi
-    onUpdate();
-    // Các xử lý khác (nếu có) khi người dùng nhấn nút "Update"
-    Swal.fire("Update!", `Updating data...`, "info");
-  };
 
   if (btn) {
     // Render the component with a different layout for btn=true
@@ -46,7 +39,6 @@ export const SideNavItem = (props) => {
           },
         }}
         {...linkProps}
-        onClick={handleUpdate} // Xử lý khi người dùng nhấn nút "Update"
       >
         {icon && (
           <Box

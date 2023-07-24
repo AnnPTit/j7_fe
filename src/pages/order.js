@@ -93,7 +93,7 @@ const Page = () => {
   return (
     <>
       <Head>
-        <title>Order | Devias Kit</title>
+        <title>Order |  Hotel Finder</title>
       </Head>
       <Box
         component="main"

@@ -3,14 +3,13 @@ import axios from "axios";
 import Head from "next/head";
 
 import PlusIcon from "@heroicons/react/24/solid/PlusIcon";
-import { Box, Button, Container, Stack, SvgIcon, Typography } from "@mui/material";
+import { Box, Container, Stack, SvgIcon, Typography } from "@mui/material";
 import { useSelection } from "src/hooks/use-selection";
 import { Layout as DashboardLayout } from "src/layouts/dashboard/layout";
 import { ServiceSearch } from "src/sections/service/service-search";
 import ServiceFilter from "src/sections/service/service-filter";
 import { Service } from "src/sections/service/service-table";
 import { applyPagination } from "src/utils/apply-pagination";
-import InputService from "src/components/inputService/inputService";
 import Pagination from "src/components/Pagination";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { SideNavItem } from "src/layouts/dashboard/side-nav-item";
@@ -63,9 +62,6 @@ const Page = () => {
   };
   const active = item.path ? pathname === item.path : false;
 
-  const openModelInput = () => {
-    // setInputModal(!inputModal);
-  };
   // Delete
   const handleDelete = async (id) => {
     try {

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useRouter } from "next/router"; // Import useRouter từ Next.js
 import axios from "axios";
 import PropTypes from "prop-types";
 import Swal from "sweetalert2";
@@ -18,9 +19,8 @@ import {
   MenuItem,
   SvgIcon,
 } from "@mui/material";
-import { SideNavItem } from "src/layouts/dashboard/side-nav-item";
-import { usePathname } from "next/navigation";
-import PlusIcon from "@heroicons/react/24/solid/PlusIcon";
+import TrashIcon from "@heroicons/react/24/solid/TrashIcon";
+import Bars4Icon from "@heroicons/react/24/solid/Bars4Icon";
 
 export const Service = (props) => {
   const { items = [], selected = [] } = props;
@@ -33,19 +33,6 @@ export const Service = (props) => {
 
   const [serviceTypeU, setServiceTypeU] = useState([]);
   const [unit, setUnit] = useState([]);
-
-  const pathname = usePathname();
-  const item = {
-    title: "Add",
-    path: "input/inputService/inputService",
-    icon: (
-      <SvgIcon fontSize="small">
-        <PlusIcon />
-      </SvgIcon>
-    ),
-  };
-
-  const active = item.path ? pathname === item.path : false;
 
   const payload = {
     serviceCode,
@@ -83,12 +70,6 @@ export const Service = (props) => {
   const handleDelete = (id) => {
     props.onDelete(id);
   };
-  const handleUpdate = (id) => {
-    // Gọi API hoặc thực hiện các tác vụ cập nhật dữ liệu tại đây dựa trên ID
-    // Ví dụ: Gọi API để lấy dữ liệu cần cập nhật từ backend, sau đó hiển thị giao diện chỉnh sửa dữ liệu
-    Swal.fire("Update!", `Updating data for ID ${id}...`, "info");
-    // Tiến hành cập nhật dữ liệu với ID đã truyền vào
-  };
 
   return (
     <Card>
@@ -98,19 +79,20 @@ export const Service = (props) => {
             <TableHead>
               <TableRow>
                 <TableCell padding="checkbox">STT</TableCell>
-                <TableCell>Service Code</TableCell>
-                <TableCell>Service Name</TableCell>
-                <TableCell>Service Type</TableCell>
-                <TableCell>Unit</TableCell>
-                <TableCell>Price</TableCell>
-                <TableCell>Description</TableCell>
-                <TableCell>Actions</TableCell>
+                <TableCell>Mã dịch vụ</TableCell>
+                <TableCell>Tên dịch vụ</TableCell>
+                <TableCell>Loại dịch vụ</TableCell>
+                <TableCell>Đơn vị tính</TableCell>
+                <TableCell>Đơn giá </TableCell>
+                <TableCell>Mô Tả </TableCell>
+                <TableCell>Hành động</TableCell>
               </TableRow>
             </TableHead>
 
             <TableBody>
               {items.map((service, index) => {
                 const isSelected = selected.includes(service.id);
+                const hrefUpdate = `/update/updateService/updateService?id=${service.id}`;
                 const alertDelete = () => {
                   Swal.fire({
                     title: "Are you sure?",
@@ -156,23 +138,18 @@ export const Service = (props) => {
                     <TableCell>{service.price}</TableCell>
                     <TableCell>{service.description}</TableCell>
                     <TableCell>
-                      <button className="btn btn-primary" onClick={() => handleEdit(service.id)}>
+                      {/* <button className="btn btn-primary" onClick={() => handleEdit(service.id)}>
                         Edit
-                      </button>
-                      <SideNavItem
-                        style={{ backgroundColor: "red" }}
-                        active={active}
-                        disabled={item.disabled}
-                        external={item.external}
-                        icon={item.icon}
-                        key={item.title}
-                        path={item.path}
-                        title={item.title}
-                        btn={true}
-                        onUpdate={() => handleUpdate(service.id)} // Truyền hàm xử lý cập nhật dữ liệu
-                      />
+                      </button> */}
+                      <a className="btn btn-info m-xl-2" href={hrefUpdate}>
+                        <SvgIcon fontSize="small">
+                          <Bars4Icon />
+                        </SvgIcon>
+                      </a>
                       <button className="btn btn-danger m-xl-2" onClick={alertDelete}>
-                        Delete
+                        <SvgIcon fontSize="small">
+                          <TrashIcon />
+                        </SvgIcon>
                       </button>
                       <ToastContainer />
                     </TableCell>
