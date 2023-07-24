@@ -87,7 +87,7 @@ const Page = () => {
   return (
     <>
       <Head>
-        <title>Customers | Devias Kit</title>
+        <title>Customers |  Hotel Finder</title>
       </Head>
       <Box
         component="main"

@@ -2,9 +2,9 @@ import classNames from "classnames/bind";
 import style from "./inputService.module.scss";
 import { Layout as DashboardLayout } from "src/layouts/dashboard/layout";
 import axios from "axios";
-import { toast } from "react-toastify";
 import { useEffect, useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { ToastContainer, toast } from "react-toastify";
 
 const cx = classNames.bind(style);
 const handleSubmit = async (event) => {
@@ -78,20 +78,42 @@ const handleSubmit = async (event) => {
         alert("Bạn không có quyền truy cập vào trang này");
         window.location.href = "/auth/login"; // Chuyển hướng đến trang đăng nhập
       } else if (error.response.status === 400) {
-        console.log(error.response);
+        console.log(error.response.data);
 
-        if (
-          error.response.data.price == undefined &&
-          error.response.data.serviceName == undefined
-        ) {
-          toast.error(error.response.data);
+        const isServiceNameError = error.response.data.serviceName === undefined;
+        const isServiceCodeError = error.response.data.serviceCode === undefined;
+        const isPriceError = error.response.data.price === undefined;
+
+        // Kiểm tra nếu tất cả các trường không bị thiếu, hiển thị thông báo lỗi cho cả 3 trường
+        if (!isServiceNameError && !isServiceCodeError && !isPriceError) {
+          toast.error(error.response.data.serviceName, {
+            position: toast.POSITION.BOTTOM_RIGHT,
+          });
+          toast.error(error.response.data.serviceCode, {
+            position: toast.POSITION.BOTTOM_RIGHT,
+          });
+          toast.error(error.response.data.price, {
+            position: toast.POSITION.BOTTOM_RIGHT,
+          });
+        } else {
+          // Nếu có ít nhất một trường bị thiếu, xóa thông báo lỗi cho trường đó nếu có
+          // và hiển thị thông báo lỗi cho các trường còn lại
+          if (!isServiceNameError) {
+            toast.error(error.response.data.serviceName, {
+              position: toast.POSITION.BOTTOM_RIGHT,
+            });
+          }
+          if (!isServiceCodeError) {
+            toast.error(error.response.data.serviceCode, {
+              position: toast.POSITION.BOTTOM_RIGHT,
+            });
+          }
+          if (!isPriceError) {
+            toast.error(error.response.data.price, {
+              position: toast.POSITION.BOTTOM_RIGHT,
+            });
+          }
         }
-        toast.error(error.response.data.price, {
-          position: toast.POSITION.BOTTOM_RIGHT,
-        });
-        toast.error(error.response.data.serviceName, {
-          position: toast.POSITION.BOTTOM_RIGHT,
-        });
       } else {
         alert("Có lỗi xảy ra trong quá trình gọi API");
       }
@@ -135,7 +157,13 @@ function InputService() {
     <div className={cx("wrapper")}>
       <h1>Add Service</h1>
       <div className="form-floating mb-3">
-        <input type="email" className="form-control" id="floatingInput" name="serviceCode" />
+        <input
+          className="form-control"
+          type="text"
+          placeholder="Default input"
+          aria-label="default input example"
+          name="serviceCode"
+        />
         <label htmlFor="floatingInput">Mã dịch vụ</label>
       </div>
       <div className="form-floating">
@@ -150,7 +178,13 @@ function InputService() {
       </div>
       <br></br>
       <div className="form-floating mb-3">
-        <input type="email" className="form-control" id="floatingInput" name="price" />
+        <input
+          type="text"
+          className="form-control"
+          id="floatingPassword"
+          placeholder="Password"
+          name="price"
+        />
         <label htmlFor="floatingInput">Đơn giá </label>
       </div>
       <div className="form-floating">
@@ -164,6 +198,7 @@ function InputService() {
         <label htmlFor="floatingPassword">Mô tả</label>
       </div>
       <br></br>
+      <p>Loại Dịch Vụ</p>
       <select className="form-select" aria-label="Default select example" name="serviceType">
         {serviceType.map((serviceType) => (
           <option key={serviceType.id} value={serviceType.id}>
@@ -172,6 +207,7 @@ function InputService() {
         ))}
       </select>
       <br></br>
+      <p>Đơn Vị Tính </p>
       <select className="form-select" aria-label="Default select example" name="unit">
         {unit.map((unit) => (
           <option key={unit.id} value={unit.id}>
@@ -181,8 +217,9 @@ function InputService() {
       </select>
       <br></br>
       <button className={(cx("input-btn"), "btn btn-primary")} onClick={handleSubmit}>
-        Submit
+        Update
       </button>
+      <ToastContainer />
     </div>
   );
 }
