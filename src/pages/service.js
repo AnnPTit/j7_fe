@@ -10,7 +10,6 @@ import { ServiceSearch } from "src/sections/service/service-search";
 import ServiceFilter from "src/sections/service/service-filter";
 import { Service } from "src/sections/service/service-table";
 import { applyPagination } from "src/utils/apply-pagination";
-import InputService from "src/components/inputService/inputService";
 import Pagination from "src/components/Pagination";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { SideNavItem } from "src/layouts/dashboard/side-nav-item";

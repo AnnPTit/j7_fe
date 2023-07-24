@@ -127,3 +127,11 @@ form .form-row .textarea {
   border-radius: 20px;
   background: -webkit-linear-gradient(right, #56d8e4, #9f01ea, #56d8e4, #9f01ea);
 }
+.toast-message {
+  background: darkblue !important;
+  color: #fff;
+  font-size: 20px;
+  width: 34vw;
+  padding: 30px 20px;
+  z-index: 10000 !important;
+}
