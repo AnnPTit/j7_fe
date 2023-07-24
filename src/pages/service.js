@@ -3,7 +3,7 @@ import axios from "axios";
 import Head from "next/head";
 
 import PlusIcon from "@heroicons/react/24/solid/PlusIcon";
-import { Box, Button, Container, Stack, SvgIcon, Typography } from "@mui/material";
+import { Box, Container, Stack, SvgIcon, Typography } from "@mui/material";
 import { useSelection } from "src/hooks/use-selection";
 import { Layout as DashboardLayout } from "src/layouts/dashboard/layout";
 import { ServiceSearch } from "src/sections/service/service-search";
@@ -62,9 +62,6 @@ const Page = () => {
   };
   const active = item.path ? pathname === item.path : false;
 
-  const openModelInput = () => {
-    // setInputModal(!inputModal);
-  };
   // Delete
   const handleDelete = async (id) => {
     try {

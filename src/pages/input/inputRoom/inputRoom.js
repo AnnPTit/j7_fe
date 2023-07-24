@@ -5,6 +5,13 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { useEffect, useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
+import PlusIcon from "@heroicons/react/24/solid/PlusIcon";
+import { SvgIcon } from "@mui/material";
+import Modal from "react-bootstrap/Modal";
+import Button from "react-bootstrap/Button";
+import InputFloor from "src/components/InputFloor/InputFloor";
+import { width } from "@mui/system";
+import InputTypeRoom from "src/components/InputTypeRoom/InputTypeRoom";
 
 const cx = classNames.bind(style);
 
@@ -14,6 +21,14 @@ function InputRoom() {
   const [newPhotos, setNewPhotos] = useState([]);
   const [previewImages, setPreviewImages] = useState([]);
 
+  const [showFloor, setShowFloor] = useState(false);
+  const [showTypeRoom, setShowTypeRoom] = useState(false);
+
+  const handleCloseFloor = () => setShowFloor(false);
+  const handleShowFloor = () => setShowFloor(true);
+  const handleCloseTypeRoom = () => setShowTypeRoom(false);
+  const handleShowTypeRoom = () => setShowTypeRoom(true);
+
   const handleSubmit = async (event) => {
     event.preventDefault(); // Ngăn chặn sự kiện submit mặc định
     // Lấy giá trị từ các trường nhập liệu
@@ -22,21 +37,21 @@ function InputRoom() {
     const noteInpt = document.querySelector('input[name="note"]');
     const floorIput = document.querySelector('select[name="floor"]');
     const typeRoomIput = document.querySelector('select[name="typeRoom"]');
-  
+
     const roomCode = roomCodeInpt?.value;
     const roomName = roomNameInpt?.value;
     const note = noteInpt?.value;
     const floor = floorIput?.value;
     const typeRoom = typeRoomIput?.value;
-  
+
     let floorObj = {
       id: floor,
     };
-  
+
     let typeRoomObj = {
       id: typeRoom,
     };
-  
+
     // Tạo payload dữ liệu để gửi đến API
     const payload = {
       roomCode,
@@ -46,20 +61,20 @@ function InputRoom() {
       typeRoom: typeRoomObj,
     };
     console.log("payload ", payload);
-  
+
     const formData = new FormData(); // Create a new FormData object
-  
+
     formData.append("roomCode", roomCode);
     formData.append("roomName", roomName);
     formData.append("note", note);
     formData.append("floor", floorObj.id);
     formData.append("typeRoom", typeRoomObj.id);
-  
+
     // Append each file to the FormData object
     for (let i = 0; i < newPhotos.length; i++) {
       formData.append("photos", newPhotos[i]);
     }
-  
+
     try {
       const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
       // Kiểm tra xem accessToken có tồn tại không
@@ -67,16 +82,16 @@ function InputRoom() {
         alert("Bạn chưa đăng nhập");
         return;
       }
-  
+
       axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
-  
+
       const response = await axios.post("http://localhost:2003/api/admin/room/save", formData); // Gọi API /api/room-type/save với payload và access token
       toast.success("Add Successfully!", {
         position: toast.POSITION.BOTTOM_RIGHT,
       });
       console.log(response); //
       console.log("formData: ", formData);
-  
+
       if (response.status === 200) {
         // Xử lý khi API thành công
         console.log("API call successful");
@@ -157,84 +172,135 @@ function InputRoom() {
   };
 
   return (
-    <div className={cx("wrapper")}>
-      <h1>Add Service</h1>
-      <div className="form-floating mb-4">
-        <input
-          type="text"
-          className="form-control"
-          id="floatingPassword"
-          placeholder="Password"
-          name="roomCode"
-        />
-        <label htmlFor="floatingPassword">Mã phòng</label>
-      </div>
-      <div className="form-floating">
-        <input
-          type="text"
-          className="form-control"
-          id="floatingPassword"
-          placeholder="Password"
-          name="roomName"
-        />
-        <label htmlFor="floatingPassword">Tên phòng</label>
-      </div>
-      <br></br>
-      <select
-        className="form-select"
-        style={{ height: 60 }}
-        aria-label="Default select example"
-        name="typeRoom"
-      >
-        {typeRoom.map((typeRoom) => (
-          <option key={typeRoom.id} value={typeRoom.id}>
-            {typeRoom.typeRoomName}
-          </option>
-        ))}
-      </select>
-      <br></br>
-      <select
-        className="form-select"
-        style={{ height: 60 }}
-        aria-label="Default select example"
-        name="floor"
-      >
-        {floor.map((floor) => (
-          <option key={floor.id} value={floor.id}>
-            {floor.floorName}
-          </option>
-        ))}
-      </select>
-      <br></br>
-      <div className="form-floating">
-        <input
-          type="text"
-          className="form-control"
-          id="floatingPassword"
-          placeholder="Password"
-          name="note"
-        ></input>
-        <label htmlFor="floatingPassword">Mô tả</label>
-      </div>
-      <br></br>
-      <div className="form-floating">
-        <input type="file" name="photos" multiple onChange={handleFileChange} />
-        <div>
-          {previewImages &&
-            previewImages.map((image, index) => (
-              <img
-                key={index}
-                src={image}
-                alt={`Photo ${index}`}
-                style={{ width: "150px", height: "auto" }}
-              />
-            ))}
+    <div
+      className={cx("wrapper")}
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <div className={cx("wrapper")}>
+        <h1 style={{ marginBottom: 50 }}>Add New Room</h1>
+        <div className="d-flex mb-4">
+          <div style={{ width: 490, marginRight: 23 }} className="form-floating">
+            <input
+              type="text"
+              className="form-control"
+              id="floatingPassword"
+              placeholder="Password"
+              name="roomCode"
+            />
+            <label htmlFor="floatingPassword">Mã phòng</label>
+          </div>
+          <div style={{ width: 490 }} className="form-floating">
+            <input
+              type="text"
+              className="form-control"
+              id="floatingPassword"
+              placeholder="Password"
+              name="roomName"
+            />
+            <label htmlFor="floatingPassword">Tên phòng</label>
+          </div>
         </div>
+        <br></br>
+        <div className="d-flex mb-4">
+          <select
+            className="form-select"
+            style={{ height: 50, width: 400 }}
+            aria-label="Default select example"
+            name="typeRoom"
+          >
+            {typeRoom.map((typeRoom) => (
+              <option key={typeRoom.id} value={typeRoom.id}>
+                {typeRoom.typeRoomName}
+              </option>
+            ))}
+          </select>
+          <Button style={{marginRight: 20}} variant="primary" onClick={handleShowTypeRoom}>
+            <SvgIcon fontSize="small">
+              <PlusIcon />
+            </SvgIcon>
+          </Button>
+          <Modal show={showTypeRoom} onHide={handleCloseTypeRoom} backdrop="static" keyboard={false}>
+          <Modal.Header closeButton>
+            <Modal.Title>Loại phòng</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <InputTypeRoom />
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={handleCloseTypeRoom}>
+              Close
+            </Button>
+            <Button variant="primary">Understood</Button>
+          </Modal.Footer>
+        </Modal>
+          <select
+            className="form-select"
+            style={{ height: 50, width: 400 }}
+            aria-label="Default select example"
+            name="floor"
+          >
+            {floor.map((floor) => (
+              <option key={floor.id} value={floor.id}>
+                {floor.floorName}
+              </option>
+            ))}
+          </select>
+          <Button variant="primary" onClick={handleShowFloor}>
+            <SvgIcon fontSize="small">
+              <PlusIcon />
+            </SvgIcon>
+          </Button>
+        </div>
+        <Modal show={showFloor} onHide={handleCloseFloor} backdrop="static" keyboard={false}>
+          <Modal.Header closeButton>
+            <Modal.Title>Tầng</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <InputFloor />
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={handleCloseFloor}>
+              Close
+            </Button>
+            <Button variant="primary">Understood</Button>
+          </Modal.Footer>
+        </Modal>
+        <br></br>
+        <div className="form-floating">
+        <textarea
+            className="form-control"
+            id="floatingTextarea"
+            placeholder="Description"
+            name="note"
+            style={{ height: "150px" }}
+          ></textarea>
+          <label htmlFor="floatingTextarea">Mô tả</label>
+        </div>
+        <br></br>
+        <div className="form-floating">
+          <input type="file" name="photos" multiple onChange={handleFileChange} />
+          <div>
+            {previewImages &&
+              previewImages.map((image, index) => (
+                <img
+                  key={index}
+                  src={image}
+                  alt={`Photo ${index}`}
+                  style={{ width: "150px", height: "auto" }}
+                />
+              ))}
+          </div>
+        </div>
+        <br></br>
+        <button className={(cx("input-btn"), "btn btn-primary")} onClick={handleSubmit}>
+          Submit
+        </button>
       </div>
-      <br></br>
-      <button className={(cx("input-btn"), "btn btn-primary")} onClick={handleSubmit}>
-        Submit
-      </button>
     </div>
   );
 }

@@ -18,7 +18,7 @@ const Page = () => (
   <>
     <Head>
       <title>
-        Overview | Devias Kit
+        Overview |  Hotel Finder
       </title>
     </Head>
     <Box
