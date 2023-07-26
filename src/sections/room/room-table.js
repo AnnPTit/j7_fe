@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import PropTypes from "prop-types";
 import moment from "moment";
 import Swal from "sweetalert2";
@@ -20,6 +21,31 @@ import Bars4Icon from "@heroicons/react/24/solid/Bars4Icon";
 
 export const RoomTable = (props) => {
   const { items = [], selected = [] } = props;
+
+  // useEffect(() => {
+  //   // Định nghĩa hàm fetchData bên trong useEffect
+  //   async function fetchData() {
+  //     try {
+  //       const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
+  //       // Kiểm tra xem accessToken có tồn tại không
+  //       if (!accessToken) {
+  //         alert("Bạn chưa đăng nhập");
+  //         return;
+  //       }
+  //       axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
+  //       const response = await axios.get("http://localhost:2003/api/admin/floor/getList");
+  //       const response2 = await axios.get("http://localhost:2003/api/admin/type-room/getList");
+  //       console.log(response.data);
+  //       console.log(response2.data);
+  //       setFloor(response.data);
+  //       setTypeRoom(response2.data);
+  //     } catch (error) {
+  //       console.log(error);
+  //     }
+  //   }
+  //   // Gọi hàm fetchData ngay lập tức
+  //   fetchData();
+  // }, []);
 
   const handleDelete = (id) => {
     props.onDelete(id);

@@ -149,7 +149,7 @@ const Page = () => {
   return (
     <>
       <Head>
-        <title>Room | Hotel Finder</title>
+        <title>Phòng | Hotel Finder</title>
       </Head>
       <Box
         component="main"
@@ -162,7 +162,7 @@ const Page = () => {
           <Stack spacing={3}>
             <Stack direction="row" justifyContent="space-between" spacing={4}>
               <Stack spacing={1}>
-                <Typography variant="h4">Room</Typography>
+                <Typography variant="h4">Phòng</Typography>
               </Stack>
               <div>
               <SideNavItem

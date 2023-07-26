@@ -119,7 +119,7 @@ const Page = () => {
   return (
     <>
       <Head>
-        <title>TypeRoom |  Hotel Finder</title>
+        <title>Loại Phòng | Hotel Finder</title>
       </Head>
       <Box
         component="main"
@@ -132,7 +132,7 @@ const Page = () => {
           <Stack spacing={3}>
             <Stack direction="row" justifyContent="space-between" spacing={4}>
               <Stack spacing={1}>
-                <Typography variant="h4">TypeRoom</Typography>
+                <Typography variant="h4">Loại Phòng</Typography>
                 <Stack alignItems="center" direction="row" spacing={1}></Stack>
               </Stack>
               <div>

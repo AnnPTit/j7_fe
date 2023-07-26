@@ -3,14 +3,17 @@ import "react-toastify/dist/ReactToastify.css";
 import style from "./updateRoom.module.scss";
 import { Layout as DashboardLayout } from "src/layouts/dashboard/layout";
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { ToastContainer, toast } from "react-toastify";
 import Swal from "sweetalert2";
 import { useRouter } from "next/router";
+import Card from "react-bootstrap/Card";
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 
 const cx = classNames.bind(style);
-const handleSubmit = async (event, id, roomUpdate) => {
+
+const handleSubmit = async (event, id, roomUpdate, selectedImages) => {
   event.preventDefault(); // Ngăn chặn sự kiện submit mặc định
   const floorIput = document.querySelector('select[name="floor"]');
   const typeRoomIput = document.querySelector('select[name="typeRoom"]');
@@ -37,6 +40,21 @@ const handleSubmit = async (event, id, roomUpdate) => {
   };
   console.log("payload ", payload);
 
+  const formData = new FormData();
+
+  // Append room information to formData
+  formData.append("id", id);
+  formData.append("roomCode", roomUpdate.roomCode);
+  formData.append("roomName", roomUpdate.roomName);
+  formData.append("note", roomUpdate.note);
+  formData.append("typeRoom", roomUpdate.typeRoom.id);
+  formData.append("floor", roomUpdate.floor.id);
+
+  // Append each image file to formData
+  selectedImages.forEach((image) => {
+    formData.append("photos", image);
+  });
+
   try {
     const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
     // Kiểm tra xem accessToken có tồn tại không
@@ -46,11 +64,8 @@ const handleSubmit = async (event, id, roomUpdate) => {
     }
 
     axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
-    const response = await axios.put(
-      `http://localhost:2003/api/admin/room/update/${id}`,
-      payload
-    ); // Gọi API /api/room-type/save với payload và access token
-    toast.success("update Successfully!", {
+    const response = await axios.put(`http://localhost:2003/api/admin/room/update/${id}`, formData); // Gọi API /api/room-type/save với payload và access token
+    toast.success("Cập nhật thành công!", {
       position: toast.POSITION.BOTTOM_RIGHT,
     });
     console.log(response); //
@@ -132,6 +147,8 @@ function UpdateRoom() {
   const router = useRouter(); // Sử dụng useRouter để truy cập router của Next.js
   const { id } = router.query; // Lấy thông tin từ URL qua router.query
   const [roomImages, setRoomImages] = useState([]);
+  const [selectedImages, setSelectedImages] = useState([]);
+  const fileInputRef = useRef(null);
   const [roomUpdate, setRoomUpdate] = useState({
     id: "",
     roomCode: "",
@@ -139,8 +156,23 @@ function UpdateRoom() {
     note: "",
     floor: {},
     typeRoom: {},
-    createAt: "",
   });
+
+  const handleImageChange = (event) => {
+    const files = event.target.files;
+    const imageUrls = [];
+    const selectedImagesCopy = [...selectedImages];
+
+    // Create an array of URLs for the selected images
+    for (let i = 0; i < files.length; i++) {
+      const url = URL.createObjectURL(files[i]);
+      imageUrls.push(url);
+    }
+
+    setSelectedImages([...selectedImagesCopy, ...files]);
+    setRoomImages([...roomImages, ...imageUrls]); // Update the roomImages state with new image URLs
+  };
+
   // Lấy data cho combobox;
   useEffect(() => {
     // Định nghĩa hàm fetchData bên trong useEffect
@@ -161,25 +193,33 @@ function UpdateRoom() {
         console.log(error);
       }
     }
-
     // Gọi hàm fetchData ngay lập tức
     fetchData();
   }, []);
+
   useEffect(() => {
     async function fetchRoomImages() {
       try {
-        const response = await axios.get(
-          `http://localhost:2003/api/admin/room/photo/${id}`
-        );
-        setRoomImages(response.data);
+        const accessToken = localStorage.getItem("accessToken");
+        if (!accessToken) {
+          alert("Bạn chưa đăng nhập");
+          return;
+        }
+
+        axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+        const response = await axios.get(`http://localhost:2003/api/admin/room/photo/${id}`);
+        console.log("Response data:", response.data);
+        const photos = response.data; // Assuming the API response returns a list of photo URLs directly
+
+        setRoomImages(photos); // Set the roomImages state with the array of photo URLs
       } catch (error) {
         console.log("Error fetching room images:", error);
       }
     }
-
-    // Fetch room images
+    // Call the fetchRoomImages function inside useEffect
     fetchRoomImages();
   }, [id]);
+
   //Hàm detail
   useEffect(() => {
     // Định nghĩa hàm fetchData bên trong useEffect
@@ -207,10 +247,49 @@ function UpdateRoom() {
     fetchData();
   }, []);
 
+  const handleDeleteImage = async (photoId) => {
+    try {
+      const accessToken = localStorage.getItem("accessToken");
+      if (!accessToken) {
+        alert("Bạn chưa đăng nhập");
+        return;
+      }
+
+      axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+
+      // Find the photo based on the photoId
+      const photoToDelete = roomImages.find((photo) => photo.id === photoId);
+
+      if (!photoToDelete) {
+        console.log("Photo not found in roomImages.");
+        return;
+      }
+
+      const response = await axios.delete(
+        `http://localhost:2003/api/admin/room/delete-photo/${photoToDelete.id}`
+      );
+
+      if (response.status === 200) {
+        // If the image is successfully deleted from the server, remove it from the client-side state
+        const updatedImages = roomImages.filter((photo) => photo.id !== photoId);
+        setRoomImages(updatedImages);
+        console.log("Data:", response.data);
+        toast.success("Image deleted successfully!", {
+          position: toast.POSITION.BOTTOM_RIGHT,
+        });
+      }
+    } catch (error) {
+      console.log("Error deleting image:", error);
+      toast.error("Error deleting image!", {
+        position: toast.POSITION.BOTTOM_RIGHT,
+      });
+    }
+  };
+
   return (
     <div className={cx("wrapper")}>
       <h1>Cập Nhật Phòng</h1>
-      <div className="form-floating mb-3">
+      <div className="form-floating mt-5 mb-3">
         <input
           className="form-control"
           type="text"
@@ -283,7 +362,6 @@ function UpdateRoom() {
           </option>
         ))}
       </select>
-
       <br></br>
       <p>Tầng</p>
       <select
@@ -305,6 +383,65 @@ function UpdateRoom() {
         ))}
       </select>
       <br></br>
+      <div>
+        <input
+          ref={fileInputRef}
+          name="photos"
+          type="file"
+          accept="image/*"
+          multiple
+          onChange={handleImageChange}
+          style={{ display: "none" }}
+        />
+      </div>
+      <label
+        className="icon-container d-flex justify-content-center align-items-center"
+        onClick={() => fileInputRef.current.click()}
+        htmlFor="photosInput"
+        style={{ cursor: "pointer" }}
+      >
+        <CloudUploadIcon style={{ fontSize: "7rem" }} />
+      </label>
+
+      <br />
+      <div className="image-container d-flex justify-content-center flex-wrap mb-4">
+        {roomImages.map((photo, index) => (
+          <Card
+            key={index}
+            style={{
+              marginTop: 20,
+              marginRight: 20,
+              position: "relative",
+              display: "inline-block",
+            }}
+          >
+            <Card.Img
+              src={typeof photo === "string" ? photo : photo.url}
+              style={{ width: 250 }}
+              alt={`Room Image ${index}`}
+            />
+            <Card.Body style={{ padding: "0rem" }}>
+              <button
+                onClick={() => handleDeleteImage(typeof photo === "string" ? undefined : photo.id)}
+                style={{
+                  position: "absolute",
+                  top: "5px",
+                  right: "5px",
+                  background: "red",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "20%",
+                  cursor: "pointer",
+                  padding: "10px",
+                }}
+              >
+                X
+              </button>
+            </Card.Body>
+          </Card>
+        ))}
+      </div>
+      <br></br>
       <button
         className={(cx("input-btn"), "btn btn-primary")}
         onClick={() => {
@@ -317,13 +454,19 @@ function UpdateRoom() {
             confirmButtonText: "Yes, Update it!",
           }).then(async (result) => {
             if (result.isConfirmed) {
-              const isSubmitSuccess = await handleSubmit(event, id, roomUpdate);
+              const isSubmitSuccess = await handleSubmit(event, id, roomUpdate, selectedImages);
               if (isSubmitSuccess) {
                 Swal.fire("Update!", "Your data has been Update.", "success");
                 toast.success("Cập nhật thành công!");
               }
             }
           });
+        }}
+        style={{
+          position: "absolute",
+          right: 200,
+          width: 150,
+          height: 45,
         }}
       >
         Cập nhật
