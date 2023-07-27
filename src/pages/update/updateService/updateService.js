@@ -204,6 +204,7 @@ function UpdateService() {
           placeholder="Default input"
           aria-label="default input example"
           name="serviceCode"
+          disabled
           value={serviceUpdate.serviceCode}
           onChange={(e) => {
             setServiceUpdate((prev) => ({

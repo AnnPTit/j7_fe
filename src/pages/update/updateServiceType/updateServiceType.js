@@ -122,6 +122,7 @@ function UpdateServiceType() {
         <input
           className="form-control"
           type="text"
+          disabled
           placeholder="Default input"
           aria-label="default input example"
           name="serviceTypeCode"

@@ -1,4 +1,3 @@
-import { useState } from "react";
 import PropTypes from "prop-types";
 import Swal from "sweetalert2";
 import { ToastContainer, toast } from "react-toastify";
@@ -17,22 +16,8 @@ import {
 import TrashIcon from "@heroicons/react/24/solid/TrashIcon";
 import Bars4Icon from "@heroicons/react/24/solid/Bars4Icon";
 
-export const ServiceType = (props) => {
+export const Combo = (props) => {
   const { items = [], selected = [] } = props;
-  const serviceTypeCodeInput = document.querySelector('input[name="serviceTypeCode"]');
-  const serviceTypeNameInput = document.querySelector('input[name="serviceTypeName"]');
-  const descriptionInput = document.querySelector('input[name="description"]');
-  const serviceTypeCode = serviceTypeCodeInput?.value;
-  const serviceTypeName = serviceTypeNameInput?.value;
-  const description = descriptionInput?.value;
-
-  const payload = {
-    serviceTypeCode,
-    serviceTypeName,
-    description,
-  };
-  const [serviceTypeData, setServiceTypeData] = useState([payload]);
-  const [editState, setEditState] = useState(-1);
 
   const handleDelete = (id) => {
     props.onDelete(id);
@@ -46,17 +31,19 @@ export const ServiceType = (props) => {
             <TableHead>
               <TableRow>
                 <TableCell padding="checkbox">STT</TableCell>
-                <TableCell>Mã loại dịch vụ</TableCell>
-                <TableCell>Tên loại dịch vụ</TableCell>
-                <TableCell>Mô tả</TableCell>
+                <TableCell>Mã Combo dịch vụ</TableCell>
+                <TableCell>Tên Combo dịch vụ</TableCell>
+                <TableCell>Đơn giá</TableCell>
+                <TableCell>Dịch vụ bên trong</TableCell>
+                <TableCell>Ghi chú</TableCell>
                 <TableCell>Hành động </TableCell>
               </TableRow>
             </TableHead>
 
             <TableBody>
-              {items.map((serviceType, index) => {
-                const hrefUpdate = `/update/updateServiceType/updateServiceType?id=${serviceType.id}`;
-                const isSelected = selected.includes(serviceType.id);
+              {items.map((combo, index) => {
+                const hrefUpdate = `/update/updateCombo/updateCombo?id=${combo.id}`;
+                const isSelected = selected.includes(combo.id);
                 const alertDelete = () => {
                   Swal.fire({
                     title: "Are you sure?",
@@ -69,22 +56,35 @@ export const ServiceType = (props) => {
                   }).then((result) => {
                     if (result.isConfirmed) {
                       Swal.fire("Deleted!", "Your data has been deleted.", "success");
-                      handleDelete(serviceType.id);
+                      handleDelete(combo.id);
                       toast.success("Delete Successfully!");
                     }
                   });
                 };
 
                 return (
-                  <TableRow key={serviceType.id} selected={isSelected}>
+                  <TableRow key={combo.id} selected={isSelected}>
                     <TableCell padding="checkbox">
                       <div key={index}>
                         <span>{index + props.pageNumber * 5 + 1}</span>
                       </div>
                     </TableCell>
-                    <TableCell>{serviceType.serviceTypeCode}</TableCell>
-                    <TableCell>{serviceType.serviceTypeName}</TableCell>
-                    <TableCell>{serviceType.description}</TableCell>
+                    <TableCell>{combo.comboCode}</TableCell>
+                    <TableCell>{combo.comboName}</TableCell>
+                    <TableCell>{combo.price}</TableCell>
+                    <TableCell>
+                      <ul>
+                        {combo.comboServiceList.map((comboService) => (
+                          <li key={comboService.id}>
+                            <p>
+                              {" "}
+                              {comboService.service.serviceName} - {comboService.service.price}
+                            </p>
+                          </li>
+                        ))}
+                      </ul>
+                    </TableCell>
+                    <TableCell>{combo.note}</TableCell>
                     <TableCell>
                       <a className="btn btn-info m-xl-2" href={hrefUpdate}>
                         <SvgIcon fontSize="small">
@@ -109,7 +109,7 @@ export const ServiceType = (props) => {
   );
 };
 
-ServiceType.propTypes = {
+Combo.propTypes = {
   count: PropTypes.number,
   items: PropTypes.array,
   onDeselectAll: PropTypes.func,
