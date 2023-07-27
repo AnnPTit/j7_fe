@@ -8,6 +8,9 @@ import Swal from "sweetalert2";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Checkbox, FormControlLabel, FormGroup } from "@mui/material";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/router";
+import CurrencyInput from "react-currency-input-field";
+
 const cx = classNames.bind(style);
 const handleSubmit = async (event, selectedServiceCodes) => {
   event.preventDefault();
@@ -16,12 +19,16 @@ const handleSubmit = async (event, selectedServiceCodes) => {
   const comboNameInpt = document.querySelector('input[name="comboName"]');
   const noteInpt = document.querySelector('input[name="note"]');
   const priceInpt = document.querySelector('input[name="price"]');
+  const priceString = priceInpt.value; // Lấy giá trị dạng chuỗi từ trường input
+  const cleanedPriceString = priceString.replace(/[^0-9]/g, ""); // Loại bỏ các ký tự không phải số
+  // const price0 = parseInt(cleanedPriceString, 10); // Chuyển chuỗi thành số nguyên
 
   const comboCode = comboCodeInpt?.value;
   const comboName = comboNameInpt?.value;
   const note = noteInpt?.value;
   const service = selectedServiceCodes;
-  const price = priceInpt?.value;
+  const price = cleanedPriceString;
+  // const price = priceInpt?.value;
   // Tạo payload dữ liệu để gửi đến API
   const payload = {
     comboCode,
@@ -86,6 +93,12 @@ function InputCombo() {
   const [dataService, setDataService] = useState([]);
   const [checkedItems, setCheckedItems] = useState({});
   const [selectedServiceCodes, setSelectedServiceCodes] = useState([]);
+  const router = useRouter(); // Sử dụng useRouter để truy cập router của Next.js
+  const { code } = router.query; // Lấy thông tin từ URL qua router.query
+
+  function formatCurrency(price) {
+    return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(price);
+  }
 
   useEffect(() => {
     const fetchData = async () => {
@@ -126,14 +139,8 @@ function InputCombo() {
   return (
     <div className={cx("wrapper")}>
       <h1>Thêm Combo Dịch Vụ</h1>
-      <div className="form-floating mb-3">
-        <input
-          className="form-control"
-          type="text"
-          placeholder="Default input"
-          aria-label="default input example"
-          name="comboCode"
-        />
+      <div className=" form-floating mb-3">
+        <input className="form-control" type="text" name="comboCode" disabled value={code} />
         <label htmlFor="floatingInput">Mã Combo dịch vụ</label>
       </div>
       <div className="form-floating">
@@ -176,21 +183,27 @@ function InputCombo() {
                 name={service.id}
               />
             }
-            label={service.serviceName}
+            label={service.serviceName + " - " + formatCurrency(service.price) + " VND"} // Hiển thị tên dịch vụ và giá với định dạng tiền tệ
           />
         ))}
       </FormGroup>
+
       <br />
-      <div className="form-floating">
-        <input
-          type="number"
-          className="form-control"
-          id="floatingPassword"
-          placeholder="Password"
-          name="price"
-        />
-        <label htmlFor="floatingPassword">Đơn giá </label>
-      </div>
+      <p
+        style={{
+          marginLeft: 10,
+        }}
+      >
+        Đơn giá
+      </p>
+      <CurrencyInput
+        className="form-control"
+        id="input-example"
+        name="price"
+        placeholder="Please enter a number"
+        defaultValue={0}
+        decimalsLimit={2}
+      />
       <br />
       <button
         className={(cx("input-btn"), "btn btn-primary")}

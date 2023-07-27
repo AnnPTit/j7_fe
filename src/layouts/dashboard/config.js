@@ -107,6 +107,15 @@ export const items = [
     ),
   },
   {
+    title: "Webcam",
+    path: "/webcam",
+    icon: (
+      <SvgIcon fontSize="small">
+        <ShoppingBagIcon />
+      </SvgIcon>
+    ),
+  },
+  {
     title: "Companies",
     path: "/companies",
     icon: (

@@ -6,6 +6,8 @@ import { useEffect, useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { ToastContainer, toast } from "react-toastify";
 import Swal from "sweetalert2";
+import { useRouter } from "next/router";
+import CurrencyInput from "react-currency-input-field";
 
 const cx = classNames.bind(style);
 const handleSubmit = async (event) => {
@@ -21,9 +23,12 @@ const handleSubmit = async (event) => {
   const serviceCode = serviceCodeInpt?.value;
   const serviceName = serviceNameInpt?.value;
   const description = descriptionInpt?.value;
-  const price = priceInpt?.value;
+
   const unit = unitIput?.value;
   const serviceType = serviceTypeIput?.value;
+  const priceString = priceInpt.value; // Lấy giá trị dạng chuỗi từ trường input
+  const cleanedPriceString = priceString.replace(/[^0-9]/g, ""); // Loại bỏ các ký tự không phải số
+  const price = cleanedPriceString;
 
   let unitObj = {
     id: unit,
@@ -135,6 +140,8 @@ const handleSubmit = async (event) => {
 function InputService() {
   const [serviceType, setServiceType] = useState([]);
   const [unit, setUnit] = useState([]);
+  const router = useRouter(); // Sử dụng useRouter để truy cập router của Next.js
+  const { code } = router.query; // Lấy thông tin từ URL qua router.query
   // Hàm lấy loại dịch vụ và đơn vijtinhs
   useEffect(() => {
     // Định nghĩa hàm fetchData bên trong useEffect
@@ -169,7 +176,8 @@ function InputService() {
         <input
           className="form-control"
           type="text"
-          placeholder="Default input"
+          value={code}
+          disabled
           aria-label="default input example"
           name="serviceCode"
         />
@@ -186,7 +194,7 @@ function InputService() {
         <label htmlFor="floatingPassword">Tên dịch vụ</label>
       </div>
       <br></br>
-      <div className="form-floating mb-3">
+      {/* <div className="form-floating mb-3">
         <input
           type="text"
           className="form-control"
@@ -195,7 +203,7 @@ function InputService() {
           name="price"
         />
         <label htmlFor="floatingInput">Đơn giá </label>
-      </div>
+      </div> */}
       <div className="form-floating">
         <input
           type="text"
@@ -225,6 +233,22 @@ function InputService() {
         ))}
       </select>
       <br></br>
+      <p
+        style={{
+          marginLeft: 10,
+        }}
+      >
+        Đơn giá
+      </p>
+      <CurrencyInput
+        className="form-control"
+        id="input-example"
+        name="price"
+        placeholder="Please enter a number"
+        defaultValue={0}
+        decimalsLimit={2}
+      />
+      <br />
       <button
         className={(cx("input-btn"), "btn btn-primary")}
         onClick={() => {

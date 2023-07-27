@@ -40,11 +40,22 @@ const Page = () => {
 
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
+  function generateRandomString(length) {
+    const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    const charactersLength = characters.length;
+
+    const randomChars = Array.from({ length }, () =>
+      characters.charAt(Math.floor(Math.random() * charactersLength))
+    );
+
+    return randomChars.join("");
+  }
+  let randomString = generateRandomString(10); // Sinh chuỗi ngẫu nhiên có độ dài 10
 
   const pathname = usePathname();
   const item = {
     title: "Add",
-    path: "input/inputCombo/inputCombo",
+    path: `input/inputCombo/inputCombo?code=CB_${randomString}`,
     icon: (
       <SvgIcon fontSize="small">
         <PlusIcon />

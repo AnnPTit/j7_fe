@@ -44,8 +44,8 @@ const handleSubmit = async (event) => {
     if (response.status === 200) {
       // Xử lý khi API thành công
       console.log("API call successful");
-      // window.location.href = "/floor";
-      toast.success("Add Successfully!");
+      window.location.href = "/input/inputRoom/inputRoom";
+      toast.success("Thêm thành công!");
       // Thực hiện các hành động khác sau khi API thành công
     } else {
       // Xử lý khi API gặp lỗi
@@ -64,7 +64,8 @@ const handleSubmit = async (event) => {
         // alert(error.response.data.serviceTypeCode);
         if (
           error.response.data.floorCode == undefined &&
-          error.response.data.floorName == undefined
+          error.response.data.floorName == undefined && 
+          error.response.data.note == undefined
         ) {
           toast.error(error.response.data);
         }
@@ -72,6 +73,9 @@ const handleSubmit = async (event) => {
           position: toast.POSITION.BOTTOM_RIGHT,
         });
         toast.error(error.response.data.floorName, {
+          position: toast.POSITION.BOTTOM_RIGHT,
+        });
+        toast.error(error.response.data.note, {
           position: toast.POSITION.BOTTOM_RIGHT,
         });
       } else {
@@ -104,7 +108,6 @@ function InputFloor() {
   return (
     <div className={cx("wrapper")}>
       <div className={cx("container")}>
-        <div className={cx("text")}>Floor</div>
         <form>
           <div className={cx("form-row")}>
             <div className={cx("input-data")}>
@@ -120,7 +123,7 @@ function InputFloor() {
           </div>
           <div className={cx("form-row")}>
             <div className={cx("input-data textarea")}>
-              <textarea rows="8" cols="80" name="note"></textarea>
+              <textarea rows="8" cols="52" name="note"></textarea>
               <br />
               <div className={cx("underline")}></div>
               <br />
@@ -130,7 +133,7 @@ function InputFloor() {
             <div className={cx("input-data")}>
               <div className={cx("inner")}>
                 <button className={cx("input-btn")} onClick={handleSubmit}>
-                  Save
+                  Thêm
                 </button>
                 <ToastContainer />
               </div>

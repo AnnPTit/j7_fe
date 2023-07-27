@@ -1,5 +1,4 @@
 import classNames from "classnames/bind";
-import { useEffect, useState } from "react";
 import "react-toastify/dist/ReactToastify.css";
 import { Layout as DashboardLayout } from "src/layouts/dashboard/layout";
 import style from "./inputServiceType.module.scss";
@@ -7,6 +6,7 @@ import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import Swal from "sweetalert2";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { useRouter } from "next/router";
 const cx = classNames.bind(style);
 const handleSubmit = async (event) => {
   event.preventDefault(); // Ngăn chặn sự kiện submit mặc định
@@ -83,6 +83,8 @@ const handleSubmit = async (event) => {
 };
 
 function InputServiceType() {
+  const router = useRouter(); // Sử dụng useRouter để truy cập router của Next.js
+  const { code } = router.query; // Lấy thông tin từ URL qua router.query
   return (
     <div className={cx("wrapper")}>
       <h1>Thêm Loại Dịch Vụ</h1>
@@ -90,9 +92,10 @@ function InputServiceType() {
         <input
           className="form-control"
           type="text"
-          placeholder="Default input"
+          value={code}
           aria-label="default input example"
           name="serviceTypeCode"
+          disabled
         />
         <label htmlFor="floatingInput">Mã loại dịch vụ</label>
       </div>

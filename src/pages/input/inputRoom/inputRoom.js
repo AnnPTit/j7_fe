@@ -13,6 +13,7 @@ import InputFloor from "src/components/InputFloor/InputFloor";
 import InputTypeRoom from "src/components/InputTypeRoom/InputTypeRoom";
 import Swal from "sweetalert2";
 import Card from "react-bootstrap/Card";
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 
 const cx = classNames.bind(style);
 
@@ -36,7 +37,7 @@ function InputRoom() {
     // Lấy giá trị từ các trường nhập liệu
     const roomCodeInpt = document.querySelector('input[name="roomCode"]');
     const roomNameInpt = document.querySelector('input[name="roomName"]');
-    const noteInpt = document.querySelector('input[name="note"]');
+    const noteInpt = document.querySelector('textarea[name="notee"]');
     const floorIput = document.querySelector('select[name="floor"]');
     const typeRoomIput = document.querySelector('select[name="typeRoom"]');
 
@@ -210,7 +211,7 @@ function InputRoom() {
       }}
     >
       <div className={cx("wrapper")}>
-        <h1 style={{ marginBottom: 50 }}>Thêm phòng mới</h1>
+        <h1 style={{ marginBottom: 50 }}>Thêm phòng</h1>
         <div className="d-flex mb-4">
           <div style={{ width: 490, marginRight: 23 }} className="form-floating">
             <input
@@ -237,7 +238,7 @@ function InputRoom() {
         <div className="d-flex mb-4">
           <select
             className="form-select"
-            style={{ height: 50, width: 400 }}
+            style={{ height: 50, width: 380, marginRight: 10 }}
             aria-label="Default select example"
             name="typeRoom"
           >
@@ -253,6 +254,7 @@ function InputRoom() {
             </SvgIcon>
           </Button>
           <Modal
+            style={{ marginTop: 50 }}
             show={showTypeRoom}
             onHide={handleCloseTypeRoom}
             backdrop="static"
@@ -264,16 +266,10 @@ function InputRoom() {
             <Modal.Body>
               <InputTypeRoom />
             </Modal.Body>
-            <Modal.Footer>
-              <Button variant="secondary" onClick={handleCloseTypeRoom}>
-                Đóng
-              </Button>
-              <Button variant="primary">Thêm</Button>
-            </Modal.Footer>
           </Modal>
           <select
             className="form-select"
-            style={{ height: 50, width: 400 }}
+            style={{ height: 50, width: 380, marginRight: 10 }}
             aria-label="Default select example"
             name="floor"
           >
@@ -289,19 +285,19 @@ function InputRoom() {
             </SvgIcon>
           </Button>
         </div>
-        <Modal show={showFloor} onHide={handleCloseFloor} backdrop="static" keyboard={false}>
+        <Modal
+          style={{ marginTop: 50 }}
+          show={showFloor}
+          onHide={handleCloseFloor}
+          backdrop="static"
+          keyboard={false}
+        >
           <Modal.Header closeButton>
             <Modal.Title>Tầng</Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <InputFloor />
           </Modal.Body>
-          <Modal.Footer>
-            <Button variant="secondary" onClick={handleCloseFloor}>
-              Đóng
-            </Button>
-            <Button variant="primary">Thêm</Button>
-          </Modal.Footer>
         </Modal>
         <br></br>
         <div className="form-floating">
@@ -309,13 +305,13 @@ function InputRoom() {
             className="form-control"
             id="floatingTextarea"
             placeholder="Description"
-            name="note"
+            name="notee"
             style={{ height: "150px" }}
           ></textarea>
           <label htmlFor="floatingTextarea">Mô tả</label>
         </div>
         <br></br>
-        <div className="form-floating">
+        <div className="form-floating" style={{ textAlign: "center" }}>
           {/* Hide the original file input */}
           <input
             ref={fileInputRef}
@@ -327,20 +323,24 @@ function InputRoom() {
           />
           {/* Create a custom file input component */}
           <div>
-            <label htmlFor="photosInput">
-              {/* {selectedImagesCount} {selectedImagesCount === 1 ? "file" : "files"} selected */}
+            <label
+              onClick={() => fileInputRef.current.click()}
+              htmlFor="photosInput"
+              style={{ cursor: "pointer" }}
+            >
+              <CloudUploadIcon style={{ fontSize: "7rem" }} />
             </label>
-            <input
+            {/* <input
               id="photosInput"
               type="button"
               value="Choose Files"
-              onClick={() => fileInputRef.current.click()} // Trigger the hidden file input on button click
-            />
+               // Trigger the hidden file input on button click
+            /> */}
           </div>
           <div className="d-flex flex-wrap mb-4">
             {previewImages &&
               previewImages.map((image, index) => (
-                <Card key={index} style={{ width: 250, marginRight: 20, marginTop: 30 }}>
+                <Card key={index} style={{ width: 250, marginRight: 20, marginLeft: 25, marginTop: 20 }}>
                   <Card.Img src={image} alt={`Photo ${index}`} style={{ height: "200px" }} />
                   <Card.Body style={{ padding: "0rem" }}>
                     <button
@@ -348,7 +348,7 @@ function InputRoom() {
                       style={{
                         background: "red",
                         color: "white",
-                        borderRadius: "50%",
+                        borderRadius: "20%",
                         width: "25px",
                         height: "25px",
                         display: "flex",
@@ -387,6 +387,12 @@ function InputRoom() {
                 }
               }
             });
+          }}
+          style={{
+            position: "absolute",
+            right: 250,
+            width: 150,
+            height: 45
           }}
         >
           Thêm

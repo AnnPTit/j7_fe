@@ -60,7 +60,7 @@ const handleSubmit = async (event) => {
     if (response.status === 200) {
       // Xử lý khi API thành công
       console.log("API call successful");
-      window.location.href = "/type-room";
+      window.location.href = "/input/inputRoom/inputRoom";
       toast.success("Add Successfully!");
       // Thực hiện các hành động khác sau khi API thành công
     } else {
@@ -103,7 +103,6 @@ function InputTypeRoom() {
   return (
     <div className={cx("wrapper")}>
       <div className={cx("container")}>
-        <div className={cx("text")}>Loại phòng</div>
         <form>
           <div className={cx("form-row")}>
             <div className={cx("input-data")}>
@@ -154,7 +153,7 @@ function InputTypeRoom() {
             </div>
           </div>
           <div className={cx("form-row")}>
-            <div className={cx("input-data textarea")}>
+            <div style={{ marginLeft: 20}} className={cx("input-data textarea")}>
               <textarea rows="6" cols="50" name="note"></textarea>
               <br />
               <div className={cx("underline")}></div>
@@ -165,7 +164,7 @@ function InputTypeRoom() {
             <div className={cx("input-data")}>
               <div className={cx("inner")}>
                 <button className={cx("input-btn")} onClick={handleSubmit}>
-                  Save
+                  Thêm
                 </button>
                 <ToastContainer />
               </div>

@@ -18,6 +18,9 @@ import Bars4Icon from "@heroicons/react/24/solid/Bars4Icon";
 
 export const Combo = (props) => {
   const { items = [], selected = [] } = props;
+  function formatCurrency(price) {
+    return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(price);
+  }
 
   const handleDelete = (id) => {
     props.onDelete(id);
@@ -71,14 +74,15 @@ export const Combo = (props) => {
                     </TableCell>
                     <TableCell>{combo.comboCode}</TableCell>
                     <TableCell>{combo.comboName}</TableCell>
-                    <TableCell>{combo.price}</TableCell>
+                    <TableCell>{formatCurrency(combo.price)}</TableCell>
                     <TableCell>
                       <ul>
                         {combo.comboServiceList.map((comboService) => (
                           <li key={comboService.id}>
                             <p>
                               {" "}
-                              {comboService.service.serviceName} - {comboService.service.price}
+                              {comboService.service.serviceName}
+                              {/* {formatCurrency(comboService.service.price)} */}
                             </p>
                           </li>
                         ))}

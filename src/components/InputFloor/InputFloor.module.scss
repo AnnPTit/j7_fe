@@ -1,13 +1,12 @@
 @import url("https://fonts.googleapis.com/css?family=Poppins:400,500,600,700&display=swap");
 
 .wrapper {
-  display: flex;
+  // display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 80vh;
   padding: 10px;
   font-family: "Poppins", sans-serif;
-  background: linear-gradient(115deg, #56d8e4 10%, #9f01ea 90%);
+  // background: linear-gradient(115deg, #56d8e4 10%, #9f01ea 90%);
   margin: 0;
   padding: 0;
   outline: none;
@@ -15,10 +14,9 @@
   font-family: "Poppins", sans-serif;
 }
 .container {
-  max-width: 800px;
   background: #fff;
-  width: 800px;
-  padding: 25px 40px 10px 40px;
+  width: 470px;
+  padding: 10px;
   box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
 }
 .container .text {
@@ -26,13 +24,10 @@
   font-size: 41px;
   font-weight: 600;
   font-family: "Poppins", sans-serif;
-  background: -webkit-linear-gradient(right, #56d8e4, #9f01ea, #56d8e4, #9f01ea);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
-.container form {
-  padding: 30px 0 0 0;
-}
+
 .container form .form-row {
   display: flex;
   margin: 32px 0;
@@ -65,7 +60,6 @@ form .form-row .textarea {
 }
 .textarea textarea {
   resize: none;
-  padding-top: 10px;
 }
 .input-data input {
   outline: none;
@@ -120,10 +114,11 @@ form .form-row .textarea {
 }
 
 .input-btn {
-  width: 50% !important;
+  margin-left: 55px;
+  width: 60% !important;
   outline: none;
   border: none;
   min-height: 50px;
   border-radius: 20px;
-  background: -webkit-linear-gradient(right, #56d8e4, #9f01ea, #56d8e4, #9f01ea);
+  // background: -webkit-linear-gradient(right, #56d8e4, #9f01ea, #56d8e4, #9f01ea);  
 }

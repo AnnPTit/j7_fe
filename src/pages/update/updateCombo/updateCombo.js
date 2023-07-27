@@ -9,6 +9,7 @@ import Swal from "sweetalert2";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useRouter } from "next/router";
 import { Checkbox, FormControlLabel, FormGroup } from "@mui/material";
+import CurrencyInput from "react-currency-input-field";
 
 const cx = classNames.bind(style);
 
@@ -31,7 +32,7 @@ const handleSubmit = async (event, id, comboUpdate, selectedServiceCodes) => {
       return false;
     }
     axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
-    const response = await axios.put(`http://localhost:2003/api/admin/combo/update/${id}`, payload); // Gọi API /api/combo/save với payload và access token 
+    const response = await axios.put(`http://localhost:2003/api/admin/combo/update/${id}`, payload); // Gọi API /api/combo/save với payload và access token
     toast.success("Update Successfully!", {
       position: toast.POSITION.BOTTOM_RIGHT,
     });
@@ -83,13 +84,16 @@ function Updatecombo() {
   const [selectedServiceCodes, setSelectedServiceCodes] = useState([]);
   const [dataService, setDataService] = useState([]);
 
-  const [comboUpdate, setcomboUpdate] = useState({
+  const [comboUpdate, setComboUpdate] = useState({
     comboCode: "",
     comboName: "",
     note: "",
     price: 0,
     comboServiceList: [],
   });
+  function formatCurrency(price) {
+    return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(price);
+  }
 
   useEffect(() => {
     const fetchData = async () => {
@@ -180,7 +184,7 @@ function Updatecombo() {
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
         const response = await axios.get(`http://localhost:2003/api/admin/combo/detail/${id}`);
         console.log("Combo", response.data);
-        setcomboUpdate(response.data);
+        setComboUpdate(response.data);
         // Khởi tạo một mảng tạm để kiểm tra trùng lặp
         const tempSelectedServiceCodes = [];
 
@@ -203,7 +207,12 @@ function Updatecombo() {
     // Gọi hàm fetchData ngay lập tức
     fetchData();
   }, []);
-
+  function handleChangePrice(value) {
+    setComboUpdate((prev) => ({
+      ...prev,
+      price: value,
+    }));
+  }
   return (
     <div className={cx("wrapper")}>
       <h1>Cập nhật Loại Dịch Vụ</h1>
@@ -214,9 +223,10 @@ function Updatecombo() {
           placeholder="Default input"
           aria-label="default input example"
           name="comboCode"
+          disabled
           value={comboUpdate.comboCode}
           onChange={(e) => {
-            setcomboUpdate((prev) => ({
+            setComboUpdate((prev) => ({
               ...prev,
               comboCode: e.target.value,
             }));
@@ -233,7 +243,7 @@ function Updatecombo() {
           name="comboName"
           value={comboUpdate.comboName}
           onChange={(e) => {
-            setcomboUpdate((prev) => ({
+            setComboUpdate((prev) => ({
               ...prev,
               comboName: e.target.value,
             }));
@@ -251,7 +261,7 @@ function Updatecombo() {
           name="note"
           value={comboUpdate.note}
           onChange={(e) => {
-            setcomboUpdate((prev) => ({
+            setComboUpdate((prev) => ({
               ...prev,
               note: e.target.value,
             }));
@@ -261,23 +271,24 @@ function Updatecombo() {
       </div>
 
       <br />
-      <div className="form-floating">
-        <input
-          type="text"
-          className="form-control"
-          id="floatingPassword"
-          placeholder="Password"
-          name="price"
-          value={comboUpdate.price}
-          onChange={(e) => {
-            setcomboUpdate((prev) => ({
-              ...prev,
-              price: e.target.value,
-            }));
-          }}
-        />
-        <label htmlFor="floatingPassword">Đơn giá</label>
-      </div>
+
+      <p
+        style={{
+          marginLeft: 10,
+        }}
+      >
+        Đơn giá
+      </p>
+      <CurrencyInput
+        className="form-control"
+        id="input-example"
+        name="price"
+        value={comboUpdate.price}
+        placeholder="Please enter a number"
+        defaultValue={0}
+        decimalsLimit={2}
+        onValueChange={(value) => handleChangePrice(value)} // Lấy giá trị từ hàm callback onValueChange
+      />
       <br />
       <p
         style={{
@@ -297,7 +308,7 @@ function Updatecombo() {
                 name={service.id}
               />
             }
-            label={service.serviceName}
+            label={service.serviceName + "-" + formatCurrency(service.price)}
           />
         ))}
       </FormGroup>
