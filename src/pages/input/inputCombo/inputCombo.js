@@ -10,6 +10,11 @@ import { Checkbox, FormControlLabel, FormGroup } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import CurrencyInput from "react-currency-input-field";
+import PlusIcon from "@heroicons/react/24/solid/PlusIcon";
+import { SvgIcon } from "@mui/material";
+import Modal from "react-bootstrap/Modal";
+import Button from "react-bootstrap/Button";
+import InputService from "src/components/inputService/inputService";
 
 const cx = classNames.bind(style);
 const handleSubmit = async (event, selectedServiceCodes) => {
@@ -95,6 +100,10 @@ function InputCombo() {
   const [selectedServiceCodes, setSelectedServiceCodes] = useState([]);
   const router = useRouter(); // Sử dụng useRouter để truy cập router của Next.js
   const { code } = router.query; // Lấy thông tin từ URL qua router.query
+  const [showServiceType, setShowServiceType] = useState(false);
+
+  const handleCloseServiceType = () => setShowServiceType(false);
+  const handleShowServiceType = () => setShowServiceType(true);
 
   function formatCurrency(price) {
     return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(price);
@@ -187,7 +196,25 @@ function InputCombo() {
           />
         ))}
       </FormGroup>
-
+      <Button style={{ marginRight: 20 }} variant="primary" onClick={handleShowServiceType}>
+        <SvgIcon fontSize="small">
+          <PlusIcon />
+        </SvgIcon>
+      </Button>
+      <Modal
+        style={{ marginTop: 50 }}
+        show={showServiceType}
+        onHide={handleCloseServiceType}
+        backdrop="static"
+        keyboard={false}
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Dịch Vụ</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <InputService code={code} />
+        </Modal.Body>
+      </Modal>
       <br />
       <p
         style={{

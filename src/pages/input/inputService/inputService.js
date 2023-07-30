@@ -3,20 +3,26 @@ import style from "./inputService.module.scss";
 import { Layout as DashboardLayout } from "src/layouts/dashboard/layout";
 import axios from "axios";
 import { useEffect, useState } from "react";
-import "bootstrap/dist/css/bootstrap.min.css";
 import { ToastContainer, toast } from "react-toastify";
 import Swal from "sweetalert2";
 import { useRouter } from "next/router";
 import CurrencyInput from "react-currency-input-field";
+import "bootstrap/dist/css/bootstrap.min.css";
+import PlusIcon from "@heroicons/react/24/solid/PlusIcon";
+import { SvgIcon } from "@mui/material";
+import Modal from "react-bootstrap/Modal";
+import Button from "react-bootstrap/Button";
+import InputServiceTypeModal from "src/components/inputServiceType/inputServiceTypeModal";
+import InputUnitModal from "src/components/inputUnit/inputUnitModal";
 
 const cx = classNames.bind(style);
-const handleSubmit = async (event) => {
+const handleSubmit = async (event, price1) => {
   event.preventDefault(); // Ngăn chặn sự kiện submit mặc định
   // Lấy giá trị từ các trường nhập liệu
   const serviceCodeInpt = document.querySelector('input[name="serviceCode"]');
   const serviceNameInpt = document.querySelector('input[name="serviceName"]');
   const descriptionInpt = document.querySelector('input[name="description"]');
-  const priceInpt = document.querySelector('input[name="price"]');
+  // const priceInpt = document.querySelector('input[name="price"]');
   const unitIput = document.querySelector('select[name="unit"]');
   const serviceTypeIput = document.querySelector('select[name="serviceType"]');
 
@@ -26,7 +32,7 @@ const handleSubmit = async (event) => {
 
   const unit = unitIput?.value;
   const serviceType = serviceTypeIput?.value;
-  const priceString = priceInpt.value; // Lấy giá trị dạng chuỗi từ trường input
+  const priceString = price1 + ""; // Lấy giá trị dạng chuỗi từ trường input
   const cleanedPriceString = priceString.replace(/[^0-9]/g, ""); // Loại bỏ các ký tự không phải số
   const price = cleanedPriceString;
 
@@ -142,6 +148,15 @@ function InputService() {
   const [unit, setUnit] = useState([]);
   const router = useRouter(); // Sử dụng useRouter để truy cập router của Next.js
   const { code } = router.query; // Lấy thông tin từ URL qua router.query
+
+  const [price, setPrice] = useState(0);
+
+  const [showServiceType, setShowServiceType] = useState(false);
+  const [showUnit, setShowUnit] = useState(false);
+  const handleCloseServiceType = () => setShowServiceType(false);
+  const handleShowServiceType = () => setShowServiceType(true);
+  const handleShowUnit = () => setShowUnit(true);
+  const handleCloseUnit = () => setShowUnit(false);
   // Hàm lấy loại dịch vụ và đơn vijtinhs
   useEffect(() => {
     // Định nghĩa hàm fetchData bên trong useEffect
@@ -194,16 +209,7 @@ function InputService() {
         <label htmlFor="floatingPassword">Tên dịch vụ</label>
       </div>
       <br></br>
-      {/* <div className="form-floating mb-3">
-        <input
-          type="text"
-          className="form-control"
-          id="floatingPassword"
-          placeholder="Password"
-          name="price"
-        />
-        <label htmlFor="floatingInput">Đơn giá </label>
-      </div> */}
+
       <div className="form-floating">
         <input
           type="text"
@@ -216,22 +222,69 @@ function InputService() {
       </div>
       <br></br>
       <p>Loại Dịch Vụ</p>
-      <select className="form-select" aria-label="Default select example" name="serviceType">
-        {serviceType.map((serviceType) => (
-          <option key={serviceType.id} value={serviceType.id}>
-            {serviceType.serviceTypeName}
-          </option>
-        ))}
-      </select>
+
+      <div
+        style={{
+          display: "flex",
+        }}
+      >
+        <select className="form-select" aria-label="Default select example" name="serviceType">
+          {serviceType.map((serviceType) => (
+            <option key={serviceType.id} value={serviceType.id}>
+              {serviceType.serviceTypeName}
+            </option>
+          ))}
+        </select>
+        <Button style={{ marginRight: 20 }} variant="primary" onClick={handleShowServiceType}>
+          <SvgIcon fontSize="small">
+            <PlusIcon />
+          </SvgIcon>
+        </Button>
+        <Modal
+          style={{ marginTop: 50 }}
+          show={showServiceType}
+          onHide={handleCloseServiceType}
+          backdrop="static"
+          keyboard={false}
+        >
+          <Modal.Header closeButton>
+            <Modal.Title>Loại Dịch Vụ</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <InputServiceTypeModal code={code} />
+          </Modal.Body>
+        </Modal>
+      </div>
       <br></br>
       <p>Đơn Vị Tính </p>
-      <select className="form-select" aria-label="Default select example" name="unit">
-        {unit.map((unit) => (
-          <option key={unit.id} value={unit.id}>
-            {unit.unitName}
-          </option>
-        ))}
-      </select>
+      <div style={{ display: "flex" }}>
+        <select className="form-select" aria-label="Default select example" name="unit">
+          {unit.map((unit) => (
+            <option key={unit.id} value={unit.id}>
+              {unit.unitName}
+            </option>
+          ))}
+        </select>
+        <Button style={{ marginRight: 20 }} variant="primary" onClick={handleShowUnit}>
+          <SvgIcon fontSize="small">
+            <PlusIcon />
+          </SvgIcon>
+        </Button>
+        <Modal
+          style={{ marginTop: 50 }}
+          show={showUnit}
+          onHide={handleCloseUnit}
+          backdrop="static"
+          keyboard={false}
+        >
+          <Modal.Header closeButton>
+            <Modal.Title>Đơn Vị</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <InputUnitModal code={code} />
+          </Modal.Body>
+        </Modal>
+      </div>
       <br></br>
       <p
         style={{
@@ -247,6 +300,8 @@ function InputService() {
         placeholder="Please enter a number"
         defaultValue={0}
         decimalsLimit={2}
+        value={price}
+        onValueChange={(value) => setPrice(value)} // Thêm event và value vào hàm
       />
       <br />
       <button
@@ -262,7 +317,7 @@ function InputService() {
             confirmButtonText: "Yes, Add it!",
           }).then(async (result) => {
             if (result.isConfirmed) {
-              const isSubmitSuccess = await handleSubmit(event);
+              const isSubmitSuccess = await handleSubmit(event, price);
               if (isSubmitSuccess) {
                 Swal.fire("Add!", "Your data has been Add.", "success");
                 toast.success("Add Successfully!");

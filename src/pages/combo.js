@@ -11,12 +11,13 @@ import { Layout as DashboardLayout } from "src/layouts/dashboard/layout";
 import { Combo } from "src/sections/combo/combo-table";
 import { ComboSearch } from "src/sections/combo/combo-search";
 import { applyPagination } from "src/utils/apply-pagination";
+import ComboFilter from "src/sections/combo/combo-filter";
+import PriceRangeSlider from "src/sections/combo/combo-slider";
 import Pagination from "src/components/Pagination";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 const useCustomers = (data, page, rowsPerPage) => {
   return useMemo(() => {
-    console.log("data : ", data);
     return applyPagination(data, page, rowsPerPage);
   }, [data, page, rowsPerPage]);
 };
@@ -37,9 +38,15 @@ const Page = () => {
   const customersSelection = useSelection(customersIds);
   const [pageNumber, setPageNumber] = useState(0);
   const [textSearch, setTextSearch] = useState("");
+  const [service, setService] = useState([]);
+  const [serviceChoises, setServiceChoices] = useState("");
+  const [priceRange, setPriceRange] = useState([0, 5000000]);
 
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
+
+  console.log(priceRange);
+
   function generateRandomString(length) {
     const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     const charactersLength = characters.length;
@@ -73,50 +80,51 @@ const Page = () => {
       console.log(error);
     }
   };
-
-  // // Tim kiem
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     try {
-  //       const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
-  //       console.log(accessToken);
-  //       axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
-
-  //       const response = await axios.get(
-  //         `http://localhost:2003/api/admin/combo/search?key=${encodeURIComponent(textSearch)}`
-  //       ); // Thay đổi URL API của bạn tại đây
-  //       console.log(response.data);
-  //       setTotalPages(response.data.totalPages);
-  //       setTotalElements(response.data.totalElements);
-  //       setData(response.data.content);
-  //     } catch (error) {
-  //       if (error.response) {
-  //         // Xử lý response lỗi
-  //         if (error.response.status === 403) {
-  //           alert("Bạn không có quyền truy cập vào trang này");
-  //           window.location.href = "/auth/login"; // Thay đổi "/dang-nhap" bằng đường dẫn đến trang đăng nhập của bạn
-  //         } else {
-  //           alert("Có lỗi xảy ra trong quá trình gọi API");
-  //         }
-  //       } else {
-  //         console.log("Không thể kết nối đến API");
-  //       }
-  //     }
-  //   };
-
-  //   fetchData();
-  // }, [textSearch]);
+  //Load Service
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
-        console.log(accessToken);
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
+        let api = `http://localhost:2003/api/admin/service/getAll`;
+        const response = await axios.get(api); // Thay đổi URL API của bạn tại đây
+        setService(response.data);
+      } catch (error) {
+        if (error.response) {
+          // Xử lý response lỗi
+          if (error.response.status === 403) {
+            alert("Bạn không có quyền truy cập vào trang này");
+            window.location.href = "/auth/login"; // Thay đổi "/dang-nhap" bằng đường dẫn đến trang đăng nhập của bạn
+          } else {
+            alert("Có lỗi xảy ra trong quá trình gọi API");
+          }
+        } else {
+          console.log("Không thể kết nối đến API");
+        }
+      }
+    };
 
-        const response = await axios.get(
-          `http://localhost:2003/api/admin/combo/load?current_page=${pageNumber}`
-        ); // Thay đổi URL API của bạn tại đây
+    fetchData();
+  }, []);
+  // Tim kiem
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
+        axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
+        let api = `http://localhost:2003/api/admin/combo/search?&current_page=${pageNumber}`;
+        if (textSearch !== "") {
+          api = api + `&key=${textSearch}`;
+        }
+        if (serviceChoises !== "") {
+          api = api + `&serviceId=${serviceChoises}`;
+        }
+        if (priceRange.length !== 0) {
+          api = api + `&start=${priceRange[0]}` + `&end=${priceRange[1]}`;
+        }
+        const response = await axios.get(api); // Thay đổi URL API của bạn tại đây
+        console.log(api);
         console.log(response.data);
         setTotalPages(response.data.totalPages);
         setTotalElements(response.data.totalElements);
@@ -137,7 +145,7 @@ const Page = () => {
     };
 
     fetchData();
-  }, [pageNumber, dataChange]);
+  }, [textSearch, pageNumber, serviceChoises, priceRange]);
 
   return (
     <>
@@ -175,7 +183,46 @@ const Page = () => {
               </div>
             </Stack>
             <ComboSearch textSearch={textSearch} setTextSearch={setTextSearch} />
-
+            <p
+              style={{
+                marginLeft: 20,
+              }}
+            >
+              {" "}
+              Lọc:
+            </p>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-around",
+                alignItems: "center",
+              }}
+            >
+              <div
+                style={{
+                  flex: 1,
+                }}
+              >
+                <ComboFilter
+                  service={service}
+                  serviceChoses={serviceChoises}
+                  setServiceChoses={setServiceChoices}
+                />
+              </div>
+              <div
+                style={{
+                  width: 500,
+                }}
+              ></div>
+              <div
+                style={{
+                  flex: 2,
+                }}
+              >
+                {" "}
+                <PriceRangeSlider priceRange={priceRange} setPriceRange={setPriceRange} />
+              </div>
+            </div>
             <div style={{ minHeight: 500 }}>
               {" "}
               <Combo
@@ -183,7 +230,6 @@ const Page = () => {
                 selected={customersSelection.selected}
                 onDelete={handleDelete} // Thêm prop onDelete và truyền giá trị của handleDelete vào đây
                 setPageNumber={setPageNumber}
-                totalElements={totalElements}
                 pageNumber={pageNumber}
               />
             </div>

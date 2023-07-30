@@ -116,6 +116,15 @@ export const items = [
     ),
   },
   {
+    title: "Unit",
+    path: "/unit",
+    icon: (
+      <SvgIcon fontSize="small">
+        <ShoppingBagIcon />
+      </SvgIcon>
+    ),
+  },
+  {
     title: "Companies",
     path: "/companies",
     icon: (
