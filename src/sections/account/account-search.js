@@ -6,7 +6,7 @@ export const AccountSearch = ({textSearch, setTextSearch}) => (
     <OutlinedInput
       value={textSearch}
       fullWidth
-      placeholder="Search Account"
+      placeholder="Tìm kiếm..."
       sx={{ maxWidth: 500 }}
       onChange={(e) => {
         setTextSearch(e.target.value);

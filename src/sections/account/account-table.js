@@ -7,75 +7,24 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import {
   Input,
-  TextField,
-  Avatar,
   Box,
   Card,
-  Checkbox,
-  Stack,
   Table,
   TableBody,
   TableCell,
   TableHead,
-  TablePagination,
   TableRow,
-  Typography,
+  SvgIcon,
 } from "@mui/material";
 import { Scrollbar } from "src/components/scrollbar";
+import TrashIcon from "@heroicons/react/24/solid/TrashIcon";
+import Bars4Icon from "@heroicons/react/24/solid/Bars4Icon";
 
 export const AccountTable = (props) => {
   const {
-    count = 0,
     items = [],
-    onDeselectAll,
-    onDeselectOne,
-    onPageChange = () => { },
-    onRowsPerPageChange,
-    onSelectAll,
-    onSelectOne,
-    page = 0,
-    rowsPerPage = 0,
     selected = [],
   } = props;
-
-  const selectedSome = selected.length > 0 && selected.length < items.length;
-  const selectedAll = items.length > 0 && selected.length === items.length;
-
-  const accountCodeInput = document.querySelector('input[name="accountCode"]');
-  const passwordInput = document.querySelector('input[name="password"]');
-  const fullNameInput = document.querySelector('input[name="fullName"]');
-  const genderdInput = document.querySelector('input[name="gender"]');
-  const birthdayInput = document.querySelector('input[name="birthday"]');
-  const emailInput = document.querySelector('input[name="email"]');
-  const phoneInput = document.querySelector('input[name="phone"]');
-  const citizenIdInput = document.querySelector('input[name="citizenId"]');
-
-
-  const accountCode = accountCodeInput?.value;
-  const password = passwordInput?.value;
-  const gender = genderdInput?.value;
-  const fullName = fullNameInput?.value;
-  const email = emailInput?.value;
-  const phoneNumber = phoneInput?.value;
-  const birthday = birthdayInput?.value;
-  const citizenId = citizenIdInput?.value;
-  // const position = positionIdInput?.value;
-
-  const payload = {
-    accountCode,
-    password,
-    gender,
-    fullName,
-    email,
-    phoneNumber,
-    birthday,
-    citizenId,
-    // position,
-  };
-  // console.log(payload);
-
-  const [accountData, setAccountData] = useState([payload]);
-  const [editState, setEditState] = useState(-1);
 
   const handleDelete = (id) => {
     props.onDelete(id);
@@ -89,15 +38,16 @@ export const AccountTable = (props) => {
             <TableHead>
               <TableRow>
                 <TableCell padding="checkbox">STT</TableCell>
-                <TableCell>Account Code</TableCell>
-                <TableCell>Full Name</TableCell>
-                <TableCell>Gender</TableCell>
-                <TableCell>Birthday</TableCell>
-                <TableCell>Phone</TableCell>
-                <TableCell>Citizen Id</TableCell>
+                <TableCell>Mã nhân viên</TableCell>
+                <TableCell>Họ tên</TableCell>
+                <TableCell>Giới tính</TableCell>
+                <TableCell>Ngày sinh</TableCell>
+                <TableCell>Số ĐT</TableCell>
+                <TableCell>Căn cước công dân</TableCell>
+                <TableCell>Địa chỉ</TableCell>
                 <TableCell>Email</TableCell>
-                <TableCell>Position</TableCell>
-                <TableCell>Actions</TableCell>
+                <TableCell>Chức vụ</TableCell>
+                <TableCell>Hành động</TableCell>
               </TableRow>
             </TableHead>
 
@@ -105,6 +55,7 @@ export const AccountTable = (props) => {
               {items.map((account, index) => {
                 const birthday = moment(account.birthday).format("DD/MM/YYYY");
                 const isSelected = selected.includes(account.id);
+                const hrefUpdate = `/update/updateAccount/updateAccount?id=${account.id}`;
                 const alertDelete = () => {
                   Swal.fire({
                     title: "Are you sure?",
@@ -122,13 +73,7 @@ export const AccountTable = (props) => {
                     }
                   });
                 };
-                return editState === account.id ? (
-                  <EditAccount
-                    key={account.id}
-                    account={account}
-                    accountData={accountData}
-                    setAccountData={setAccountData} />
-                ) : (
+                return (
                   <TableRow hover key={account.id} selected={isSelected}>
                     <TableCell padding="checkbox">
                       <div key={index}>
@@ -141,171 +86,30 @@ export const AccountTable = (props) => {
                     <TableCell>{birthday}</TableCell>
                     <TableCell>{account.phoneNumber}</TableCell>
                     <TableCell>{account.citizenId}</TableCell>
+                    <TableCell>{account.wards} - {account.districts} - {account.provinces}</TableCell>
                     <TableCell>{account.email}</TableCell>
-                    <TableCell>{account.position.positionName}</TableCell>
-                    <TableCell>{account.status == 1 ? "Hoạt động" : "Unactive"}</TableCell>
+                    <TableCell>{account.position.positionName === "ROLE_ADMIN" ? "Quản lý" : "Nhân Viên"}</TableCell>
                     <TableCell>
-                      <button className="btn btn-primary" onClick={() => handleEdit(account.id)}>
+                      {/* <button className="btn btn-primary" onClick={() => handleEdit(account.id)}>
                         Edit
                       </button>
                       <button className="btn btn-danger m-xl-2" onClick={alertDelete}>
                         Delete
+                      </button> */}
+                      <a className="btn btn-info m-xl-2" href={hrefUpdate}>
+                        <SvgIcon fontSize="small">
+                          <Bars4Icon />
+                        </SvgIcon>
+                      </a>
+                      <button className="btn btn-danger m-xl-2" onClick={alertDelete}>
+                        <SvgIcon fontSize="small">
+                          <TrashIcon />
+                        </SvgIcon>
                       </button>
                       <ToastContainer />
                     </TableCell>
                   </TableRow>
                 );
-                function EditAccount({ account, accountData, setAccountData }) {
-                  const [editedAccount, setEditedAccount] = useState({ ...account });
-
-                  function handleAccountCode(event) {
-                    const name = event.target.value;
-                    setEditedAccount((prevAccount) => ({ ...prevAccount, accountCode: name }));
-                  }
-
-                  function handleFullName(event) {
-                    const name = event.target.value;
-                    setEditedAccount((prevAccount) => ({ ...prevAccount, fullname: name }));
-                  }
-
-                  function handleGender(event) {
-                    const name = event.target.value;
-                    setEditedAccount((prevAccount) => ({ ...prevAccount, gender: name }));
-                  }
-
-                  function handleBirthday(event) {
-                    const name = event.target.value;
-                    setEditedAccount((prevAccount) => ({ ...prevAccount, birthday: name }));
-                  }
-
-                  function handlePhoneNumber(event) {
-                    const name = event.target.value;
-                    setEditedAccount((prevAccount) => ({ ...prevAccount, phoneNumber: name }));
-                  }
-
-                  function handleCitizenId(event) {
-                    const name = event.target.value;
-                    setEditedAccount((prevAccount) => ({ ...prevAccount, citizenId: name }));
-                  }
-
-                  function handleEmail(event) {
-                    const name = event.target.value;
-                    setEditedAccount((prevAccount) => ({ ...prevAccount, email: name }));
-                  }
-
-
-
-                  // Tương tự cho các trường dữ liệu khác
-                  const handleUpdate = async () => {
-                    try {
-                      await axios.put(`http://localhost:2003/api/admin/account/update/${editedAccount.id}`, editedAccount);
-                      const updatedData = accountData.map((f) => (f.id === editedAccount.id ? editedAccount : f));
-                      setAccountData(updatedData);
-                      window.location.href = "/account";
-                    } catch (error) {
-                      console.error(error);
-                    }
-                  };
-
-                  const alertEdit = () => {
-                    Swal.fire({
-                      title: "Are you sure?",
-                      icon: "info",
-                      showCancelButton: true,
-                      confirmButtonColor: "#3085d6",
-                      cancelButtonColor: "#d33",
-                      confirmButtonText: "Yes, edit it!",
-                    }).then((result) => {
-                      if (result.isConfirmed) {
-                        Swal.fire("Edited!", "Your data has been edited.", "success");
-                        handleUpdate();
-                        toast.success("Edit Successfully!");
-                      }
-                    });
-                  };
-
-                  return (
-                    <TableRow>
-                      <TableCell padding="checkbox">
-                        <div key={index}>
-                          <span>{index + props.pageNumber * 5 + 1}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Input
-                          onChange={handleAccountCode}
-                          name="accountCode"
-                          value={editedAccount.accountCode}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Input
-                          onChange={handleFullName}
-                          name="fullname"
-                          value={editedAccount.fullname}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <TableCell>
-                          Nam
-                          <Input type="radio"
-                            onChange={handleGender}
-                            name="gender"
-                            value={editedAccount.gender === true ? "checked":""}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          Nu
-                          <Input type="radio"
-                            onChange={handleGender}
-                            name="gender"
-                            value={editedAccount.gender === false ? "checked":""}
-                          />
-                        </TableCell>
-                      </TableCell>
-                      <TableCell>
-                        <Input type="Date"
-                          onChange={handleBirthday}
-                          name="birthday"
-                          value={editedAccount.birthday}
-                        />
-                        
-                      </TableCell>
-                      <TableCell>
-                        <Input
-                          onChange={handlePhoneNumber}
-                          name="phoneNumber"
-                          value={editedAccount.phoneNumber}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Input
-                          onChange={handleCitizenId}
-                          name="citizenId"
-                          value={editedAccount.citizenId}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Input
-                          onChange={handleEmail}
-                          name="email"
-                          value={editedAccount.email}
-                        />
-                      </TableCell>
-                      <TableCell>{account.position.positionName}</TableCell>
-                      <TableCell>{account.status == 1 ? "Hoạt động" : "Unactive"}</TableCell>
-                      <TableCell>
-                        <button className="btn btn-primary" onClick={alertEdit}>
-                          Update
-                        </button>
-                        <button className="btn btn-danger m-xl-2" onClick={handldeCancel}>
-                          Cancel
-                        </button>
-                        <ToastContainer />
-                      </TableCell>
-                    </TableRow>
-                  );
-                }
               })}
             </TableBody>
           </Table>
@@ -313,14 +117,6 @@ export const AccountTable = (props) => {
       </Scrollbar>
     </Card>
   );
-
-  function handleEdit(id) {
-    setEditState(id);
-  }
-
-  function handldeCancel() {
-    setEditState(false);
-  }
 };
 
 AccountTable.propTypes = {
