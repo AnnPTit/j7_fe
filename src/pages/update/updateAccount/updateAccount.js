@@ -149,6 +149,7 @@ const handleSubmit = async (event, id, accountUpdate) => {
       return false;
     }
   }
+};
 
 function UpdateAccount() {
   // const [serviceType, setServiceType] = useState([]);
