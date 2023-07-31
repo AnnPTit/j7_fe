@@ -20,6 +20,9 @@ import Bars4Icon from "@heroicons/react/24/solid/Bars4Icon";
 
 export const Service = (props) => {
   const { items = [], selected = [] } = props;
+  function formatCurrency(price) {
+    return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(price);
+  }
 
   useEffect(() => {
     // Định nghĩa hàm fetchData bên trong useEffect
@@ -108,7 +111,7 @@ export const Service = (props) => {
                     <TableCell>
                       {service.unit && service.unit.unitName ? service.unit.unitName : "Null"}
                     </TableCell>
-                    <TableCell>{service.price}</TableCell>
+                    <TableCell>{formatCurrency(service.price)}</TableCell>
                     <TableCell>{service.description}</TableCell>
                     <TableCell>
                       {/* <button className="btn btn-primary" onClick={() => handleEdit(service.id)}>

@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { SideNavItem } from "src/layouts/dashboard/side-nav-item";
 
 import PlusIcon from "@heroicons/react/24/solid/PlusIcon";
-import { Box, Button, Container, Stack, SvgIcon, Typography } from "@mui/material";
+import { Box, Container, Stack, SvgIcon, Typography } from "@mui/material";
 import { useSelection } from "src/hooks/use-selection";
 import { Layout as DashboardLayout } from "src/layouts/dashboard/layout";
 import { ServiceType } from "src/sections/serviceType/serviceType-table";
@@ -43,10 +43,22 @@ const Page = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
 
+  function generateRandomString(length) {
+    const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    const charactersLength = characters.length;
+
+    const randomChars = Array.from({ length }, () =>
+      characters.charAt(Math.floor(Math.random() * charactersLength))
+    );
+
+    return randomChars.join("");
+  }
+  let randomString = generateRandomString(10); // Sinh chuỗi ngẫu nhiên có độ dài 10
+
   const pathname = usePathname();
   const item = {
     title: "Add",
-    path: "input/inputServiceType/inputServiceType",
+    path: `input/inputServiceType/inputServiceType?code=LDV_${randomString}`,
     icon: (
       <SvgIcon fontSize="small">
         <PlusIcon />
@@ -72,7 +84,6 @@ const Page = () => {
         const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
         console.log(accessToken);
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
-
         const response = await axios.get(
           `http://localhost:2003/api/admin/service-type/search?key=${encodeURIComponent(
             textSearch

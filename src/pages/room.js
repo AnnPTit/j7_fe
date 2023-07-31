@@ -1,9 +1,9 @@
-import { useCallback, useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect } from "react";
 import axios from "axios";
 import Head from "next/head";
 
 import PlusIcon from "@heroicons/react/24/solid/PlusIcon";
-import { Box, Button, Container, Stack, SvgIcon, Typography } from "@mui/material";
+import { Box, Container, Stack, SvgIcon, Typography } from "@mui/material";
 import { useSelection } from "src/hooks/use-selection";
 import { Layout as DashboardLayout } from "src/layouts/dashboard/layout";
 import { RoomSearch } from "src/sections/room/room-search";
@@ -12,7 +12,8 @@ import { RoomTable } from "src/sections/room/room-table";
 import { applyPagination } from "src/utils/apply-pagination";
 import Pagination from "src/components/Pagination";
 import "bootstrap/dist/css/bootstrap.min.css";
-import InputRoom from "src/components/InputRoom/InputRoom";
+import { SideNavItem } from "src/layouts/dashboard/side-nav-item";
+import { usePathname } from "next/navigation";
 
 const useRoom = (data, page, rowsPerPage) => {
   return useMemo(() => {
@@ -48,9 +49,22 @@ const Page = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
 
-  const openModelInput = () => {
-    setInputModal(!inputModal);
+  const pathname = usePathname();
+
+  const item = {
+    title: "Add",
+    path: "input/inputRoom/inputRoom",
+    icon: (
+      <SvgIcon fontSize="small">
+        <PlusIcon />
+      </SvgIcon>
+    ),
   };
+  const active = item.path ? pathname === item.path : false;
+
+  // const openModelInput = () => {
+  //   setInputModal(!inputModal);
+  // };
 
   // Delete room
   const handleDelete = async (id) => {
@@ -108,7 +122,7 @@ const Page = () => {
         if (typeRoomChose !== "") {
           Api = Api + `&typeRoomId=${typeRoomChose}`;
         }
-        console.warn(Api);
+        // console.warn(Api);
         const response = await axios.get(Api); // Thay đổi URL API của bạn tại đây
         console.log(response.data);
         setTotalPages(response.data.totalPages);
@@ -135,7 +149,7 @@ const Page = () => {
   return (
     <>
       <Head>
-        <title>Room |  Hotel Finder</title>
+        <title>Phòng | Hotel Finder</title>
       </Head>
       <Box
         component="main"
@@ -148,20 +162,20 @@ const Page = () => {
           <Stack spacing={3}>
             <Stack direction="row" justifyContent="space-between" spacing={4}>
               <Stack spacing={1}>
-                <Typography variant="h4">Room</Typography>
+                <Typography variant="h4">Phòng</Typography>
               </Stack>
               <div>
-                <Button
-                  onClick={openModelInput}
-                  startIcon={
-                    <SvgIcon fontSize="small">
-                      <PlusIcon />
-                    </SvgIcon>
-                  }
-                  variant="contained"
-                >
-                  Add
-                </Button>
+              <SideNavItem
+                  style={{ backgroundColor: "red" }}
+                  active={active}
+                  disabled={item.disabled}
+                  external={item.external}
+                  icon={item.icon}
+                  key={item.title}
+                  path={item.path}
+                  title={item.title}
+                  btn={true}
+                />
               </div>
             </Stack>
             <RoomSearch textSearch={textSearch} setTextSearch={setTextSearch} />
@@ -173,7 +187,6 @@ const Page = () => {
               setFloorChose={setFloorChose}
               setTypeRoomChose={setTypeRoomChose}
             />
-            {inputModal && <InputRoom />}
             <div style={{ minHeight: 500 }}>
               {" "}
               <RoomTable

@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import PropTypes from "prop-types";
 import moment from "moment";
 import Swal from "sweetalert2";
@@ -12,11 +13,39 @@ import {
   TableCell,
   TableHead,
   TableRow,
+  SvgIcon,
 } from "@mui/material";
 import { Scrollbar } from "src/components/scrollbar";
+import TrashIcon from "@heroicons/react/24/solid/TrashIcon";
+import Bars4Icon from "@heroicons/react/24/solid/Bars4Icon";
 
 export const RoomTable = (props) => {
   const { items = [], selected = [] } = props;
+
+  // useEffect(() => {
+  //   // Định nghĩa hàm fetchData bên trong useEffect
+  //   async function fetchData() {
+  //     try {
+  //       const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
+  //       // Kiểm tra xem accessToken có tồn tại không
+  //       if (!accessToken) {
+  //         alert("Bạn chưa đăng nhập");
+  //         return;
+  //       }
+  //       axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
+  //       const response = await axios.get("http://localhost:2003/api/admin/floor/getList");
+  //       const response2 = await axios.get("http://localhost:2003/api/admin/type-room/getList");
+  //       console.log(response.data);
+  //       console.log(response2.data);
+  //       setFloor(response.data);
+  //       setTypeRoom(response2.data);
+  //     } catch (error) {
+  //       console.log(error);
+  //     }
+  //   }
+  //   // Gọi hàm fetchData ngay lập tức
+  //   fetchData();
+  // }, []);
 
   const handleDelete = (id) => {
     props.onDelete(id);
@@ -44,6 +73,7 @@ export const RoomTable = (props) => {
               {items.map((room, index) => {
                 // const created = moment(room.createAt).format("DD/MM/YYYY - HH:mm:ss");
                 // const updated = moment(room.updateAt).format("DD/MM/YYYY - HH:mm:ss");
+                const hrefUpdate = `/update/updateRoom/updateRoom?id=${room.id}`;
                 const alertDelete = () => {
                   Swal.fire({
                     title: "Are you sure?",
@@ -76,8 +106,8 @@ export const RoomTable = (props) => {
                           <img
                             key={room.photoList[0].id} // Use key from the first photo
                             src={`${room.photoList[0].url}`} // Use URL from the first photo
-                            width={100}
-                            height={100}
+                            width={200}
+                            height={200}
                           />
                         )}
                       </Stack>
@@ -88,9 +118,15 @@ export const RoomTable = (props) => {
                     <TableCell>{room.note}</TableCell>
                     <TableCell>{room.status == 1 ? "Active" : "Unactive"}</TableCell>
                     <TableCell>
-                      <button className="btn btn-primary">Edit</button>
+                    <a className="btn btn-info m-xl-2" href={hrefUpdate}>
+                        <SvgIcon fontSize="small">
+                          <Bars4Icon />
+                        </SvgIcon>
+                      </a>
                       <button className="btn btn-danger m-xl-2" onClick={alertDelete}>
-                        Delete
+                        <SvgIcon fontSize="small">
+                          <TrashIcon />
+                        </SvgIcon>
                       </button>
                       <ToastContainer />
                     </TableCell>

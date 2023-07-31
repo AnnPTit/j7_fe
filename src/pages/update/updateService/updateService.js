@@ -8,6 +8,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { ToastContainer, toast } from "react-toastify";
 import Swal from "sweetalert2";
 import { useRouter } from "next/router";
+import CurrencyInput from "react-currency-input-field";
 
 const cx = classNames.bind(style);
 const handleSubmit = async (event, id, serviceUpdate) => {
@@ -194,6 +195,13 @@ function UpdateService() {
     fetchData();
   }, []);
 
+  function handleChangePrice(value) {
+    setServiceUpdate((prev) => ({
+      ...prev,
+      price: value,
+    }));
+  }
+
   return (
     <div className={cx("wrapper")}>
       <h1>Cập Nhật Dịch Vụ</h1>
@@ -204,6 +212,7 @@ function UpdateService() {
           placeholder="Default input"
           aria-label="default input example"
           name="serviceCode"
+          disabled
           value={serviceUpdate.serviceCode}
           onChange={(e) => {
             setServiceUpdate((prev) => ({
@@ -233,24 +242,24 @@ function UpdateService() {
         <label htmlFor="floatingPassword">Tên dịch vụ</label>
       </div>
       <br></br>
-      <div className="form-floating mb-3">
-        <input
-          className="form-control"
-          type="number"
-          placeholder="Default input"
-          aria-label="default input example"
-          name="price"
-          value={serviceUpdate.price}
-          onChange={(e) => {
-            setServiceUpdate((prev) => ({
-              ...prev,
-              price: e.target.value,
-            }));
-          }}
-        />
-
-        <label htmlFor="floatingInput">Đơn giá </label>
-      </div>
+      <p
+        style={{
+          marginLeft: 10,
+        }}
+      >
+        Đơn giá
+      </p>
+      <CurrencyInput
+        className="form-control"
+        id="input-example"
+        name="price"
+        value={serviceUpdate.price}
+        placeholder="Please enter a number"
+        defaultValue={0}
+        decimalsLimit={2}
+        onValueChange={(value) => handleChangePrice(value)} // Lấy giá trị từ hàm callback onValueChange
+      />
+      <br />
       <div className="form-floating">
         <input
           type="text"

@@ -74,6 +74,16 @@ export const TypeRoomTable = (props) => {
   };
   // console.log(payload);
 
+  const formatPrice = (price) => {
+    if (typeof price !== "number") {
+      return price;
+    }
+
+    return price
+      .toLocaleString({ style: "currency", currency: "VND"})
+      .replace(/\D00(?=\D*$)/, "");
+  };
+
   const [typeRoomData, setTypeRoomData] = useState([payload]);
   const [editState, setEditState] = useState(-1);
 
@@ -127,11 +137,11 @@ export const TypeRoomTable = (props) => {
                   <TableRow hover key={typeRoom.id}>
                     <TableCell>{typeRoom.typeRoomCode}</TableCell>
                     <TableCell>{typeRoom.typeRoomName}</TableCell>
-                    <TableCell>{typeRoom.pricePerDay}</TableCell>
-                    <TableCell>{typeRoom.pricePerHours}</TableCell>
-                    <TableCell>{typeRoom.pricePerDaytime}</TableCell>
-                    <TableCell>{typeRoom.pricePerNighttime}</TableCell>
-                    <TableCell>{typeRoom.priceOvertime}</TableCell>
+                    <TableCell>{formatPrice(typeRoom.pricePerDay)}</TableCell>
+                    <TableCell>{formatPrice(typeRoom.pricePerHours)}</TableCell>
+                    <TableCell>{formatPrice(typeRoom.pricePerDaytime)}</TableCell>
+                    <TableCell>{formatPrice(typeRoom.pricePerNighttime)}</TableCell>
+                    <TableCell>{formatPrice(typeRoom.priceOvertime)}</TableCell>
                     <TableCell>{typeRoom.capacity}</TableCell>
                     <TableCell>{typeRoom.note}</TableCell>
                     <TableCell>{typeRoom.status == 1 ? "Hoạt động" : "Unactive"}</TableCell>

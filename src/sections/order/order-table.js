@@ -35,6 +35,16 @@ export const OrderTable = (props) => {
     selected = [],
   } = props;
 
+  const formatPrice = (price) => {
+    if (typeof price !== "number") {
+      return price;
+    }
+
+    return price
+      .toLocaleString({ style: "currency", currency: "VND"})
+      .replace(/\D00(?=\D*$)/, "");
+  };
+
   const selectedSome = selected.length > 0 && selected.length < items.length;
   const selectedAll = items.length > 0 && selected.length === items.length;
   const handleDelete = (id) => {
@@ -49,6 +59,7 @@ export const OrderTable = (props) => {
             <TableHead>
               <TableRow>
                 <TableCell>Order Code</TableCell>
+                <TableCell>Type Order</TableCell>
                 <TableCell>Book Room</TableCell>
                 <TableCell>Staff</TableCell>
                 <TableCell>Customer</TableCell>
@@ -89,10 +100,11 @@ export const OrderTable = (props) => {
                   <TableRow hover
                    key={order.id}>
                     <TableCell>{order.orderCode}</TableCell>
+                    <TableCell>{order.typeOfOrder == 1 ? 'Online' : 'Tại quầy'}</TableCell>
                     <TableCell>{order.bookRoom.bookRoomName}</TableCell>
                     <TableCell>{order.account.fullname}</TableCell>
                     <TableCell>{order.customer.fullname}</TableCell>
-                    <TableCell>{order.totalMoney}</TableCell>
+                    <TableCell>{formatPrice(order.totalMoney)}</TableCell>
                     <TableCell>{order.note}</TableCell>
                     <TableCell>{created}</TableCell>
                     <TableCell>{order.status == 1 ? 'Active' : 'Unactive'}</TableCell>

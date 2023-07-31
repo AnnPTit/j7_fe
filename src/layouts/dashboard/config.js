@@ -8,9 +8,10 @@ import HeartIcon from "@heroicons/react/24/solid/HeartIcon";
 import UserPlusIcon from "@heroicons/react/24/solid/UserPlusIcon";
 import UsersIcon from "@heroicons/react/24/solid/UsersIcon";
 import XCircleIcon from "@heroicons/react/24/solid/XCircleIcon";
+import AdjustmentsVerticalIcon from "@heroicons/react/24/solid/AdjustmentsVerticalIcon";
 import { SvgIcon } from "@mui/material";
 import Tippy from "@tippyjs/react";
-import React, { useState } from "react";
+import React from "react";
 
 export const items = [
   {
@@ -86,17 +87,6 @@ export const items = [
         <DocumentIcon />
       </SvgIcon>
     ),
-    children: [
-      {
-        title: "Service",
-        path: "/service/aaa",
-        icon: (
-          <SvgIcon fontSize="small">
-            <DocumentIcon />
-          </SvgIcon>
-        ),
-      },
-    ],
   },
   {
     title: "ServiceType",
@@ -104,6 +94,33 @@ export const items = [
     icon: (
       <SvgIcon fontSize="small">
         <Bars3Icon />
+      </SvgIcon>
+    ),
+  },
+  {
+    title: "Combo",
+    path: "/combo",
+    icon: (
+      <SvgIcon fontSize="small">
+        <AdjustmentsVerticalIcon />
+      </SvgIcon>
+    ),
+  },
+  {
+    title: "Webcam",
+    path: "/webcam",
+    icon: (
+      <SvgIcon fontSize="small">
+        <ShoppingBagIcon />
+      </SvgIcon>
+    ),
+  },
+  {
+    title: "Unit",
+    path: "/unit",
+    icon: (
+      <SvgIcon fontSize="small">
+        <ShoppingBagIcon />
       </SvgIcon>
     ),
   },

@@ -1,51 +1,42 @@
 import classNames from "classnames/bind";
-import style from "./InputFloor.module.scss";
+import style from "./inputServiceTypeModal.module.scss";
 import axios from "axios";
-import Swal from "sweetalert2";
+
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const cx = classNames.bind(style);
-
-const handleSubmit = async (event) => {
-  event.preventDefault(); // Ngăn chặn sự kiện submit mặc định
+const handleSubmit = async (code) => {
   // Lấy giá trị từ các trường nhập liệu
-  const floorCodeInput = document.querySelector('input[name="floorCode"]');
-  const floorNameInput = document.querySelector('input[name="floorName"]');
-  const noteInput = document.querySelector('textarea[name="note"]');
+  const serviceTypeInput = document.querySelector('input[name="serviceTypeName"]');
+  const descriptionInput = document.querySelector('input[name="description"]');
 
-  const floorCode = floorCodeInput?.value;
-  const floorName = floorNameInput?.value;
-  const note = noteInput?.value;
+  const serviceTypeName = serviceTypeInput?.value;
+  const description = descriptionInput?.value;
 
-  // Tạo payload dữ liệu để gửi đến API
+  let randomString = generateRandomString(10); // Sinh chuỗi ngẫu nhiên có độ dài 10
+
   const payload = {
-    floorCode,
-    floorName,
-    note,
+    serviceTypeCode: "LDV_" + randomString,
+    serviceTypeName,
+    description,
   };
   console.log(payload);
 
   try {
     const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
-
-    console.log(accessToken);
-    // Kiểm tra xem accessToken có tồn tại không
     if (!accessToken) {
       alert("Bạn chưa đăng nhập");
       return;
     }
-
     axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
-
-    const response = await axios.post("http://localhost:2003/api/admin/floor/save", payload); // Gọi API /api/customers/save với payload và access token
+    const response = await axios.post("http://localhost:2003/api/admin/service-type/save", payload); // Gọi API /api/customers/save với payload và access token
     console.log(response);
-
     if (response.status === 200) {
       // Xử lý khi API thành công
       console.log("API call successful");
-      window.location.href = "/input/inputRoom/inputRoom";
-      toast.success("Thêm thành công!");
+      window.location.href = `/input/inputService/inputService?code=${code}`;
+      toast.success("Add Successfully!");
       // Thực hiện các hành động khác sau khi API thành công
     } else {
       // Xử lý khi API gặp lỗi
@@ -63,19 +54,15 @@ const handleSubmit = async (event) => {
         console.log(error.response);
         // alert(error.response.data.serviceTypeCode);
         if (
-          error.response.data.floorCode == undefined &&
-          error.response.data.floorName == undefined && 
-          error.response.data.note == undefined
+          error.response.data.serviceTypeCode == undefined &&
+          error.response.data.serviceTypeName == undefined
         ) {
           toast.error(error.response.data);
         }
-        toast.error(error.response.data.floorCode, {
+        toast.error(error.response.data.serviceTypeCode, {
           position: toast.POSITION.BOTTOM_RIGHT,
         });
-        toast.error(error.response.data.floorName, {
-          position: toast.POSITION.BOTTOM_RIGHT,
-        });
-        toast.error(error.response.data.note, {
+        toast.error(error.response.data.serviceTypeName, {
           position: toast.POSITION.BOTTOM_RIGHT,
         });
       } else {
@@ -86,53 +73,36 @@ const handleSubmit = async (event) => {
     }
   }
 };
+function generateRandomString(length) {
+  const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  const charactersLength = characters.length;
+  const randomChars = Array.from({ length }, () =>
+    characters.charAt(Math.floor(Math.random() * charactersLength))
+  );
+  return randomChars.join("");
+}
 
-const alertSave = () => {
-  Swal.fire({
-    title: "Are you sure?",
-    icon: "info",
-    showCancelButton: true,
-    confirmButtonColor: "#3085d6",
-    cancelButtonColor: "#d33",
-    confirmButtonText: "Yes, add!",
-  }).then((result) => {
-    if (result.isConfirmed) {
-      handleSubmit();
-      Swal.fire("Added!", "Your data has been added.", "success");
-      toast.success("Add Successfully!");
-    }
-  });
-};
-
-function InputFloor() {
+function InputServiceTypeModal({ code }) {
   return (
     <div className={cx("wrapper")}>
       <div className={cx("container")}>
         <form>
           <div className={cx("form-row")}>
             <div className={cx("input-data")}>
-              <input type="text" required name="floorCode" />
+              <input type="text" required name="serviceTypeName" />
               <div className={cx("underline")}></div>
-              <label>Floor Code</label>
+              <label>Tên Loại Dịch vụ</label>
             </div>
             <div className={cx("input-data")}>
-              <input type="text" required name="floorName" />
+              <input type="text" required name="description" />
               <div className={cx("underline")}></div>
-              <label>Floor Name</label>
-            </div>
-          </div>
-          <div className={cx("form-row")}>
-            <div className={cx("input-data textarea")}>
-              <textarea rows="8" cols="52" name="note"></textarea>
-              <br />
-              <div className={cx("underline")}></div>
-              <br />
+              <label>Mô tả</label>
             </div>
           </div>
           <div className={cx("form-row submit-btn")}>
             <div className={cx("input-data")}>
               <div className={cx("inner")}>
-                <button className={cx("input-btn")} onClick={handleSubmit}>
+                <button className={cx("input-btn")} onClick={() => handleSubmit(code)}>
                   Thêm
                 </button>
                 <ToastContainer />
@@ -145,4 +115,4 @@ function InputFloor() {
   );
 }
 
-export default InputFloor;
+export default InputServiceTypeModal;
