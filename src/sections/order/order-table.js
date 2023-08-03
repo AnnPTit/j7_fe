@@ -1,54 +1,61 @@
 import PropTypes from "prop-types";
 import moment from "moment";
-import Swal from 'sweetalert2'
+import Swal from "sweetalert2";
 import { ToastContainer, toast } from "react-toastify";
-import 'react-toastify/dist/ReactToastify.css';
+import "react-toastify/dist/ReactToastify.css";
 import {
-  Avatar,
   Box,
   Card,
-  Checkbox,
-  Stack,
   Table,
   TableBody,
   TableCell,
   TableHead,
-  TablePagination,
   TableRow,
-  Typography,
+  SvgIcon,
 } from "@mui/material";
 import { Scrollbar } from "src/components/scrollbar";
-import { getInitials } from "src/utils/get-initials";
+import TrashIcon from "@heroicons/react/24/solid/TrashIcon";
+import Bars4Icon from "@heroicons/react/24/solid/Bars4Icon";
+import Button from "@mui/material/Button";
+import Badge from "@mui/material/Badge";
 
 export const OrderTable = (props) => {
-  const {
-    count = 0,
-    items = [],
-    onDeselectAll,
-    onDeselectOne,
-    onPageChange = () => {},
-    onRowsPerPageChange,
-    onSelectAll,
-    onSelectOne,
-    page = 0,
-    rowsPerPage = 0,
-    selected = [],
-  } = props;
+  const { items = [], selected = [] } = props;
 
   const formatPrice = (price) => {
-    if (typeof price !== "number") {
-      return price;
+    if (typeof price !== "number" || isNaN(price)) {
+      return "N/A"; // Return a default value when price is not a valid number
     }
 
-    return price
-      .toLocaleString({ style: "currency", currency: "VND"})
-      .replace(/\D00(?=\D*$)/, "");
+    return price.toLocaleString({ style: "currency", currency: "VND" }).replace(/\D00(?=\D*$)/, "");
   };
 
-  const selectedSome = selected.length > 0 && selected.length < items.length;
-  const selectedAll = items.length > 0 && selected.length === items.length;
   const handleDelete = (id) => {
     props.onDelete(id);
+  };
+
+  const handleRowClick = (id) => {
+    // Navigate to the "orders" page based on the selected row's ID
+    window.location.href = `/orders?id=${id}`;
+  };
+
+  const getStatusButtonColor = (status) => {
+    switch (status) {
+      case 0:
+        return { color: "error", text: "Đã hủy" };
+      case 1:
+        return { color: "primary", text: "Chờ xác nhận" };
+      case 2:
+        return { color: "secondary", text: "Đã xác nhận" };
+      case 3:
+        return { color: "success", text: "Completed" };
+      case 4:
+        return { color: "warning", text: "Pending" };
+      case 5:
+        return { color: "info", text: "Processing" };
+      default:
+        return { color: "default", text: "Unknown" };
+    }
   };
 
   return (
@@ -58,61 +65,50 @@ export const OrderTable = (props) => {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>Order Code</TableCell>
-                <TableCell>Type Order</TableCell>
-                <TableCell>Book Room</TableCell>
-                <TableCell>Staff</TableCell>
-                <TableCell>Customer</TableCell>
-                <TableCell>Total Money</TableCell>
-                <TableCell>Note</TableCell>
-                <TableCell>Created At</TableCell>
-                <TableCell>Status</TableCell>
-                {/* <TableCell>Actions</TableCell> */}
+                <TableCell padding="checkbox">STT</TableCell>
+                <TableCell>Mã HĐ</TableCell>
+                <TableCell>Loại HĐ</TableCell>
+                <TableCell>Phòng</TableCell>
+                <TableCell>Nhân viên</TableCell>
+                <TableCell>Khách hàng</TableCell>
+                <TableCell>Tổng tiền</TableCell>
+                <TableCell>Ghi chú</TableCell>
+                <TableCell>Ngày tạo</TableCell>
+                <TableCell>Trạng thái</TableCell>
               </TableRow>
             </TableHead>
-            
+
             <TableBody>
-              {items.map((order) => {
+              {items.map((order, index) => {
                 const created = moment(order.createAt).format("DD/MM/YYYY - hh:mm:ss");
-                // const alertDelete = () => {
-                //   Swal.fire({
-                //     title: 'Are you sure?',
-                //     text: "You won't be able to revert this!",
-                //     icon: 'warning',
-                //     showCancelButton: true,
-                //     confirmButtonColor: '#3085d6',
-                //     cancelButtonColor: '#d33',
-                //     confirmButtonText: 'Yes, delete it!'
-                //   }).then((result) => {
-                //     if (result.isConfirmed) {
-                //       Swal.fire(
-                //         'Deleted!',
-                //         'Your data has been deleted.',
-                //         'success'
-                //       )
-                //       handleDelete(floor.id);
-                //       toast.success("Delete Successfully!");
-                //     }
-                //   })
-                // }
-              
+                const statusData = getStatusButtonColor(order.status);
+                const statusText = statusData.text;
+
                 return (
-                  <TableRow hover
-                   key={order.id}>
+                  <TableRow
+                    hover
+                    key={order.id}
+                    style={{ cursor: "pointer" }}
+                    onClick={() => handleRowClick(order.id)}
+                  >
+                    <TableCell padding="checkbox">
+                      <div key={index}>
+                        <span>{index + 1}</span>
+                      </div>
+                    </TableCell>
                     <TableCell>{order.orderCode}</TableCell>
-                    <TableCell>{order.typeOfOrder == 1 ? 'Online' : 'Tại quầy'}</TableCell>
+                    <TableCell>{order.typeOfOrder == 1 ? "Online" : "Tại quầy"}</TableCell>
                     <TableCell>{order.bookRoom.bookRoomName}</TableCell>
                     <TableCell>{order.account.fullname}</TableCell>
                     <TableCell>{order.customer.fullname}</TableCell>
                     <TableCell>{formatPrice(order.totalMoney)}</TableCell>
                     <TableCell>{order.note}</TableCell>
                     <TableCell>{created}</TableCell>
-                    <TableCell>{order.status == 1 ? 'Active' : 'Unactive'}</TableCell>
-                    {/* <TableCell>
-                      <button className="btn btn-primary">Edit</button>
-                      <button className="btn btn-danger m-xl-2">Delete</button>
-                      <ToastContainer/>
-                    </TableCell> */}
+                    <TableCell>
+                      <Button variant="contained" color={statusData.color}>
+                        {statusText}
+                      </Button>
+                    </TableCell>
                   </TableRow>
                 );
               })}

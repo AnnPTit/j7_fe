@@ -154,23 +154,45 @@ function UpdateRoom() {
     roomCode: "",
     roomName: "",
     note: "",
+    createAt: "",
     floor: {},
     typeRoom: {},
   });
+
+  const MAX_IMAGE_COUNT = 6; // Giới hạn số lượng ảnh tối đa
 
   const handleImageChange = (event) => {
     const files = event.target.files;
     const imageUrls = [];
     const selectedImagesCopy = [...selectedImages];
 
+    // Convert files object to an array
+    const fileList = Array.from(files);
+
+    // Calculate the number of images that can be added without exceeding the limit
+    const remainingImageCount = MAX_IMAGE_COUNT - selectedImagesCopy.length;
+
+    // Check if there are already preloaded images
+    const preloadedImageCount = roomImages.length;
+
+    // If the total number of images (preloaded + selected) exceeds the limit, show an error
+    if (preloadedImageCount + fileList.length > MAX_IMAGE_COUNT) {
+      toast.error(`Chỉ được chọn tối đa ${MAX_IMAGE_COUNT} ảnh!`, {
+        position: toast.POSITION.BOTTOM_RIGHT,
+      });
+      return;
+    }
+
     // Create an array of URLs for the selected images
-    for (let i = 0; i < files.length; i++) {
-      const url = URL.createObjectURL(files[i]);
+    for (let i = 0; i < Math.min(fileList.length, remainingImageCount); i++) {
+      const url = URL.createObjectURL(fileList[i]);
       imageUrls.push(url);
     }
 
-    setSelectedImages([...selectedImagesCopy, ...files]);
-    setRoomImages([...roomImages, ...imageUrls]); // Update the roomImages state with new image URLs
+    // Update the selectedImages state with the new image files
+    setSelectedImages([...selectedImagesCopy, ...fileList.slice(0, remainingImageCount)]);
+    // Update the roomImages state with new image URLs
+    setRoomImages([...roomImages, ...imageUrls]);
   };
 
   // Lấy data cho combobox;
@@ -247,7 +269,7 @@ function UpdateRoom() {
     fetchData();
   }, []);
 
-  const handleDeleteImage = async (photoId) => {
+  const handleDeleteImage = async (photoId, index) => {
     try {
       const accessToken = localStorage.getItem("accessToken");
       if (!accessToken) {
@@ -260,20 +282,30 @@ function UpdateRoom() {
       // Find the photo based on the photoId
       const photoToDelete = roomImages.find((photo) => photo.id === photoId);
 
-      if (!photoToDelete) {
+      if (photoId && !photoToDelete) {
         console.log("Photo not found in roomImages.");
         return;
       }
 
-      const response = await axios.delete(
-        `http://localhost:2003/api/admin/room/delete-photo/${photoToDelete.id}`
-      );
+      // If the photoId exists, delete the image using the API
+      if (photoId) {
+        const response = await axios.delete(
+          `http://localhost:2003/api/admin/room/delete-photo/${photoId}`
+        );
 
-      if (response.status === 200) {
-        // If the image is successfully deleted from the server, remove it from the client-side state
-        const updatedImages = roomImages.filter((photo) => photo.id !== photoId);
+        if (response.status === 200) {
+          // If the image is successfully deleted from the server, remove it from the client-side state
+          const updatedImages = roomImages.filter((photo) => photo.id !== photoId);
+          setRoomImages(updatedImages);
+          toast.success("Image deleted successfully!", {
+            position: toast.POSITION.BOTTOM_RIGHT,
+          });
+        }
+      } else {
+        // If the photoId does not exist, remove the image using the provided index
+        const updatedImages = [...roomImages];
+        updatedImages.splice(index, 1);
         setRoomImages(updatedImages);
-        console.log("Data:", response.data);
         toast.success("Image deleted successfully!", {
           position: toast.POSITION.BOTTOM_RIGHT,
         });
@@ -291,6 +323,7 @@ function UpdateRoom() {
       <h1>Cập Nhật Phòng</h1>
       <div className="form-floating mt-5 mb-3">
         <input
+          disabled
           className="form-control"
           type="text"
           placeholder="Default input"
@@ -422,7 +455,7 @@ function UpdateRoom() {
             />
             <Card.Body style={{ padding: "0rem" }}>
               <button
-                onClick={() => handleDeleteImage(typeof photo === "string" ? undefined : photo.id)}
+                onClick={() => handleDeleteImage(photo.id, index)}
                 style={{
                   position: "absolute",
                   top: "5px",

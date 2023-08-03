@@ -41,6 +41,7 @@ class Test extends Component {
     const previewStyle = {
       height: 240,
       width: 320,
+      transform: cameraEnabled ? "scaleX(-1)" : "none",
     };
 
     return (

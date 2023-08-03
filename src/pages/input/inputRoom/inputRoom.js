@@ -114,11 +114,7 @@ function InputRoom() {
           window.location.href = "/auth/login"; // Chuyển hướng đến trang đăng nhập
         } else if (error.response.status === 400) {
           console.log(error.response);
-          if (
-            error.response.data.roomCode == undefined &&
-            error.response.data.roomName == undefined &&
-            error.response.data.note == undefined
-          ) {
+          if (error.response.data.roomName == undefined && error.response.data.note == undefined) {
             toast.error(error.response.data, {
               position: toast.POSITION.BOTTOM_RIGHT,
             });
@@ -126,9 +122,9 @@ function InputRoom() {
           // toast.error(error.response.data.roomCode, {
           //   position: toast.POSITION.BOTTOM_RIGHT,
           // });
-          // toast.error(error.response.data.roomName, {
-          //   position: toast.POSITION.BOTTOM_RIGHT,
-          // });
+          toast.error(error.response.data.roomName, {
+            position: toast.POSITION.BOTTOM_RIGHT,
+          });
         } else {
           alert("Có lỗi xảy ra trong quá trình gọi API");
         }
@@ -215,6 +211,7 @@ function InputRoom() {
         <div className="d-flex mb-4">
           <div style={{ width: 490, marginRight: 23 }} className="form-floating">
             <input
+              disabled
               type="text"
               className="form-control"
               id="floatingPassword"
@@ -340,7 +337,10 @@ function InputRoom() {
           <div className="d-flex flex-wrap mb-4">
             {previewImages &&
               previewImages.map((image, index) => (
-                <Card key={index} style={{ width: 250, marginRight: 20, marginLeft: 25, marginTop: 20 }}>
+                <Card
+                  key={index}
+                  style={{ width: 250, marginRight: 20, marginLeft: 25, marginTop: 20 }}
+                >
                   <Card.Img src={image} alt={`Photo ${index}`} style={{ height: "200px" }} />
                   <Card.Body style={{ padding: "0rem" }}>
                     <button
@@ -392,7 +392,7 @@ function InputRoom() {
             position: "absolute",
             right: 250,
             width: 150,
-            height: 45
+            height: 45,
           }}
         >
           Thêm
