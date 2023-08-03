@@ -20,8 +20,11 @@ import {
   TablePagination,
   TableRow,
   Typography,
+  SvgIcon,
 } from "@mui/material";
 import { Scrollbar } from "src/components/scrollbar";
+import TrashIcon from "@heroicons/react/24/solid/TrashIcon";
+import Bars4Icon from "@heroicons/react/24/solid/Bars4Icon";
 
 export const TypeRoomTable = (props) => {
   const {
@@ -79,9 +82,7 @@ export const TypeRoomTable = (props) => {
       return price;
     }
 
-    return price
-      .toLocaleString({ style: "currency", currency: "VND"})
-      .replace(/\D00(?=\D*$)/, "");
+    return price.toLocaleString({ style: "currency", currency: "VND" }).replace(/\D00(?=\D*$)/, "");
   };
 
   const [typeRoomData, setTypeRoomData] = useState([payload]);
@@ -132,7 +133,12 @@ export const TypeRoomTable = (props) => {
                   });
                 };
                 return editState === typeRoom.id ? (
-                  <EditTypeRoom key={typeRoom.id} typeRoom={typeRoom} typeRoomData={typeRoomData} setTypeRoomData={setTypeRoomData} />
+                  <EditTypeRoom
+                    key={typeRoom.id}
+                    typeRoom={typeRoom}
+                    typeRoomData={typeRoomData}
+                    setTypeRoomData={setTypeRoomData}
+                  />
                 ) : (
                   <TableRow hover key={typeRoom.id}>
                     <TableCell>{typeRoom.typeRoomCode}</TableCell>
@@ -147,10 +153,14 @@ export const TypeRoomTable = (props) => {
                     <TableCell>{typeRoom.status == 1 ? "Hoạt động" : "Unactive"}</TableCell>
                     <TableCell>
                       <button className="btn btn-primary" onClick={() => handleEdit(typeRoom.id)}>
-                        Edit
+                        <SvgIcon fontSize="small">
+                          <Bars4Icon /> 
+                        </SvgIcon>
                       </button>
                       <button className="btn btn-danger m-xl-2" onClick={alertDelete}>
-                        Delete
+                        <SvgIcon fontSize="small">
+                          <TrashIcon />
+                        </SvgIcon>
                       </button>
                       <ToastContainer />
                     </TableCell>
@@ -181,12 +191,18 @@ export const TypeRoomTable = (props) => {
 
                   function handlePricePerDaytime(event) {
                     const name = event.target.value;
-                    setEditedTypeRoom((prevTypeRoom) => ({ ...prevTypeRoom, pricePerDaytime: name }));
+                    setEditedTypeRoom((prevTypeRoom) => ({
+                      ...prevTypeRoom,
+                      pricePerDaytime: name,
+                    }));
                   }
 
                   function handlePricePerNighttime(event) {
                     const name = event.target.value;
-                    setEditedTypeRoom((prevTypeRoom) => ({ ...prevTypeRoom, pricePerNighttime: name }));
+                    setEditedTypeRoom((prevTypeRoom) => ({
+                      ...prevTypeRoom,
+                      pricePerNighttime: name,
+                    }));
                   }
 
                   function handlePriceOvertime(event) {
@@ -207,8 +223,13 @@ export const TypeRoomTable = (props) => {
                   // Tương tự cho các trường dữ liệu khác
                   const handleUpdate = async () => {
                     try {
-                      await axios.put(`http://localhost:2003/api/admin/type-room/update/${editedTypeRoom.id}`, editedTypeRoom);
-                      const updatedData = typeRoomData.map((f) => (f.id === editedTypeRoom.id ? editedTypeRoom : f));
+                      await axios.put(
+                        `http://localhost:2003/api/admin/type-room/update/${editedTypeRoom.id}`,
+                        editedTypeRoom
+                      );
+                      const updatedData = typeRoomData.map((f) =>
+                        f.id === editedTypeRoom.id ? editedTypeRoom : f
+                      );
                       setTypeRoomData(updatedData);
                       window.location.href = "/type-room";
                     } catch (error) {
@@ -236,10 +257,7 @@ export const TypeRoomTable = (props) => {
                   return (
                     <TableRow>
                       <TableCell>
-                        <Input
-                          name="typeRoomCode"
-                          value={editedTypeRoom.typeRoomCode}
-                        />
+                        <Input name="typeRoomCode" value={editedTypeRoom.typeRoomCode} />
                       </TableCell>
                       <TableCell>
                         <Input

@@ -8,8 +8,10 @@ import HeartIcon from "@heroicons/react/24/solid/HeartIcon";
 import UserPlusIcon from "@heroicons/react/24/solid/UserPlusIcon";
 import UsersIcon from "@heroicons/react/24/solid/UsersIcon";
 import XCircleIcon from "@heroicons/react/24/solid/XCircleIcon";
+import HomeIcon from "@heroicons/react/24/solid/HomeIcon";
 import { SvgIcon } from "@mui/material";
 import Tippy from "@tippyjs/react";
+
 import React, { useState } from "react";
 
 export const items = [
@@ -19,6 +21,15 @@ export const items = [
     icon: (
       <SvgIcon fontSize="small">
         <ChartBarIcon />
+      </SvgIcon>
+    ),
+  },
+  {
+    title: "Quản lý hóa đơn",
+    path: "/order",
+    icon: (
+      <SvgIcon fontSize="small">
+        <ShoppingBagIcon />
       </SvgIcon>
     ),
   },
@@ -34,15 +45,6 @@ export const items = [
     ),
   },
   {
-    title: "Manager Order",
-    path: "/order",
-    icon: (
-      <SvgIcon fontSize="small">
-        <ShoppingBagIcon />
-      </SvgIcon>
-    ),
-  },
-  {
     title: "Account",
     path: "/account",
     icon: (
@@ -52,16 +54,16 @@ export const items = [
     ),
   },
   {
-    title: "Room",
+    title: "Phòng",
     path: "/room",
     icon: (
       <SvgIcon fontSize="small">
-        <CogIcon />
+        <HomeIcon />
       </SvgIcon>
     ),
   },
   {
-    title: "TypeRoom",
+    title: "Loại phòng",
     path: "/type-room",
     icon: (
       <SvgIcon fontSize="small">
@@ -70,7 +72,7 @@ export const items = [
     ),
   },
   {
-    title: "Floor",
+    title: "Tầng",
     path: "/floor",
     icon: (
       <SvgIcon fontSize="small">

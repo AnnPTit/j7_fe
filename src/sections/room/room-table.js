@@ -118,7 +118,7 @@ export const RoomTable = (props) => {
                     <TableCell>{room.note}</TableCell>
                     <TableCell>{room.status == 1 ? "Active" : "Unactive"}</TableCell>
                     <TableCell>
-                    <a className="btn btn-info m-xl-2" href={hrefUpdate}>
+                      <a className="btn btn-info m-xl-2" href={hrefUpdate}>
                         <SvgIcon fontSize="small">
                           <Bars4Icon />
                         </SvgIcon>
