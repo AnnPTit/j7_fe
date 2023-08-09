@@ -44,6 +44,7 @@ class Test extends Component {
       transform: cameraEnabled ? "scaleX(-1)" : "none",
     };
 
+    
     return (
       <div>
         {cameraEnabled ? (

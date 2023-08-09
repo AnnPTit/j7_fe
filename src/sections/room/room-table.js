@@ -116,7 +116,7 @@ export const RoomTable = (props) => {
                     <TableCell>{room.typeRoom.typeRoomName}</TableCell>
                     <TableCell>{room.floor.floorName}</TableCell>
                     <TableCell>{room.note}</TableCell>
-                    <TableCell>{room.status == 1 ? "Active" : "Unactive"}</TableCell>
+                    <TableCell>{room.status == 1 ? "Phòng trống" : "Phòng chưa hoạt động"}</TableCell>
                     <TableCell>
                       <a className="btn btn-info m-xl-2" href={hrefUpdate}>
                         <SvgIcon fontSize="small">

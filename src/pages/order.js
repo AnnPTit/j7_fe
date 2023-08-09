@@ -93,7 +93,7 @@ const Page = () => {
   return (
     <>
       <Head>
-        <title>Order |  Hotel Finder</title>
+        <title>Quản lý hóa đơn |  Hotel Finder</title>
       </Head>
       <Box
         component="main"
@@ -106,7 +106,7 @@ const Page = () => {
           <Stack spacing={3}>
             <Stack direction="row" justifyContent="space-between" spacing={4}>
               <Stack spacing={1}>
-                <Typography variant="h4">Order</Typography>
+                <Typography variant="h4">Hóa đơn</Typography>
               </Stack>
             </Stack>
             <OrderSearch />

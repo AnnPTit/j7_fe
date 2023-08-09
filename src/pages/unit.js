@@ -64,7 +64,7 @@ const Page = () => {
       </SvgIcon>
     ),
   };
-
+  
   // Delete Customer
   const handleDelete = async (id) => {
     try {
