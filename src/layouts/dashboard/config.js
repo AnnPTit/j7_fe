@@ -9,6 +9,7 @@ import UserPlusIcon from "@heroicons/react/24/solid/UserPlusIcon";
 import UsersIcon from "@heroicons/react/24/solid/UsersIcon";
 import XCircleIcon from "@heroicons/react/24/solid/XCircleIcon";
 import HomeIcon from "@heroicons/react/24/solid/HomeIcon";
+import TVIcon from "@heroicons/react/24/solid/TVIcon";
 import AdjustmentsVerticalIcon from "@heroicons/react/24/solid/AdjustmentsVerticalIcon";
 import { SvgIcon } from "@mui/material";
 import Tippy from "@tippyjs/react";
@@ -22,6 +23,15 @@ export const items = [
     icon: (
       <SvgIcon fontSize="small">
         <ChartBarIcon />
+      </SvgIcon>
+    ),
+  },
+  {
+    title: "Đặt phòng tại quầy",
+    path: "/book-room-offline",
+    icon: (
+      <SvgIcon fontSize="small">
+        <TVIcon />
       </SvgIcon>
     ),
   },

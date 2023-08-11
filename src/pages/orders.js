@@ -1,5 +1,5 @@
 import { Timeline, TimelineEvent } from "@mailtop/horizontal-timeline";
-import { FaBug, FaRegCalendarCheck, FaRegFileAlt, FaTimesCircle } from "react-icons/fa";
+import { FaBug, FaRegCalendarCheck, FaRegFileAlt, FaTimesCircle, FaHome } from "react-icons/fa";
 import { Layout as DashboardLayout } from "src/layouts/dashboard/layout";
 import React, { Component } from "react";
 import axios from "axios";
@@ -15,15 +15,13 @@ import {
   TableRow,
   SvgIcon,
   TextField,
+  CardMedia,
+  Grid,
+  Typography,
 } from "@mui/material";
-import { Scrollbar } from "src/components/scrollbar";
 import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
-import DialogTitle from "@mui/material/DialogTitle";
-import Button from "@mui/material/Button";
-import { TextareaAutosize } from "@mui/material";
 import { format } from "date-fns";
 
 function OrderTimeline() {
@@ -31,7 +29,6 @@ function OrderTimeline() {
   const router = useRouter(); // Sử dụng useRouter để truy cập router của Next.js
   const { id } = router.query;
   const [customer, setCustomer] = useState();
-  const [bookRoom, setBookRoom] = useState();
   const [room, setRoom] = useState();
   const [account, setAccount] = useState();
   const [order, setOrder] = useState({
@@ -58,9 +55,9 @@ function OrderTimeline() {
       case 1:
         return { color: "primary", text: "Chờ xác nhận" };
       case 2:
-        return { color: "secondary", text: "Đã xác nhận" };
+        return { color: "secondary", text: "Đã nhận phòng" };
       case 3:
-        return { color: "success", text: "Completed" };
+        return { color: "success", text: "Khách hàng trả phòng" };
       case 4:
         return { color: "warning", text: "Pending" };
       case 5:
@@ -70,7 +67,10 @@ function OrderTimeline() {
     }
   };
 
-  const [hideCancelButton, setHideCancelButton] = useState(false);
+  const formatRoomPrice = (price) => {
+    return price.toLocaleString("vi-VN") + " VND";
+  };
+
   const statusData = getStatusButtonColor(order.status);
   const statusText = statusData.text;
 
@@ -100,7 +100,6 @@ function OrderTimeline() {
         const responseAccount = await axios.get("http://localhost:2003/api/admin/account/getAll");
         setAccount(responseAccount.data);
         setCustomer(responseCustomer.data);
-        // setBookRoom(responseBookRoom.data);
         setRoom(responseRoom.data);
       } catch (error) {
         console.log(error);
@@ -149,14 +148,13 @@ function OrderTimeline() {
                 case 2:
                   eventColor = "#00CC66";
                   eventIcon = FaRegCalendarCheck;
-                  eventTitle = "Xác nhận hóa đơn";
+                  eventTitle = "Khách hàng đã nhận phòng";
                   break;
                 case 3:
-                  eventColor = "#007BFF";
-                  // eventIcon = /* Your icon for type 3 */;
-                  // eventTitle = /* Your title for type 3 */;
+                  eventColor = "#00CC66";
+                  eventIcon = FaHome;
+                  eventTitle = "Khách hàng trả phòng";
                   break;
-                // Add more cases for other types if needed
                 default:
                   eventColor = "default";
                   eventIcon = FaBug;
@@ -172,9 +170,7 @@ function OrderTimeline() {
                 type: event.type,
               };
             });
-
-            // // Update the timelineEvents state with the new events
-            // timelineEventsData.sort((a, b) => a.type - b.type);
+            // Update the timelineEvents state with the new events
             setTimelineEvents(timelineEventsData);
           } else {
             // If there are no order timeline events, set a default event
@@ -207,7 +203,7 @@ function OrderTimeline() {
         }
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
         const responseOrderDetail = await axios.get(
-          `http://localhost:2003/api/order-detail/loadByOrderId/${id}`
+          `http://localhost:2003/api/order-detail/loadOrderDetailByOrderId/${id}`
         );
         console.log("OrderDetail", responseOrderDetail.data);
       } catch (error) {
@@ -216,32 +212,6 @@ function OrderTimeline() {
     }
     fetchData();
   }, [id]);
-
-  // useEffect(() => {
-  //   // Định nghĩa hàm fetchData bên trong useEffect
-  //   async function fetchData() {
-  //     try {
-  //       const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
-  //       // Kiểm tra xem accessToken có tồn tại không
-  //       if (!accessToken) {
-  //         alert("Bạn chưa đăng nhập");
-  //         return;
-  //       }
-  //       axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
-  //       const response = await axios.get(`http://localhost:2003/api/admin/order/detail/${id}`);
-  //       console.log("Order", response.data);
-
-  //       if (response.data) {
-  //         setOrder(response.data);
-  //       }
-  //     } catch (error) {
-  //       console.log(error);
-  //     }
-  //   }
-
-  //   // Gọi hàm fetchData ngay lập tức
-  //   fetchData();
-  // }, []);
 
   const renderIconForEventType = (eventType) => {
     switch (eventType) {
@@ -252,7 +222,7 @@ function OrderTimeline() {
       case 2:
         return <FaRegCalendarCheck style={{ fontSize: "50px", color: "#00CC66" }} />;
       case 3:
-        // Return the icon for type 3 (if available)
+        return <FaHome style={{ fontSize: "50px", color: "#00CC66" }} />;
         break;
       // Add more cases for other types if needed
       default:
@@ -267,10 +237,9 @@ function OrderTimeline() {
       case 1:
         return "Tạo hóa đơn";
       case 2:
-        return "Xác nhận hóa đơn";
+        return "Khách hàng đã nhận phòng";
       case 3:
-        return "Your title for type 3";
-      // Add more cases for other types if needed
+        return "Khách hàng trả phòng";
       default:
         return "Unknown Type";
     }
@@ -301,61 +270,6 @@ function OrderTimeline() {
     }
   };
 
-  const [note, setNote] = useState(""); // Uncomment this line to manage the note state
-
-  const handleNoteChange = (event) => {
-    setNote(event.target.value);
-  };
-
-  const handleConfirmOrder = async () => {
-    try {
-      const updatedOrder = { ...order, status: 2 }; // Update the status to 2 (Đã xác nhận)
-      const confirmationEvent = {
-        color: "#00CC66",
-        icon: FaRegCalendarCheck,
-        title: "Xác nhận đơn hàng",
-        subtitle: new Date().toLocaleString(),
-      };
-      // Make an API call to update the order status to "Đã xác nhận" (status: 2) or your desired status
-      // You can use the axios.put() method for this
-      await axios.post(`http://localhost:2003/api/order-timeline/update-status-2/${id}`, {
-        updatedOrder,
-        note: note,
-      });
-
-      setOrder(updatedOrder); // Update the local state with the new order status
-      setTimelineEvents((prevEvents) => [...prevEvents, confirmationEvent]);
-      handleClose();
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const handleCancelOrder = async () => {
-    try {
-      const updatedOrder = { ...order, status: 0 }; // Update the status to 2 (Đã xác nhận)
-      const confirmationEvent = {
-        color: "#ff0000",
-        icon: FaTimesCircle,
-        title: "Hủy hóa đơn",
-        subtitle: new Date().toLocaleString(),
-      };
-      // Make an API call to update the order status to "Đã xác nhận" (status: 2) or your desired status
-      // You can use the axios.put() method for this
-      await axios.post(`http://localhost:2003/api/order-timeline/update-status-0/${id}`, {
-        updatedOrder,
-        note: note,
-      });
-
-      setOrder(updatedOrder); // Update the local state with the new order status
-      setTimelineEvents((prevEvents) => [...prevEvents, confirmationEvent]);
-      handleCloseCancel();
-      setHideCancelButton(true);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
   useEffect(() => {
     // Save timelineEvents to local storage whenever it changes
     localStorage.setItem("timelineEvents", JSON.stringify(timelineEvents));
@@ -369,81 +283,35 @@ function OrderTimeline() {
     }
   }, []);
 
-  const [open, setOpen] = React.useState(false);
-  const [openCancel, setOpenCancel] = React.useState(false);
   const [openDetail, setOpenDetail] = React.useState(false);
-  const [openPayment, setOpenPayment] = React.useState(false);
-
-  const handleClose = () => {
-    setOpen(false);
-  };
-
-  const handleOpen = () => {
-    setOpen(true);
-  };
-
-  const handleOpenPayment = () => {
-    setOpenPayment(true);
-  };
-
-  const handleClosePayment = () => {
-    setOpenPayment(false);
-  };
 
   const handleCloseDetail = () => {
     setOpenDetail(false);
   };
 
-  const handleOpenCancel = () => {
-    setOpenCancel(true);
-  };
+  const [orderDetailData, setOrderDetailData] = useState([]);
 
-  const handleCloseCancel = () => {
-    setOpenCancel(false);
-  };
-
-  const renderButtonsBasedOnStatus = () => {
-    switch (order.status) {
-      case 1:
-        return (
-          <React.Fragment>
-            <button
-              onClick={handleOpen}
-              style={{ height: 50, width: 120 }}
-              className="btn btn-primary m-xl-2"
-            >
-              Xác nhận
-            </button>
-            {!hideCancelButton && (
-              <button
-                onClick={handleOpenCancel}
-                style={{ height: 50, width: 120 }}
-                className="btn btn-danger m-xl-2"
-              >
-                Hủy đơn
-              </button>
-            )}
-          </React.Fragment>
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const accessToken = localStorage.getItem("accessToken");
+        if (!accessToken) {
+          alert("Bạn chưa đăng nhập");
+          return;
+        }
+        axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+        const response = await axios.get(
+          `http://localhost:2003/api/order-detail/loadOrderDetailByOrderId/${id}`
         );
-      case 2:
-        return (
-          <React.Fragment>
-            {!hideCancelButton && (
-              <button
-                onClick={handleOpenCancel}
-                style={{ height: 50, width: 120 }}
-                className="btn btn-danger m-xl-2"
-              >
-                Hủy đơn
-              </button>
-            )}
-          </React.Fragment>
-        );
-      // Add more cases for other statuses if needed
-      default:
-        return null; // Return null to hide all buttons if the status doesn't match any case
+        // console.log("photoList", response.data.room?.photoList?.url);
+        console.log("OrderDetail: ", response.data);
+        setOrderDetailData(response.data);
+      } catch (error) {
+        console.log(error);
+      }
     }
-  };
+    fetchData();
+  }, [id]);
 
   return (
     <div
@@ -473,49 +341,8 @@ function OrderTimeline() {
             />
           ))}
         </Timeline>
-        <Dialog open={open} onClose={handleClose} maxWidth="md">
-          <DialogTitle>Xác nhận hóa đơn</DialogTitle>
-          <DialogContent>
-            <DialogContentText>
-              <TextareaAutosize
-                className="form-control"
-                placeholder="Ghi chú"
-                name="note"
-                cols={100}
-                style={{ height: 150 }}
-                variant="outlined"
-                value={note}
-                onChange={handleNoteChange}
-              />
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleConfirmOrder}>Xác nhận</Button>
-          </DialogActions>
-        </Dialog>
-        <Dialog open={openCancel} onClose={handleCloseCancel} maxWidth="md">
-          <DialogTitle>Hủy hóa đơn</DialogTitle>
-          <DialogContent>
-            <DialogContentText>
-              <TextareaAutosize
-                className="form-control"
-                placeholder="Ghi chú"
-                name="note"
-                cols={100}
-                style={{ height: 150 }}
-                variant="outlined"
-                value={note}
-                onChange={handleNoteChange}
-              />
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleCancelOrder}>Xác nhận</Button>
-          </DialogActions>
-        </Dialog>
         <div>
           <div style={{ display: "flex", justifyContent: "flex-end" }}>
-            {renderButtonsBasedOnStatus()}
             <button
               onClick={handleShowOrderTimeline}
               style={{ height: 50, width: 130 }}
@@ -569,12 +396,7 @@ function OrderTimeline() {
           marginLeft: 140, // Add the box shadow
         }}
       >
-        <div style={{ display: "flex" }}>
-          <h3 style={{ marginRight: 700 }}>THÔNG TIN HÓA ĐƠN</h3>
-          <button style={{ width: 130 }} className="btn btn-outline-primary">
-            Cập nhật
-          </button>
-        </div>
+        <h3 style={{ marginRight: 700 }}>THÔNG TIN HÓA ĐƠN</h3>
         <hr />
         <div style={{ display: "flex" }}>
           <div style={{ marginLeft: 30, fontFamily: "inherit", fontSize: "17px" }}>
@@ -589,7 +411,7 @@ function OrderTimeline() {
             <br />
             <label>Loại</label>
             <label style={{ marginLeft: 193 }}>
-              {order.typeOfOrder == 1 ? "Online" : "Tại quầy"}
+              {order.typeOfOrder == 0 ? "Online" : "Tại quầy"}
             </label>
             <br />
             <br />
@@ -624,50 +446,7 @@ function OrderTimeline() {
           marginLeft: 140, // Add the box shadow
         }}
       >
-        <div style={{ display: "flex" }}>
-          <h3 style={{ marginRight: 650 }}>LỊCH SỬ GIAO DỊCH</h3>
-          <button
-            onClick={handleOpenPayment}
-            style={{ width: 207 }}
-            className="btn btn-outline-primary"
-          >
-            Xác nhận thanh toán
-          </button>
-        </div>
-        <Dialog open={openPayment} onClose={handleClosePayment} maxWidth="md">
-          <DialogTitle>XÁC NHẬN THANH TOÁN</DialogTitle>
-          <DialogContent>
-            <DialogContentText>
-              <br />
-              <TextField label="Số tiền" type="text" fullWidth variant="outlined" />
-              <br />
-              <br />
-              <TextareaAutosize
-                className="form-control"
-                placeholder="Ghi chú"
-                name="note"
-                cols={100}
-                style={{ height: 150 }}
-                variant="outlined"
-              />
-            </DialogContentText>
-            {/* <TextField
-          autoFocus
-          margin="dense"
-          id="name"
-          label="Email Address"
-          type="email"
-          fullWidth
-          variant="standard"
-        /> */}
-          </DialogContent>
-          <DialogActions>
-            <button className="btn btn-outline-primary">TIỀN MẶT</button>
-            <button className="btn btn-outline-danger">CHUYỂN KHOẢN</button>
-          </DialogActions>
-          <br />
-
-        </Dialog>
+        <h3 style={{ marginRight: 650 }}>LỊCH SỬ GIAO DỊCH</h3>
         <hr />
         <div style={{ display: "flex", justifyContent: "center" }}>Không có dữ liệu.</div>
       </Card>
@@ -681,11 +460,50 @@ function OrderTimeline() {
           marginLeft: 140, // Add the box shadow
         }}
       >
-        <div style={{ display: "flex" }}>
-          <h3>THÔNG TIN PHÒNG</h3>
+        <div>
+          {orderDetailData.map((orderDetail, index) => (
+            <Card key={index}>
+              <div style={{ display: "flex" }}>
+                <h3>THÔNG TIN PHÒNG</h3>
+              </div>
+              <hr />
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={6} md={4} lg={3}>
+                  {/* Render the main room image */}
+                  {orderDetail.room &&
+                  orderDetail.room.photoList &&
+                  orderDetail.room.photoList.length > 0 ? (
+                    <CardMedia
+                      component="img"
+                      alt="Main Room Image"
+                      image={
+                        typeof orderDetail.room.photoList[0].url === "string"
+                          ? orderDetail.room.photoList[0].url
+                          : ""
+                      }
+                      // Assuming the first image is the main room image
+                      style={{ height: 200, objectFit: "cover", width: "100%" }}
+                    />
+                  ) : (
+                    <Typography>No Image Available</Typography>
+                  )}
+                </Grid>
+                <div style={{ margin: 30 }}>
+                  <h4>{orderDetail.room.roomName}</h4>
+                  <br />
+                  <span>Loại phòng: {orderDetail.room.typeRoom.typeRoomName}</span>
+                  <br />
+                  <br />
+                  <span>{orderDetail.room.floor.floorName}</span>
+                  <br />
+                  <br />
+                  <span style={{ color: "red" }}>{formatRoomPrice(orderDetail.roomPrice)}</span>
+                </div>
+              </Grid>
+              <hr />
+            </Card>
+          ))}
         </div>
-        <hr />
-        <div style={{ display: "flex", justifyContent: "center" }}>Không có dữ liệu.</div>
       </Card>
     </div>
   );

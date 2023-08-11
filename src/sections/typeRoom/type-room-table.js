@@ -103,9 +103,6 @@ export const TypeRoomTable = (props) => {
                 <TableCell>Tên</TableCell>
                 <TableCell>Giá theo ngày</TableCell>
                 <TableCell>Giá theo giờ</TableCell>
-                <TableCell>Giá qua ngày</TableCell>
-                <TableCell>Giá qua đêm</TableCell>
-                <TableCell>Giá quá giờ</TableCell>
                 <TableCell>Sức chứa</TableCell>
                 <TableCell>Ghi chú</TableCell>
                 <TableCell>Trạng thái</TableCell>
@@ -145,9 +142,6 @@ export const TypeRoomTable = (props) => {
                     <TableCell>{typeRoom.typeRoomName}</TableCell>
                     <TableCell>{formatPrice(typeRoom.pricePerDay)}</TableCell>
                     <TableCell>{formatPrice(typeRoom.pricePerHours)}</TableCell>
-                    <TableCell>{formatPrice(typeRoom.pricePerDaytime)}</TableCell>
-                    <TableCell>{formatPrice(typeRoom.pricePerNighttime)}</TableCell>
-                    <TableCell>{formatPrice(typeRoom.priceOvertime)}</TableCell>
                     <TableCell>{typeRoom.capacity}</TableCell>
                     <TableCell>{typeRoom.note}</TableCell>
                     <TableCell>{typeRoom.status == 1 ? "Hoạt động" : "Unactive"}</TableCell>
