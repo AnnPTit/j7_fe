@@ -97,7 +97,10 @@ export const OrderTable = (props) => {
                     </TableCell>
                     <TableCell>{order.orderCode}</TableCell>
                     <TableCell>{order.typeOfOrder == 1 ? "Tại quầy" : "Tại quầy"}</TableCell>
-                    <TableCell>{order.account.fullname}</TableCell>
+                    <TableCell>
+                      {order.account && order.account.fullname ? order.account.fullname : "NaN"}
+                    </TableCell>
+
                     <TableCell>{order.customer.fullname}</TableCell>
                     <TableCell>{formatPrice(order.totalMoney)}</TableCell>
                     <TableCell>{order.note}</TableCell>
