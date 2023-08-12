@@ -58,10 +58,10 @@ function BookRoom() {
   const [orderDetailData, setOrderDetailData] = useState([]);
   const [numberOfDays, setNumberOfDays] = useState(0); // Add this state
   const [valueTo, setValueTo] = useState(null);
-  const [valueFrom, setValueFrom] = useState(null);
+  const [valueFrom, setValueFrom] = useState(new Date());
   const [numberOfPeople, setNumberOfPeople] = useState(0);
   const [valueTimeTo, setValueTimeTo] = useState(null);
-  const [valueTimeFrom, setValueTimeFrom] = useState(null);
+  const [valueTimeFrom, setValueTimeFrom] = useState(new Date());
   const [totalAmount, setTotalAmount] = useState(0);
   const [noteOrder, setNoteOrder] = useState("");
   const [noteReturnRoom, setNoteReturnRoom] = useState("");
@@ -80,14 +80,13 @@ function BookRoom() {
   const [delay, setDelay] = useState(100);
   const [result, setResult] = useState("No result");
   const [cameraEnabled, setCameraEnabled] = useState(false);
-  // const [scannedData, setScannedData] = useState(""); // Initialize with empty string
 
   const [selectedCustomer, setSelectedCustomer] = useState(null);
-  const [cccd, setCccd] = useState(""); // Initialize with an empty string or default value
+  const [cccd, setCccd] = useState("");
   const [customerName, setCustomerName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [birthday, setBirthday] = useState(null);
-  const [gender, setGender] = useState("");
+  const [gender, setGender] = useState("Nam");
 
   const [order, setOrder] = useState({
     id: "",
@@ -127,7 +126,7 @@ function BookRoom() {
 
   const formatDate = (date) => {
     if (!date) {
-      return ""; // Return an empty string for null date values
+      return "";
     }
     const day = date.getDate().toString().padStart(2, "0");
     const month = (date.getMonth() + 1).toString().padStart(2, "0");
@@ -148,9 +147,6 @@ function BookRoom() {
 
   const handleDateTimeToChange = (newTime) => {
     setValueTimeTo(newTime);
-    if (newTime < valueTimeFrom) {
-      setValueTimeFrom(newTime);
-    }
   };
 
   const handleOpenSearchRoom = () => {
@@ -170,7 +166,7 @@ function BookRoom() {
   };
 
   const handleOpenDateDialog = () => {
-    setOpenDateDialog(true); // Open date selection dialog
+    setOpenDateDialog(true);
   };
 
   const handleOpenChooseCustomer = () => {
@@ -213,8 +209,10 @@ function BookRoom() {
   };
 
   const handleCloseDateDialog = () => {
-    setValueFrom(null);
+    setValueFrom(new Date());
+    setValueTimeFrom(new Date());
     setValueTo(null);
+    setValueTimeTo(null);
     setNumberOfDays(0);
     setOpenDateDialog(false);
   };
@@ -233,26 +231,41 @@ function BookRoom() {
   };
 
   const handleScan = (data) => {
-    // console.log("Scanned data:", data); // Log the entire scanned object
     if (data && data.text) {
-      const scannedText = data.text; // Extract the scanned text
-      console.log("Scanned text:", scannedText); // Log the extracted text
-      const dataParts = scannedText.match(/^(.*?)\|\|(.+?)\|(.+?)\|(.+?)\|/);
-      const cccdValue = dataParts ? dataParts[1] : "";
-      const nameValue = dataParts ? dataParts[2] : "";
-      const birthdateValue = dataParts ? dataParts[3] : "";
-      const genderValue = dataParts ? dataParts[4] : "";
-      const formattedBirthdate = `${birthdateValue.substr(0, 2)}/${birthdateValue.substr(
-        2,
-        2
-      )}/${birthdateValue.substr(4, 4)}`;
-      console.log("Ngày sinh: ", formattedBirthdate);
+      const scannedText = data.text;
+      const dataParts = scannedText.split("|");
 
-      setCccd(cccdValue);
-      setCustomerName(nameValue);
-      setGender(genderValue);
-      setBirthday(formattedBirthdate);
-      console.log("Ngày sinhh: ", birthday);
+      if (dataParts.length === 6) {
+        const cccdValue = dataParts[0];
+        const nameValue = dataParts[2];
+        const birthdateValue = dataParts[3];
+        const genderValue = dataParts[4];
+        const formattedBirthdate = `${birthdateValue.substr(0, 2)}/${birthdateValue.substr(
+          2,
+          2
+        )}/${birthdateValue.substr(4, 4)}`;
+
+        setCccd(cccdValue);
+        setCustomerName(nameValue);
+        setGender(genderValue);
+        setBirthday(formattedBirthdate);
+      } else if (dataParts.length === 7) {
+        const cccdValue = dataParts[0];
+        const nameValue = dataParts[2];
+        const birthdateValue = dataParts[3];
+        const genderValue = dataParts[4];
+        const formattedBirthdate = `${birthdateValue.substr(0, 2)}/${birthdateValue.substr(
+          2,
+          2
+        )}/${birthdateValue.substr(4, 4)}`;
+
+        setCccd(cccdValue);
+        setCustomerName(nameValue);
+        setGender(genderValue);
+        setBirthday(formattedBirthdate);
+      } else {
+        console.log("Lỗi khi quét QR CCCD:", dataParts.length);
+      }
     }
   };
 
@@ -383,12 +396,15 @@ function BookRoom() {
 
   const handleConfirmOrder = async () => {
     try {
-      // Make an API call to update the order status to "Đã xác nhận" (status: 2) or your desired status
-      // You can use the axios.put() method for this
+      // Make an API call to update the order status to "Đã xác nhận" (status: 2)
       await axios.put(`http://localhost:2003/api/admin/order/update-accept/${id}`, {
         note: noteOrder,
       });
+      setOrder({ ...order, status: 2 });
       handleCloseAcceptOrder();
+      toast.success("Nhận phòng thành công!", {
+        position: toast.POSITION.BOTTOM_RIGHT,
+      });
     } catch (error) {
       console.log(error);
     }
@@ -403,7 +419,11 @@ function BookRoom() {
         excessMoney: moneyReturnCustomer,
         note: noteReturnRoom,
       });
+      setOrder({ ...order, status: 3 });
       handleCloseReturnRoom();
+      toast.success("Trả phòng thành công!", {
+        position: toast.POSITION.BOTTOM_RIGHT,
+      });
     } catch (error) {
       console.log(error);
     }
@@ -422,6 +442,13 @@ function BookRoom() {
   };
 
   const handleConfirm = async () => {
+    if (!selectedOrderDetails) {
+      toast.error("Vui lòng chọn phòng trước khi thêm dịch vụ!", {
+        position: toast.POSITION.BOTTOM_RIGHT,
+      });
+      return;
+    }
+
     const serviceResponse = await axios.get(
       `http://localhost:2003/api/admin/service/detail/${selectedServiceId}`
     );
@@ -462,10 +489,43 @@ function BookRoom() {
   };
 
   const handleAddCustomerToRooms = async () => {
+    if (!selectedOrderDetails) {
+      toast.error("Vui lòng chọn phòng trước khi thêm thông tin khách hàng!", {
+        position: toast.POSITION.BOTTOM_RIGHT,
+      });
+      return;
+    }
+
+    if (!cccd || !customerName || !birthday || !phoneNumber) {
+      toast.error("Vui lòng điền đầy đủ thông tin khách hàng!", {
+        position: toast.POSITION.BOTTOM_RIGHT,
+      });
+      return;
+    } else if (!/^\d+$/.test(cccd)) {
+      toast.error("CCCD chỉ được chứa ký tự số!", {
+        position: toast.POSITION.BOTTOM_RIGHT,
+      });
+      return;
+    } else if (!/^[0]\d{11}$/.test(cccd)) {
+      toast.error("CCCD phải bắt đầu bằng số 0 và có đúng 12 số!", {
+        position: toast.POSITION.BOTTOM_RIGHT,
+      });
+      return;
+    } else if (!/^\d+$/.test(phoneNumber)) {
+      toast.error("Số điện thoại chỉ được chứa ký tự số!", {
+        position: toast.POSITION.BOTTOM_RIGHT,
+      });
+      return;
+    } else if (!/^[0]\d{9}$/.test(phoneNumber)) {
+      toast.error("Số điện thoại phải bắt đầu bằng số 0 và có đúng 10 số!", {
+        position: toast.POSITION.BOTTOM_RIGHT,
+      });
+      return;
+    }
+
     const genderBoolean = gender === "Nam"; // true if gender is "Nam", false if gender is "Nữ"
     const parsedBirthday = parse(birthday, "dd/MM/yyyy", new Date());
 
-    // Format the parsed birthday to "yyyy-MM-dd" format
     const formattedBirthday = format(parsedBirthday, "yyyy-MM-dd");
     const customerInfo = {
       citizenId: cccd,
@@ -475,7 +535,6 @@ function BookRoom() {
       phoneNumber: phoneNumber,
     };
 
-    // Loop through selectedOrderDetails and add customer information
     try {
       const response = await axios.post(
         `http://localhost:2003/api/information-customer/save/${selectedOrderDetails}`,
@@ -495,10 +554,9 @@ function BookRoom() {
         error
       );
     }
-    // Clear selectedOrderDetails after adding customer information
     setCccd("");
     setCustomerName("");
-    setGender("");
+    setGender("Nam");
     setBirthday("");
     setPhoneNumber("");
   };
@@ -541,13 +599,11 @@ function BookRoom() {
     }
   }, [selectedOrderDetails]);
 
-  // Delete Customer
   const handleDelete = async (id) => {
     try {
       await axios.delete(`http://localhost:2003/api/information-customer/delete/${id}`);
 
       // Xóa khách hàng khỏi danh sách ngay sau khi xóa
-      // Cách này giả định rằng customerInfo là danh sách khách hàng
       setCustomerInfo((prevCustomers) => prevCustomers.filter((customer) => customer.id !== id));
       toast.success("Xóa thành công!", {
         position: toast.POSITION.BOTTOM_RIGHT,
@@ -562,10 +618,9 @@ function BookRoom() {
       await axios.delete(`http://localhost:2003/api/service-used/delete/${id}`);
 
       // Xóa khách hàng khỏi danh sách ngay sau khi xóa
-      // Cách này giả định rằng customerInfo là danh sách khách hàng
       setServiceUsed((prevServices) => prevServices.filter((serviceUsed) => serviceUsed.id !== id));
-      const newTotal = calculateTotal();
-      setTotalAmount(newTotal);
+      // const newTotal = calculateTotalAmountPriceRoom() + calculateTotalService();
+      // setTotalAmount(newTotal);
       toast.success("Xóa thành công!", {
         position: toast.POSITION.BOTTOM_RIGHT,
       });
@@ -586,7 +641,6 @@ function BookRoom() {
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
         const response = await axios.get("http://localhost:2003/api/admin/room/getAllByStatus");
         setRooms(response.data); // Cập nhật danh sách phòng từ response
-        // ... (các phần mã khác)
       } catch (error) {
         console.log(error);
       }
@@ -607,7 +661,6 @@ function BookRoom() {
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
         const response = await axios.get("http://localhost:2003/api/admin/service/getAll");
         setService(response.data); // Cập nhật danh sách phòng từ response
-        // ... (các phần mã khác)
       } catch (error) {
         console.log(error);
       }
@@ -645,7 +698,6 @@ function BookRoom() {
         console.log(error);
       }
     }
-
     // Gọi hàm fetchData ngay lập tức
     fetchData();
   }, []);
@@ -675,7 +727,6 @@ function BookRoom() {
     console.log("Fetching order details for ID:", id); // Add this line
     async function fetchData() {
       try {
-        // ... (your code)
         const response = await axios.get(`http://localhost:2003/api/admin/order/detail/${id}`);
         console.log("Order API Response:", response.data); // Add this line
         if (response.data) {
@@ -695,14 +746,14 @@ function BookRoom() {
 
   const [roomPricePerDay, setRoomPricePerDay] = useState(0); // Thêm state để lưu giá theo ngày của phòng
 
-  // Trong useEffect để fetch giá theo giờ của phòng khi selectedRoomId thay đổi
+  // Trong useEffect để fetch giá theo ngày của phòng khi selectedRoomId thay đổi
   useEffect(() => {
     const selectedRoom = rooms.find((r) => r.id === selectedRoomId);
     if (selectedRoom) {
       setRoomPricePerDay(selectedRoom.typeRoom.pricePerDay);
     }
   }, [selectedRoomId, rooms]);
-  // Trong hàm handleConfirmDate
+
   const createOrderDetail = async () => {
     // Thực hiện xử lý khi ngày được xác nhận
     if (selectedRoomId && valueFrom && valueTo && valueTimeFrom && valueTimeTo) {
@@ -725,6 +776,9 @@ function BookRoom() {
         });
 
         window.location.href = `/room-service?id=${id}`;
+        toast.success("Thêm phòng thành công!", {
+          position: toast.POSITION.BOTTOM_RIGHT,
+        });
         console.log("Phòng đã được thêm vào hóa đơn chi tiết:", response.data);
         // Đóng dialog chọn ngày
         handleCloseDateDialog();
@@ -805,7 +859,13 @@ function BookRoom() {
                       <TableCell>{formatPrice(room.typeRoom.pricePerDay)}</TableCell>
                       <TableCell>{formatPrice(room.typeRoom.pricePerHours)}</TableCell>
                       <TableCell>
-                        {room.status == 1 ? "Phòng trống" : "Phòng đã được đặt"}
+                        {room.status === 1
+                          ? "Phòng trống"
+                          : room.status === 2
+                          ? "Phòng đã được đặt"
+                          : room.status === 3
+                          ? "Đang có người ở"
+                          : "Trạng thái khác"}
                       </TableCell>
                       <TableCell>
                         {room.status === 1 && ( // Kiểm tra nếu room.status là 1 thì hiển thị nút
@@ -845,7 +905,7 @@ function BookRoom() {
           }}
         >
           <DatePicker
-            disablePast
+            disabled
             label="Từ ngày"
             value={valueFrom}
             onChange={handleFromDateChange}
@@ -861,7 +921,7 @@ function BookRoom() {
             )}
           />
           <TimePicker
-            disablePast
+            disabled
             label="Giờ check-in"
             value={valueTimeFrom}
             onChange={handleDateTimeFromChange}
@@ -895,7 +955,6 @@ function BookRoom() {
             )}
           />
           <TimePicker
-            disablePast
             label="Giờ check-out"
             value={valueTimeTo}
             onChange={handleDateTimeToChange}
