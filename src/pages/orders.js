@@ -67,7 +67,7 @@ function OrderTimeline() {
     }
   };
 
-  const formatRoomPrice = (price) => {
+  const formatPrice = (price) => {
     return price.toLocaleString("vi-VN") + " VND";
   };
 
@@ -313,6 +313,27 @@ function OrderTimeline() {
     fetchData();
   }, [id]);
 
+  const [paymentMethod, setPaymentMethod] = useState([]);
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const accessToken = localStorage.getItem("accessToken");
+        if (!accessToken) {
+          alert("Bạn chưa đăng nhập");
+          return;
+        }
+        axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+        const response = await axios.get(`http://localhost:2003/api/payment-method/load/${id}`);
+        // console.log("photoList", response.data.room?.photoList?.url);
+        console.log("PaymentMethod: ", response.data);
+        setPaymentMethod(response.data);
+      } catch (error) {
+        console.log(error);
+      }
+    }
+    fetchData();
+  }, [id]);
+
   return (
     <div
       style={{
@@ -419,6 +440,10 @@ function OrderTimeline() {
             <label style={{ marginLeft: 135 }}>{order.orderCode}</label>
             <br />
             <br />
+            <label>VAT</label>
+            <label style={{ marginLeft: 195 }}>{order.vat}</label>
+            <br />
+            <br />
           </div>
           <div style={{ marginLeft: 150, fontFamily: "inherit", fontSize: "17px" }}>
             <label>Họ và tên</label>
@@ -448,7 +473,46 @@ function OrderTimeline() {
       >
         <h3 style={{ marginRight: 650 }}>LỊCH SỬ GIAO DỊCH</h3>
         <hr />
-        <div style={{ display: "flex", justifyContent: "center" }}>Không có dữ liệu.</div>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Số tiền</TableCell>
+              <TableCell>Thời gian</TableCell>
+              <TableCell>Phương thức thanh toán</TableCell>
+              <TableCell>Trạng thái</TableCell>
+              <TableCell>Nhân viên xác nhận</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {paymentMethod.map((paymentMethod) => (
+              <TableRow hover key={paymentMethod.id}>
+                <TableCell style={{ color: "red" }}>
+                  {formatPrice(paymentMethod.totalMoney)}
+                </TableCell>
+                <TableCell>
+                  {format(new Date(paymentMethod.createAt), "dd/MM/yyyy - HH:mm:ss")}
+                </TableCell>
+                <TableCell>
+                  <span
+                    style={{ fontSize: 15, width: 100 }}
+                    className="badge rounded-pill bg-primary"
+                  >
+                    {paymentMethod.method == 1 ? "Tiền mặt" : "Chuyển khoản"}
+                  </span>
+                </TableCell>
+                <TableCell>
+                  <span
+                    style={{ fontSize: 15, width: 120 }}
+                    className="badge rounded-pill bg-success"
+                  >
+                    {paymentMethod.status == 1 ? "Thành công" : ""}
+                  </span>
+                </TableCell>
+                <TableCell></TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       </Card>
       <Card
         style={{
@@ -461,12 +525,12 @@ function OrderTimeline() {
         }}
       >
         <div>
+          <div style={{ display: "flex" }}>
+            <h3>THÔNG TIN PHÒNG</h3>
+          </div>
+          <hr />
           {orderDetailData.map((orderDetail, index) => (
             <Card key={index}>
-              <div style={{ display: "flex" }}>
-                <h3>THÔNG TIN PHÒNG</h3>
-              </div>
-              <hr />
               <Grid container spacing={2}>
                 <Grid item xs={12} sm={6} md={4} lg={3}>
                   {/* Render the main room image */}
@@ -497,7 +561,7 @@ function OrderTimeline() {
                   <span>{orderDetail.room.floor.floorName}</span>
                   <br />
                   <br />
-                  <span style={{ color: "red" }}>{formatRoomPrice(orderDetail.roomPrice)}</span>
+                  <span style={{ color: "red" }}>{formatPrice(orderDetail.roomPrice)}</span>
                 </div>
               </Grid>
               <hr />
