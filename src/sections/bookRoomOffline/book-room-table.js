@@ -1,7 +1,5 @@
 import PropTypes from "prop-types";
 import moment from "moment";
-import Swal from "sweetalert2";
-import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import {
   Box,
@@ -15,11 +13,10 @@ import {
 } from "@mui/material";
 import { Scrollbar } from "src/components/scrollbar";
 import TrashIcon from "@heroicons/react/24/solid/TrashIcon";
-import Bars4Icon from "@heroicons/react/24/solid/Bars4Icon";
+import PencilSquareIcon from "@heroicons/react/24/solid/PencilSquareIcon";
 import Button from "@mui/material/Button";
-import Badge from "@mui/material/Badge";
 
-export const OrderTable = (props) => {
+export const BookRoomTable = (props) => {
   const { items = [], selected = [] } = props;
 
   const formatPrice = (price) => {
@@ -32,11 +29,6 @@ export const OrderTable = (props) => {
 
   const handleDelete = (id) => {
     props.onDelete(id);
-  };
-
-  const handleRowClick = (id) => {
-    // Navigate to the "orders" page based on the selected row's ID
-    window.location.href = `/orders?id=${id}`;
   };
 
   const getStatusButtonColor = (status) => {
@@ -66,14 +58,11 @@ export const OrderTable = (props) => {
             <TableHead>
               <TableRow>
                 <TableCell padding="checkbox">STT</TableCell>
-                <TableCell>Mã HĐ</TableCell>
-                <TableCell>Loại HĐ</TableCell>
-                <TableCell>Nhân viên</TableCell>
-                <TableCell>Khách hàng</TableCell>
+                <TableCell>Mã hóa đơn</TableCell>
                 <TableCell>Tổng tiền</TableCell>
-                <TableCell>Ghi chú</TableCell>
                 <TableCell>Ngày tạo</TableCell>
                 <TableCell>Trạng thái</TableCell>
+                <TableCell>Thao tác</TableCell>
               </TableRow>
             </TableHead>
 
@@ -82,30 +71,34 @@ export const OrderTable = (props) => {
                 const created = moment(order.createAt).format("DD/MM/YYYY - hh:mm:ss");
                 const statusData = getStatusButtonColor(order.status);
                 const statusText = statusData.text;
+                const hrefUpdate = `/room-service?id=${order.id}`;
 
                 return (
-                  <TableRow
-                    hover
-                    key={order.id}
-                    style={{ cursor: "pointer" }}
-                    onClick={() => handleRowClick(order.id)}
-                  >
+                  <TableRow hover key={order.id}>
                     <TableCell padding="checkbox">
                       <div key={index}>
                         <span>{index + 1}</span>
                       </div>
                     </TableCell>
                     <TableCell>{order.orderCode}</TableCell>
-                    <TableCell>{order.typeOfOrder == 1 ? "Tại quầy" : "Tại quầy"}</TableCell>
-                    <TableCell>{order.account.fullname}</TableCell>
-                    <TableCell>{order.customer.fullname}</TableCell>
                     <TableCell>{formatPrice(order.totalMoney)}</TableCell>
-                    <TableCell>{order.note}</TableCell>
                     <TableCell>{created}</TableCell>
                     <TableCell>
                       <Button variant="contained" color={statusData.color}>
                         {statusText}
                       </Button>
+                    </TableCell>
+                    <TableCell>
+                      <a className="btn btn-primary m-xl-2" href={hrefUpdate}>
+                        <SvgIcon fontSize="small">
+                          <PencilSquareIcon />
+                        </SvgIcon>
+                      </a>
+                      <button className="btn btn-danger m-xl-2">
+                        <SvgIcon fontSize="small">
+                          <TrashIcon />
+                        </SvgIcon>
+                      </button>
                     </TableCell>
                   </TableRow>
                 );
@@ -118,7 +111,7 @@ export const OrderTable = (props) => {
   );
 };
 
-OrderTable.propTypes = {
+BookRoomTable.propTypes = {
   count: PropTypes.number,
   items: PropTypes.array,
   onDeselectAll: PropTypes.func,
