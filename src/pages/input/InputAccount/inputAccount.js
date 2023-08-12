@@ -7,6 +7,9 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { ToastContainer, toast } from "react-toastify";
 import Swal from "sweetalert2";
 
+import React, { Component } from "react";
+import QrReader from "react-qr-scanner";
+
 // const API_HOST = 'https://provinces.open-api.vn/api/';
 const cx = classNames.bind(style);
 const handleSubmit = async (event) => {
@@ -93,17 +96,13 @@ const handleSubmit = async (event) => {
       } else if (error.response.status === 400) {
         console.log(error.response.data);
 
-        const isAccountCodeError = error.response.data.accountCode === undefined;
         const isFullnameError = error.response.data.fullname === undefined;
         const isEmailError = error.response.data.email === undefined;
         const isPhoneNumberError = error.response.data.phoneNumber === undefined;
         const isCitizenIdError = error.response.data.citizenId === undefined;
         const isBirthdayError = error.response.data.birthday === undefined;
 
-        if (!isAccountCodeError && !isFullnameError && !isEmailError && !isPhoneNumberError && !isCitizenIdError && !isBirthdayError) {
-          toast.error(error.response.data.accountCode, {
-            position: toast.POSITION.BOTTOM_RIGHT,
-          });
+        if (!isFullnameError && !isEmailError && !isPhoneNumberError && !isCitizenIdError && !isBirthdayError) {
           toast.error(error.response.data.fullname, {
             position: toast.POSITION.BOTTOM_RIGHT,
           });
@@ -123,11 +122,6 @@ const handleSubmit = async (event) => {
         } else {
           // Nếu có ít nhất một trường bị thiếu, xóa thông báo lỗi cho trường đó nếu có
           // và hiển thị thông báo lỗi cho các trường còn lại
-          if (!isAccountCodeError) {
-            toast.error(error.response.data.accountCode, {
-              position: toast.POSITION.BOTTOM_RIGHT,
-            });
-          }
           if (!isFullnameError) {
             toast.error(error.response.data.fullname, {
               position: toast.POSITION.BOTTOM_RIGHT,
@@ -204,16 +198,6 @@ function InputAccount() {
   return (
     <div className={cx("wrapper")}>
       <h1>Thêm Nhân Viên</h1>
-      <div className="form-floating mb-3">
-        <input
-          className="form-control"
-          type="text"
-          placeholder="Default input"
-          aria-label="default input example"
-          name="accountCode"
-        />
-        <label htmlFor="floatingInput">Mã nhân viên</label>
-      </div>
       <div className="form-floating">
         <input
           type="text"
