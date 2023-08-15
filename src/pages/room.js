@@ -36,11 +36,11 @@ const Page = () => {
   const room = useRoom(data, page, rowsPerPage);
   const roomIds = useRoomIds(room);
   const roomSelection = useSelection(roomIds);
-  const [inputModal, setInputModal] = useState(false);
   const [pageNumber, setPageNumber] = useState(0);
 
+  // Search
   const [textSearch, setTextSearch] = useState("");
-  // filter
+  // Filter
   const [floor, setFloor] = useState([]);
   const [typeRoom, setTypeRoom] = useState([]);
   const [floorChose, setFloorChose] = useState("");
@@ -61,10 +61,6 @@ const Page = () => {
     ),
   };
   const active = item.path ? pathname === item.path : false;
-
-  // const openModelInput = () => {
-  //   setInputModal(!inputModal);
-  // };
 
   // Delete room
   const handleDelete = async (id) => {
@@ -98,7 +94,6 @@ const Page = () => {
         console.log(error);
       }
     }
-
     // Gọi hàm fetchData ngay lập tức
     fetchData();
   }, []);
@@ -165,7 +160,7 @@ const Page = () => {
                 <Typography variant="h4">Phòng</Typography>
               </Stack>
               <div>
-              <SideNavItem
+                <SideNavItem
                   style={{ backgroundColor: "red" }}
                   active={active}
                   disabled={item.disabled}
