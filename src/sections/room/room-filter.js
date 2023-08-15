@@ -10,7 +10,7 @@ function RoomFilter({
 }) {
   return (
     <div >
-      <label style={{marginLeft: 700}}>Floor:</label>
+      <label style={{marginLeft: 20}}>Tầng:</label>
       {floor.length > 0 ? (
         <Select
           style={{
@@ -30,7 +30,7 @@ function RoomFilter({
       ) : (
         <p>Loading...</p>
       )}
-      <label style={{marginLeft: 50}}>Type Room:</label>
+      <label style={{marginLeft: 50}}>Loại phòng:</label>
       {typeRoom.length > 0 ? (
         <Select
           style={{

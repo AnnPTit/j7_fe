@@ -27,7 +27,6 @@ import QrReader from "react-qr-scanner";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import TrashIcon from "@heroicons/react/24/solid/TrashIcon";
-import NoSymbolIcon from "@heroicons/react/24/solid/NoSymbolIcon";
 import Radio from "@mui/material/Radio";
 import RadioGroup from "@mui/material/RadioGroup";
 import FormControlLabel from "@mui/material/FormControlLabel";
@@ -36,6 +35,9 @@ import FormLabel from "@mui/material/FormLabel"; // ...
 import { parse, format, subYears } from "date-fns";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { RoomSearch } from "src/sections/room/room-search";
+import RoomFilter from "src/sections/room/room-filter";
+import PriceRangeSlider from "src/sections/room/price-slider";
 
 function BookRoom() {
   const router = useRouter(); // Sử dụng useRouter để truy cập router của Next.js
@@ -45,6 +47,8 @@ function BookRoom() {
   const [customer, setCustomer] = useState([]);
   const [floor, setFloor] = useState([]);
   const [typeRoom, setTypeRoom] = useState([]);
+  const [floorChose, setFloorChose] = useState("");
+  const [typeRoomChose, setTypeRoomChose] = useState("");
   const [serviceType, setServiceType] = useState([]);
   const [unit, setUnit] = useState([]);
   const [selectedRoomId, setSelectedRoomId] = useState(null);
@@ -66,6 +70,10 @@ function BookRoom() {
   const [noteOrder, setNoteOrder] = useState("");
   const [noteReturnRoom, setNoteReturnRoom] = useState("");
   const [givenCustomer, setGivenCustomer] = useState(0);
+  const [textSearch, setTextSearch] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [priceRange, setPriceRange] = useState([0, 3000000]);
+  const [roomPricePerDay, setRoomPricePerDay] = useState(0); // Thêm state để lưu giá theo ngày của phòng
 
   // Dialogs
   const [openSeacrhRoom, setOpenSeacrhRoom] = React.useState(false);
@@ -155,6 +163,10 @@ function BookRoom() {
 
   const handleCloseSearchRoom = () => {
     setOpenSeacrhRoom(false);
+    setTextSearch("");
+    setFloorChose("");
+    setTypeRoomChose("");
+    setPriceRange([0, 3000000]);
   };
 
   const handleOpenAddService = () => {
@@ -290,7 +302,11 @@ function BookRoom() {
   };
 
   const handleCheckboxChange = (orderDetailId) => {
-    setSelectedOrderDetails(orderDetailId);
+    if (selectedOrderDetails === orderDetailId) {
+      setSelectedOrderDetails(null); // Bỏ chọn nếu đang chọn lại cùng phòng
+    } else {
+      setSelectedOrderDetails(orderDetailId); // Chọn phòng mới
+    }
   };
 
   const calculateTotalAmountPriceRoom = () => {
@@ -405,6 +421,7 @@ function BookRoom() {
       toast.success("Nhận phòng thành công!", {
         position: toast.POSITION.BOTTOM_RIGHT,
       });
+      window.location.href = `/orders?id=${id}`;
     } catch (error) {
       console.log(error);
     }
@@ -419,7 +436,7 @@ function BookRoom() {
         excessMoney: moneyReturnCustomer,
         note: noteReturnRoom,
       });
-      setOrder({ ...order, status: 3 });
+      setOrder({ ...order, status: 1 });
       handleCloseReturnRoom();
       toast.success("Trả phòng thành công!", {
         position: toast.POSITION.BOTTOM_RIGHT,
@@ -744,8 +761,6 @@ function BookRoom() {
     handleOpenDateDialog();
   };
 
-  const [roomPricePerDay, setRoomPricePerDay] = useState(0); // Thêm state để lưu giá theo ngày của phòng
-
   // Trong useEffect để fetch giá theo ngày của phòng khi selectedRoomId thay đổi
   useEffect(() => {
     const selectedRoom = rooms.find((r) => r.id === selectedRoomId);
@@ -792,6 +807,59 @@ function BookRoom() {
     }
   };
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
+        // console.log(accessToken);
+        axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
+
+        let Api = `http://localhost:2003/api/admin/room/loadAndSearchBookRoom`;
+        // Add search text parameter only if there's a search text entered
+        let hasQueryParams = false;
+
+        // Construct the API URL based on the selected options
+        if (textSearch !== "") {
+          Api += `?key=${textSearch}`;
+          hasQueryParams = true;
+        }
+        if (floorChose !== "") {
+          Api += hasQueryParams ? `&floorId=${floorChose}` : `?floorId=${floorChose}`;
+          hasQueryParams = true;
+        }
+        if (typeRoomChose !== "") {
+          Api += hasQueryParams ? `&typeRoomId=${typeRoomChose}` : `?typeRoomId=${typeRoomChose}`;
+          hasQueryParams = true;
+        }
+        if (priceRange.length !== 0) {
+          Api += hasQueryParams
+            ? `&start=${priceRange[0]}&end=${priceRange[1]}`
+            : `?start=${priceRange[0]}&end=${priceRange[1]}`;
+          hasQueryParams = true;
+        }
+        // console.warn(Api);
+        setIsLoading(true);
+        const response = await axios.get(Api); // Thay đổi URL API của bạn tại đây
+        setRooms(response.data);
+        setIsLoading(false);
+      } catch (error) {
+        if (error.response) {
+          // Xử lý response lỗi
+          if (error.response.status === 403) {
+            alert("Bạn không có quyền truy cập vào trang này");
+            window.location.href = "/auth/login"; // Thay đổi "/dang-nhap" bằng đường dẫn đến trang đăng nhập của bạn
+          } else {
+            alert("Có lỗi xảy ra trong quá trình gọi API");
+          }
+        } else {
+          console.log("Không thể kết nối đến API");
+        }
+      }
+    };
+
+    fetchData();
+  }, [textSearch, floorChose, typeRoomChose, priceRange]);
+
   return (
     <div
       style={{
@@ -814,19 +882,27 @@ function BookRoom() {
       >
         <DialogTitle>Tìm kiếm phòng</DialogTitle>
         <DialogContent>
-          <OutlinedInput
-            fullWidth
-            defaultValue=""
-            placeholder="Tìm kiếm phòng"
-            startAdornment={
-              <InputAdornment position="start">
-                <SvgIcon color="action" fontSize="small">
-                  <MagnifyingGlassIcon />
-                </SvgIcon>
-              </InputAdornment>
-            }
-            sx={{ maxWidth: 500 }}
-          />
+          <RoomSearch textSearch={textSearch} setTextSearch={setTextSearch} />
+          <div style={{ display: "flex", marginTop: 10, alignItems: "center" }}>
+            <div>
+              <RoomFilter
+                floor={floor}
+                typeRoom={typeRoom}
+                floorChose={floorChose}
+                typeRoomChose={typeRoomChose}
+                setFloorChose={setFloorChose}
+                setTypeRoomChose={setTypeRoomChose}
+              />
+            </div>
+            <div
+              style={{
+                marginLeft: 100,
+                width: 260,
+              }}
+            >
+              <PriceRangeSlider priceRange={priceRange} setPriceRange={setPriceRange} />
+            </div>
+          </div>
           <br />
           <br />
           <Scrollbar>
@@ -834,38 +910,54 @@ function BookRoom() {
               <Table>
                 <TableHead>
                   <TableRow>
+                    <TableCell>STT</TableCell>
                     <TableCell></TableCell>
+                    <TableCell>Mã phòng</TableCell>
                     <TableCell>Phòng</TableCell>
                     <TableCell>Loại phòng</TableCell>
                     <TableCell>Tầng</TableCell>
                     <TableCell>Giá theo ngày</TableCell>
-                    <TableCell>Giá theo giờ</TableCell>
                     <TableCell>Trạng thái</TableCell>
                     <TableCell>Thao tác</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {rooms.map((room) => (
+                  {rooms.map((room, index) => (
                     <TableRow key={room.id}>
+                      <TableCell padding="checkbox">
+                        <div key={index}>
+                          <span>{index + 1}</span>
+                        </div>
+                      </TableCell>
                       <TableCell>
                         <img
                           style={{ height: 200, objectFit: "cover", width: "80%" }}
                           src={room.photoList[0].url}
                         />
                       </TableCell>
+                      <TableCell>{room.roomCode}</TableCell>
                       <TableCell>{room.roomName}</TableCell>
                       <TableCell>{room.typeRoom.typeRoomName}</TableCell>
                       <TableCell>{room.floor.floorName}</TableCell>
                       <TableCell>{formatPrice(room.typeRoom.pricePerDay)}</TableCell>
-                      <TableCell>{formatPrice(room.typeRoom.pricePerHours)}</TableCell>
                       <TableCell>
-                        {room.status === 1
-                          ? "Phòng trống"
-                          : room.status === 2
-                          ? "Phòng đã được đặt"
-                          : room.status === 3
-                          ? "Đang có người ở"
-                          : "Trạng thái khác"}
+                        {room.status === 1 ? (
+                          <span style={{ fontSize: 13 }} className="badge badge-pill bg-primary">
+                            Phòng trống
+                          </span>
+                        ) : room.status === 2 ? (
+                          <span style={{ fontSize: 13 }} className="badge badge-pill bg-danger">
+                            Phòng đã được đặt
+                          </span>
+                        ) : room.status === 3 ? (
+                          <span style={{ fontSize: 13 }} className="badge badge-pill bg-success">
+                            Đang có người ở
+                          </span>
+                        ) : (
+                          <span style={{ fontSize: 13 }} className="badge badge-pill bg-secondary">
+                            Trạng thái khác
+                          </span>
+                        )}
                       </TableCell>
                       <TableCell>
                         {room.status === 1 && ( // Kiểm tra nếu room.status là 1 thì hiển thị nút
@@ -1058,14 +1150,13 @@ function BookRoom() {
                       />
                     </TableCell>
                     <TableCell>
-                      {orderDetail.roomImages.map((imageUrl, imgIndex) => (
+                      {orderDetail.roomImages.length > 0 && ( // Kiểm tra xem có hình ảnh nào trong mảng không
                         <img
-                          style={{ height: 150, objectFit: "cover", width: "80%" }}
-                          key={imgIndex}
-                          src={imageUrl}
-                          alt={`Room ${index + 1} Image ${imgIndex + 1}`}
+                          style={{ objectFit: "cover", width: "100%" }}
+                          src={orderDetail.roomImages[0]} // Hiển thị chỉ hình ảnh đầu tiên
+                          alt={`Room ${index + 1} Image 1`} // Ví dụ: Room 1 Image 1
                         />
-                      ))}
+                      )}
                     </TableCell>
                     <TableCell>{orderDetail.room.roomName}</TableCell>
                     <TableCell>{orderDetail.room.floor.floorName}</TableCell>
@@ -1225,6 +1316,8 @@ function BookRoom() {
           marginLeft: 140, // Add the box shadow
         }}
       >
+        <h3 style={{ display: "flex", justifyContent: "center" }}>DỊCH VỤ</h3>
+        <hr />
         <Scrollbar>
           <Box sx={{ minWidth: 800 }}>
             <Table>
@@ -1261,11 +1354,9 @@ function BookRoom() {
                   <TableRow>
                     <TableCell colSpan={5} align="center">
                       <div>
-                        <SvgIcon style={{ fontSize: "100px" }}>
-                          <NoSymbolIcon />
-                        </SvgIcon>
-
-                        <span>Không có dữ liệu.</span>
+                        <span style={{ fontFamily: "monospace", fontSize: 20 }}>
+                          Không có dữ liệu.
+                        </span>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -1328,13 +1419,11 @@ function BookRoom() {
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={5} align="center">
+                    <TableCell colSpan={6} align="center">
                       <div>
-                        <SvgIcon style={{ fontSize: "100px" }}>
-                          <NoSymbolIcon />
-                        </SvgIcon>
-
-                        <span>Không có dữ liệu.</span>
+                        <span style={{ fontFamily: "monospace", fontSize: 20 }}>
+                          Không có dữ liệu.
+                        </span>
                       </div>
                     </TableCell>
                   </TableRow>
