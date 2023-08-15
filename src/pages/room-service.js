@@ -850,7 +850,7 @@ function BookRoom() {
                       <TableCell>
                         <img
                           style={{ height: 200, objectFit: "cover", width: "80%" }}
-                          src={room.photoList[0].url}
+                          // src={room.photoList[0].url}
                         />
                       </TableCell>
                       <TableCell>{room.roomName}</TableCell>

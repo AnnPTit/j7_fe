@@ -53,7 +53,7 @@
     "react-webcam": "^7.1.1",
     "simplebar-react": "^3.2.1",
     "styled-components": "^5.3.11",
-    "sweetalert2": "^11.7.16",
+    "sweetalert2": "^11.6.13",
     "yup": "1.0.0"
   },
   "devDependencies": {
@@ -65,5 +65,16 @@
     "eslint": "8.34.0",
     "eslint-config-next": "13.1.6",
     "sass": "^1.63.6"
+  },
+  "description": "![license](https://img.shields.io/badge/license-MIT-blue.svg)",
+  "main": "next.config.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AnnPTit/j7_fe.git"
+  },
+  "keywords": [],
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/AnnPTit/j7_fe/issues"
   }
 }
