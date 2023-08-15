@@ -6,18 +6,23 @@ import { useEffect, useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { ToastContainer, toast } from "react-toastify";
 import Swal from "sweetalert2";
+import { parse, format } from "date-fns";
 
 import React, { Component } from "react";
 import QrReader from "react-qr-scanner";
-import { FormControl, FormControlLabel, FormLabel, Paper, Radio, RadioGroup, TextField } from "@mui/material";
+import {
+  FormControl,
+  FormControlLabel,
+  FormLabel,
+  Paper,
+  Radio,
+  RadioGroup,
+  TextField,
+} from "@mui/material";
 
 import { DatePicker, TimePicker } from "@mui/x-date-pickers";
 
-
-
-
 const cx = classNames.bind(style);
-
 
 function InputAccount() {
   // call api địa chỉ
@@ -94,8 +99,8 @@ function InputAccount() {
     const districts = districtsInput?.value;
     const wards = wardsInput?.value;
 
-
-
+    const parsedBirthday = parse(birthdayAccount, "dd/MM/yyyy", new Date());
+    const formattedBirthday = format(parsedBirthday, "yyyy-MM-dd");
     // Tạo payload dữ liệu để gửi đến API
     const payload = {
       accountCode,
@@ -104,7 +109,7 @@ function InputAccount() {
       fullname,
       email,
       phoneNumber,
-      birthday : birthdayAccount,
+      birthday: formattedBirthday,
       citizenId,
       provinces,
       districts,
@@ -157,7 +162,13 @@ function InputAccount() {
           const isCitizenIdError = error.response.data.citizenId === undefined;
           const isBirthdayError = error.response.data.birthday === undefined;
 
-          if (!isFullnameError && !isEmailError && !isPhoneNumberError && !isCitizenIdError && !isBirthdayError) {
+          if (
+            !isFullnameError &&
+            !isEmailError &&
+            !isPhoneNumberError &&
+            !isCitizenIdError &&
+            !isBirthdayError
+          ) {
             toast.error(error.response.data.fullname, {
               position: toast.POSITION.BOTTOM_RIGHT,
             });
@@ -213,9 +224,7 @@ function InputAccount() {
         return false;
       }
     }
-
   };
-
 
   const handleScan = (data) => {
     if (data && data.text) {
@@ -256,17 +265,16 @@ function InputAccount() {
     }
   };
   const formatToDDMMYYYY = (date) => {
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
     const year = date.getFullYear();
     return `${day}/${month}/${year}`;
   };
 
-
   const handleBirthDayChange = (date) => {
     const formattedDate = formatToDDMMYYYY(date);
-  setBirthday(formattedDate);
-  console.log(formattedDate);
+    setBirthday(formattedDate);
+    console.log(formattedDate);
   };
 
   const toggleCamera = () => {
@@ -287,7 +295,7 @@ function InputAccount() {
     transform: cameraEnabled ? "scaleX(-1)" : "none",
   };
 
-  console.log(birthday)
+  console.log(birthday);
 
   return (
     <div className={cx("wrapper")}>
