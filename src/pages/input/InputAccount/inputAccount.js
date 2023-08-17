@@ -9,15 +9,19 @@ import Swal from "sweetalert2";
 
 import React, { Component } from "react";
 import QrReader from "react-qr-scanner";
-import { FormControl, FormControlLabel, FormLabel, Paper, Radio, RadioGroup, TextField } from "@mui/material";
+import {
+  FormControl,
+  FormControlLabel,
+  FormLabel,
+  Paper,
+  Radio,
+  RadioGroup,
+  TextField,
+} from "@mui/material";
 
 import { DatePicker, TimePicker } from "@mui/x-date-pickers";
 
-
-
-
 const cx = classNames.bind(style);
-
 
 function InputAccount() {
   // call api địa chỉ
@@ -94,8 +98,6 @@ function InputAccount() {
     const districts = districtsInput?.value;
     const wards = wardsInput?.value;
 
-
-
     // Tạo payload dữ liệu để gửi đến API
     const payload = {
       accountCode,
@@ -104,7 +106,7 @@ function InputAccount() {
       fullname,
       email,
       phoneNumber,
-      birthday : birthdayAccount,
+      birthday: birthdayAccount,
       citizenId,
       provinces,
       districts,
@@ -115,12 +117,12 @@ function InputAccount() {
 
     try {
       const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
+      console, log("accessToken ", accessToken);
       // Kiểm tra xem accessToken có tồn tại không
       if (!accessToken) {
         alert("Bạn chưa đăng nhập");
         return false;
       }
-
       axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
 
       const response = await axios.post("http://localhost:2003/api/admin/account/save", payload); // Gọi API /api/service-type/save với payload và access token
@@ -157,7 +159,13 @@ function InputAccount() {
           const isCitizenIdError = error.response.data.citizenId === undefined;
           const isBirthdayError = error.response.data.birthday === undefined;
 
-          if (!isFullnameError && !isEmailError && !isPhoneNumberError && !isCitizenIdError && !isBirthdayError) {
+          if (
+            !isFullnameError &&
+            !isEmailError &&
+            !isPhoneNumberError &&
+            !isCitizenIdError &&
+            !isBirthdayError
+          ) {
             toast.error(error.response.data.fullname, {
               position: toast.POSITION.BOTTOM_RIGHT,
             });
@@ -213,10 +221,7 @@ function InputAccount() {
         return false;
       }
     }
-
   };
-
-
   const handleScan = (data) => {
     if (data && data.text) {
       const scannedText = data.text;
@@ -256,17 +261,16 @@ function InputAccount() {
     }
   };
   const formatToDDMMYYYY = (date) => {
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
     const year = date.getFullYear();
     return `${day}/${month}/${year}`;
   };
 
-
   const handleBirthDayChange = (date) => {
     const formattedDate = formatToDDMMYYYY(date);
-  setBirthday(formattedDate);
-  console.log(formattedDate);
+    setBirthday(formattedDate);
+    console.log(formattedDate);
   };
 
   const toggleCamera = () => {
@@ -287,7 +291,7 @@ function InputAccount() {
     transform: cameraEnabled ? "scaleX(-1)" : "none",
   };
 
-  console.log(birthday)
+  console.log(birthday);
 
   return (
     <div className={cx("wrapper")}>
