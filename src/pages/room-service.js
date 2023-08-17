@@ -436,7 +436,7 @@ function BookRoom() {
         excessMoney: moneyReturnCustomer,
         note: noteReturnRoom,
       });
-      setOrder({ ...order, status: 1 });
+      setOrder({ ...order, status: 3 });
       handleCloseReturnRoom();
       toast.success("Trả phòng thành công!", {
         position: toast.POSITION.BOTTOM_RIGHT,
@@ -540,11 +540,32 @@ function BookRoom() {
       return;
     }
 
+    const isCustomerAdded = customerInfo.some((customer) => customer.citizenId === cccd);
+
+    if (isCustomerAdded) {
+      toast.error("Khách hàng đã tồn tại trong danh sách của phòng này!", {
+        position: toast.POSITION.BOTTOM_RIGHT,
+      });
+      return;
+    }
+
+    const selectedOrderDetail = orderDetailData.find(
+      (detail) => detail.id === selectedOrderDetails
+    );
+    const { room } = selectedOrderDetail;
+
+    if (customerInfo.length >= room.typeRoom.capacity) {
+      toast.error("Sức chứa của phòng đã đầy, không thể thêm khách hàng mới!", {
+        position: toast.POSITION.BOTTOM_RIGHT,
+      });
+      return;
+    }
+
     const genderBoolean = gender === "Nam"; // true if gender is "Nam", false if gender is "Nữ"
     const parsedBirthday = parse(birthday, "dd/MM/yyyy", new Date());
 
     const formattedBirthday = format(parsedBirthday, "yyyy-MM-dd");
-    const customerInfo = {
+    const customerInfor = {
       citizenId: cccd,
       fullname: customerName,
       gender: genderBoolean,
@@ -555,7 +576,7 @@ function BookRoom() {
     try {
       const response = await axios.post(
         `http://localhost:2003/api/information-customer/save/${selectedOrderDetails}`,
-        customerInfo
+        customerInfor
       );
       setCustomerInfo((prevCustomerInfo) => [...prevCustomerInfo, response.data]);
       toast.success("Thêm thành công!", {
@@ -932,7 +953,7 @@ function BookRoom() {
                       <TableCell>
                         <img
                           style={{ height: 200, objectFit: "cover", width: "80%" }}
-                          // src={room.photoList[0].url}
+                          src={room.photoList[0].url}
                         />
                       </TableCell>
                       <TableCell>{room.roomCode}</TableCell>
@@ -947,7 +968,7 @@ function BookRoom() {
                           </span>
                         ) : room.status === 2 ? (
                           <span style={{ fontSize: 13 }} className="badge badge-pill bg-danger">
-                            Phòng đã được đặt
+                            Phòng đặt tại quầy
                           </span>
                         ) : room.status === 3 ? (
                           <span style={{ fontSize: 13 }} className="badge badge-pill bg-success">
