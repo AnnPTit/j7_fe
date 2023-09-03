@@ -76,7 +76,7 @@ export const BookRoomSearch = () => {
             style={{
               height: 55,
               width: 170,
-              marginLeft: 650,
+              marginLeft: 600,
               backgroundColor: "darkblue",
               color: "white",
             }}

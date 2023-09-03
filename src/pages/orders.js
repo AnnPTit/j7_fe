@@ -23,6 +23,7 @@ import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import { format } from "date-fns";
+import { SeverityPill } from "src/components/severity-pill";
 
 function OrderTimeline() {
   const currentDate = new Date().toLocaleString();
@@ -31,6 +32,7 @@ function OrderTimeline() {
   const [customer, setCustomer] = useState();
   const [room, setRoom] = useState();
   const [account, setAccount] = useState();
+  const [service, setService] = useState();
   const [order, setOrder] = useState({
     id: "",
     typeOfOrder: "",
@@ -39,29 +41,37 @@ function OrderTimeline() {
     customer: {},
     bookRoom: {},
   });
-  // const [orderTimeline, setOrderTimeline] = useState({
-  //   id: "",
-  //   type: "",
-  //   note: "",
-  //   createAt: "",
-  //   order: {},
-  //   account: {},
-  // });
+  const [orderDetail, setOrderDetail] = useState({
+    id: "",
+  });
+  const [orderDetailData, setOrderDetailData] = useState([]);
+  const [paymentMethod, setPaymentMethod] = useState([]);
+  const [serviceUsed, setServiceUsed] = useState([]);
+  const [selectedOrderTimelines, setSelectedOrderTimelines] = useState([]);
 
-  const getStatusButtonColor = (status) => {
+  let totalServiceCost = 0;
+  const [openDetail, setOpenDetail] = React.useState(false);
+
+  const handleCloseDetail = () => {
+    setOpenDetail(false);
+  };
+
+  const getPaymentMethodColor = (method) => {
+    if (method === true) {
+      return { color: "primary", text: "Tiền mặt" };
+    } else if (method === false) {
+      return { color: "error", text: "Chuyển khoản" };
+    } else {
+      return { color: "default", text: "Unknown" };
+    }
+  };
+
+  const getPaymentStatusColor = (status) => {
     switch (status) {
       case 0:
-        return { color: "danger", text: "Đã hủy" };
+        return { color: "error", text: "Thất bại" };
       case 1:
-        return { color: "primary", text: "Chờ xác nhận" };
-      case 2:
-        return { color: "secondary", text: "Đã nhận phòng" };
-      case 3:
-        return { color: "success", text: "Khách hàng trả phòng" };
-      case 4:
-        return { color: "warning", text: "Pending" };
-      case 5:
-        return { color: "info", text: "Processing" };
+        return { color: "success", text: "Thành công" };
       default:
         return { color: "default", text: "Unknown" };
     }
@@ -70,9 +80,6 @@ function OrderTimeline() {
   const formatPrice = (price) => {
     return price.toLocaleString("vi-VN") + " VND";
   };
-
-  const statusData = getStatusButtonColor(order.status);
-  const statusText = statusData.text;
 
   const [timelineEvents, setTimelineEvents] = useState([
     {
@@ -95,12 +102,13 @@ function OrderTimeline() {
         }
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
         const responseCustomer = await axios.get("http://localhost:2003/api/customers/getList");
-        // const responseBookRoom = await axios.get("http://localhost:2003/api/book-room/getList");
+        const responseService = await axios.get("http://localhost:2003/api/admin/service/getAll");
         const responseRoom = await axios.get("http://localhost:2003/api/admin/room/getList");
         const responseAccount = await axios.get("http://localhost:2003/api/admin/account/getAll");
-        setAccount(responseAccount.data);
         setCustomer(responseCustomer.data);
+        setService(responseService.data);
         setRoom(responseRoom.data);
+        setAccount(responseAccount.data);
       } catch (error) {
         console.log(error);
       }
@@ -148,7 +156,7 @@ function OrderTimeline() {
                 case 2:
                   eventColor = "#00CC66";
                   eventIcon = FaRegCalendarCheck;
-                  eventTitle = "Khách hàng đã nhận phòng";
+                  eventTitle = "Khách hàng nhận phòng";
                   break;
                 case 3:
                   eventColor = "#00CC66";
@@ -205,7 +213,6 @@ function OrderTimeline() {
         const responseOrderDetail = await axios.get(
           `http://localhost:2003/api/order-detail/loadOrderDetailByOrderId/${id}`
         );
-        console.log("OrderDetail", responseOrderDetail.data);
       } catch (error) {
         console.log(error);
       }
@@ -223,8 +230,6 @@ function OrderTimeline() {
         return <FaRegCalendarCheck style={{ fontSize: "50px", color: "#00CC66" }} />;
       case 3:
         return <FaHome style={{ fontSize: "50px", color: "#00CC66" }} />;
-        break;
-      // Add more cases for other types if needed
       default:
         return <FaBug style={{ fontSize: "50px", color: "default" }} />;
     }
@@ -245,16 +250,12 @@ function OrderTimeline() {
     }
   };
 
-  const [selectedOrderTimelines, setSelectedOrderTimelines] = useState([]);
-
   const handleShowOrderTimeline = async () => {
     // Fetch order timeline data for the selected order (using the 'id' from router.query)
     try {
       const responseOrderTimeline = await axios.get(
         `http://localhost:2003/api/order-timeline/loadByOrderId/${id}`
       );
-
-      console.log("OrderTimeline", responseOrderTimeline.data);
 
       if (responseOrderTimeline.data && responseOrderTimeline.data.length > 0) {
         // Set the orderTimeline data and show the list
@@ -283,14 +284,6 @@ function OrderTimeline() {
     }
   }, []);
 
-  const [openDetail, setOpenDetail] = React.useState(false);
-
-  const handleCloseDetail = () => {
-    setOpenDetail(false);
-  };
-
-  const [orderDetailData, setOrderDetailData] = useState([]);
-
   useEffect(() => {
     async function fetchData() {
       try {
@@ -303,7 +296,6 @@ function OrderTimeline() {
         const response = await axios.get(
           `http://localhost:2003/api/order-detail/loadOrderDetailByOrderId/${id}`
         );
-        // console.log("photoList", response.data.room?.photoList?.url);
         console.log("OrderDetail: ", response.data);
         setOrderDetailData(response.data);
       } catch (error) {
@@ -313,7 +305,6 @@ function OrderTimeline() {
     fetchData();
   }, [id]);
 
-  const [paymentMethod, setPaymentMethod] = useState([]);
   useEffect(() => {
     async function fetchData() {
       try {
@@ -324,7 +315,6 @@ function OrderTimeline() {
         }
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
         const response = await axios.get(`http://localhost:2003/api/payment-method/load/${id}`);
-        // console.log("photoList", response.data.room?.photoList?.url);
         console.log("PaymentMethod: ", response.data);
         setPaymentMethod(response.data);
       } catch (error) {
@@ -333,6 +323,31 @@ function OrderTimeline() {
     }
     fetchData();
   }, [id]);
+
+  useEffect(() => {
+    async function fetchServiceUsed() {
+      try {
+        if (orderDetail && orderDetail.id) {
+          const accessToken = localStorage.getItem("accessToken");
+          if (!accessToken) {
+            alert("Bạn chưa đăng nhập");
+            return;
+          }
+
+          axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+          const response = await axios.get(
+            `http://localhost:2003/api/service-used/load/${orderDetail.id}`
+          );
+          console.log("ServiceUsed: ", response.data);
+          setServiceUsed(response.data);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    }
+
+    fetchServiceUsed();
+  }, [orderDetail]);
 
   return (
     <div
@@ -421,15 +436,6 @@ function OrderTimeline() {
         <hr />
         <div style={{ display: "flex" }}>
           <div style={{ marginLeft: 30, fontFamily: "inherit", fontSize: "17px" }}>
-            <label id="label">Trạng thái</label>
-            <span
-              className="badge badge-pill badge-warning"
-              style={{ backgroundColor: "black", marginLeft: 150 }}
-            >
-              {statusText}
-            </span>
-            <br />
-            <br />
             <label>Loại</label>
             <label style={{ marginLeft: 193 }}>
               {order.typeOfOrder == 0 ? "Online" : "Tại quầy"}
@@ -440,8 +446,10 @@ function OrderTimeline() {
             <label style={{ marginLeft: 135 }}>{order.orderCode}</label>
             <br />
             <br />
-            <label>VAT</label>
-            <label style={{ marginLeft: 195 }}>{order.vat}</label>
+            <label>Tổng tiền</label>
+            <span style={{ marginLeft: 155, color: "red" }}>
+              {order.totalMoney ? formatPrice(order.totalMoney) : "0 VND"}
+            </span>
             <br />
             <br />
           </div>
@@ -484,33 +492,34 @@ function OrderTimeline() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {paymentMethod.map((paymentMethod) => (
-              <TableRow hover key={paymentMethod.id}>
-                <TableCell style={{ color: "red" }}>
-                  {formatPrice(paymentMethod.totalMoney)}
-                </TableCell>
-                <TableCell>
-                  {format(new Date(paymentMethod.createAt), "dd/MM/yyyy - HH:mm:ss")}
-                </TableCell>
-                <TableCell>
-                  <span
-                    style={{ fontSize: 15, width: 100 }}
-                    className="badge rounded-pill bg-primary"
-                  >
-                    {paymentMethod.method == 1 ? "Tiền mặt" : "Chuyển khoản"}
-                  </span>
-                </TableCell>
-                <TableCell>
-                  <span
-                    style={{ fontSize: 15, width: 120 }}
-                    className="badge rounded-pill bg-success"
-                  >
-                    {paymentMethod.status == 1 ? "Thành công" : ""}
-                  </span>
-                </TableCell>
-                <TableCell></TableCell>
-              </TableRow>
-            ))}
+            {paymentMethod.map((paymentMethod) => {
+              const methodPayment = getPaymentMethodColor(paymentMethod.method);
+              const methodPaymentText = methodPayment.text;
+              const statusPayment = getPaymentStatusColor(paymentMethod.status);
+              const statusPaymentText = statusPayment.text;
+
+              return (
+                <TableRow hover key={paymentMethod.id}>
+                  <TableCell style={{ color: "red" }}>
+                    {formatPrice(paymentMethod.totalMoney)}
+                  </TableCell>
+                  <TableCell>
+                    {format(new Date(paymentMethod.createAt), "dd/MM/yyyy - HH:mm:ss")}
+                  </TableCell>
+                  <TableCell>
+                    <SeverityPill variant="contained" color={methodPayment.color}>
+                      {methodPaymentText}
+                    </SeverityPill>
+                  </TableCell>
+                  <TableCell>
+                    <SeverityPill variant="contained" color={statusPayment.color}>
+                      {statusPaymentText}
+                    </SeverityPill>
+                  </TableCell>
+                  <TableCell></TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </Card>
@@ -529,6 +538,7 @@ function OrderTimeline() {
             <h3>THÔNG TIN PHÒNG</h3>
           </div>
           <hr />
+
           {orderDetailData.map((orderDetail, index) => (
             <Card key={index}>
               <Grid container spacing={2}>
@@ -562,6 +572,52 @@ function OrderTimeline() {
                   <br />
                   <br />
                   <span style={{ color: "red" }}>{formatPrice(orderDetail.roomPrice)}</span>
+                  <br />
+                  <br />
+                </div>
+                <div style={{ margin: 30, marginLeft: 60 }}>
+                  <h4>Dịch vụ</h4>
+                  <br />
+                  <ul>
+                    {orderDetail.serviceUsedList.map((serviceUsed, serviceIndex) => {
+                      totalServiceCost += serviceUsed.service.price * serviceUsed.quantity;
+                      return (
+                        <li key={serviceIndex}>
+                          {serviceUsed.service.serviceName} x{serviceUsed.quantity} -{" "}
+                          {formatPrice(serviceUsed.service.price * serviceUsed.quantity)}
+                          <br />
+                          <br />
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+                <div style={{ margin: 30, marginLeft: 60 }}>
+                  <h4>Khách hàng</h4>
+                  <br />
+                  <ul>
+                    {orderDetail.informationCustomerList.map(
+                      (infomationCustomer, infomationCustomerIndex) => {
+                        return (
+                          <li key={infomationCustomerIndex}>
+                            {infomationCustomer.fullname}
+                            <br />
+                            <br />
+                          </li>
+                        );
+                      }
+                    )}
+                  </ul>
+                </div>
+                <div style={{ marginLeft: 900 }}>
+                  <span>
+                    Check in: {format(new Date(orderDetail.checkIn), "dd/MM/yyyy - HH:mm")}
+                  </span>
+                  <br />
+                  <br />
+                  <span>
+                    Check out: {format(new Date(orderDetail.checkOut), "dd/MM/yyyy - HH:mm")}
+                  </span>
                 </div>
               </Grid>
               <hr />

@@ -110,7 +110,7 @@ const Page = () => {
               </Stack>
             </Stack>
             <OrderSearch />
-            <div style={{ minHeight: 500 }}>
+            <div style={{ minHeight: 350 }}>
               {" "}
               <OrderTable
                 count={data.length}

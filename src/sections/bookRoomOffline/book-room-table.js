@@ -15,6 +15,7 @@ import { Scrollbar } from "src/components/scrollbar";
 import TrashIcon from "@heroicons/react/24/solid/TrashIcon";
 import PencilSquareIcon from "@heroicons/react/24/solid/PencilSquareIcon";
 import Button from "@mui/material/Button";
+import { SeverityPill } from "src/components/severity-pill";
 
 export const BookRoomTable = (props) => {
   const { items = [], selected = [] } = props;
@@ -38,9 +39,9 @@ export const BookRoomTable = (props) => {
       case 1:
         return { color: "primary", text: "Chờ xác nhận" };
       case 2:
-        return { color: "secondary", text: "Đã nhận phòng" };
+        return { color: "warning", text: "Đã nhận phòng" };
       case 3:
-        return { color: "success", text: "Khách hàng trả phòng" };
+        return { color: "success", text: "Đã trả phòng" };
       case 4:
         return { color: "warning", text: "Pending" };
       case 5:
@@ -84,9 +85,9 @@ export const BookRoomTable = (props) => {
                     <TableCell>{formatPrice(order.totalMoney)}</TableCell>
                     <TableCell>{created}</TableCell>
                     <TableCell>
-                      <Button variant="contained" color={statusData.color}>
+                      <SeverityPill variant="contained" color={statusData.color}>
                         {statusText}
-                      </Button>
+                      </SeverityPill>
                     </TableCell>
                     <TableCell>
                       <a className="btn btn-primary m-xl-2" href={hrefUpdate}>

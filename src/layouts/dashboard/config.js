@@ -13,8 +13,9 @@ import TVIcon from "@heroicons/react/24/solid/TVIcon";
 import AdjustmentsVerticalIcon from "@heroicons/react/24/solid/AdjustmentsVerticalIcon";
 import { SvgIcon } from "@mui/material";
 import Tippy from "@tippyjs/react";
-
-import React, { useState } from "react";
+import "tippy.js/dist/tippy.css";
+import { NavLink } from "react-router-dom";
+import React from "react";
 
 export const items = [
   {
@@ -43,6 +44,24 @@ export const items = [
         <ShoppingBagIcon />
       </SvgIcon>
     ),
+  },
+  {
+    title: "Quản lý phòng",
+    icon: (
+      <SvgIcon fontSize="small">
+        <ShoppingBagIcon />
+      </SvgIcon>
+    ),
+    items: [
+      {
+        title: "Phòng",
+        path: "/room",
+      },
+      {
+        title: "Loại phòng",
+        path: "/dashboards/analytics",
+      },
+    ],
   },
   {
     title: "Customers",
@@ -182,3 +201,45 @@ export const items = [
     ),
   },
 ];
+
+function Sidebar() {
+  const [showRoomTooltip, setShowRoomTooltip] = useState(false);
+
+  const toggleRoomTooltip = () => {
+    setShowRoomTooltip(!showRoomTooltip);
+  };
+
+  return (
+    <div className="sidebar">
+      {/* Các mục khác */}
+      <div className="sidebar-item">
+        <Tippy
+          content={
+            <div className="tooltip">
+              {/* Hiển thị các mục con */}
+              {items[3].items.map((subItem, index) => (
+                <NavLink
+                  key={index}
+                  to={subItem.path}
+                  onClick={() => setShowRoomTooltip(false)} // Ẩn tooltip khi nhấp vào mục con
+                >
+                  {subItem.title}
+                </NavLink>
+              ))}
+            </div>
+          }
+          visible={showRoomTooltip}
+          placement="right"
+          interactive={true}
+          trigger="click" // Kích hoạt tooltip bằng cách nhấp vào
+          onClickOutside={() => setShowRoomTooltip(false)} // Ẩn tooltip khi nhấp vào bên ngoài
+        >
+          <div onClick={toggleRoomTooltip}>{items[3].icon}</div>
+        </Tippy>
+      </div>
+      {/* Các mục khác */}
+    </div>
+  );
+}
+
+export default Sidebar;

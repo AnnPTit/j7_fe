@@ -27,6 +27,7 @@ import QrReader from "react-qr-scanner";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import TrashIcon from "@heroicons/react/24/solid/TrashIcon";
+import PencilSquareIcon from "@heroicons/react/24/solid/PencilSquareIcon";
 import Radio from "@mui/material/Radio";
 import RadioGroup from "@mui/material/RadioGroup";
 import FormControlLabel from "@mui/material/FormControlLabel";
@@ -38,6 +39,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { RoomSearch } from "src/sections/room/room-search";
 import RoomFilter from "src/sections/room/room-filter";
 import PriceRangeSlider from "src/sections/room/price-slider";
+import { SeverityPill } from "src/components/severity-pill";
 
 function BookRoom() {
   const router = useRouter(); // Sử dụng useRouter để truy cập router của Next.js
@@ -86,7 +88,7 @@ function BookRoom() {
 
   // QR Code
   const [delay, setDelay] = useState(100);
-  const [result, setResult] = useState("No result");
+  const [result, setResult] = useState("");
   const [cameraEnabled, setCameraEnabled] = useState(false);
 
   const [selectedCustomer, setSelectedCustomer] = useState(null);
@@ -410,6 +412,21 @@ function BookRoom() {
     }
   };
 
+  const getStatusButtonColor = (status) => {
+    switch (status) {
+      case 0:
+        return { color: "error", text: "Phòng chưa hoạt động" };
+      case 1:
+        return { color: "success", text: "Phòng trống" };
+      case 2:
+        return { color: "warning", text: "Phòng đặt tại quầy" };
+      case 3:
+        return { color: "success", text: "Phòng đặt qua website" };
+      default:
+        return { color: "default", text: "Unknown" };
+    }
+  };
+
   const handleConfirmOrder = async () => {
     try {
       // Make an API call to update the order status to "Đã xác nhận" (status: 2)
@@ -448,7 +465,7 @@ function BookRoom() {
 
   const handleSave = async () => {
     const updatedTotalMoney = calculateTotal(); // Lấy giá trị tạm tính
-
+    // window.location.href = `/room-service?id=${id}`;
     const response = await axios.put(`http://localhost:2003/api/admin/order/update/${id}`, {
       totalMoney: updatedTotalMoney,
     });
@@ -943,55 +960,45 @@ function BookRoom() {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {rooms.map((room, index) => (
-                    <TableRow key={room.id}>
-                      <TableCell padding="checkbox">
-                        <div key={index}>
-                          <span>{index + 1}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <img
-                          style={{ height: 200, objectFit: "cover", width: "80%" }}
-                          src={room.photoList[0].url}
-                        />
-                      </TableCell>
-                      <TableCell>{room.roomCode}</TableCell>
-                      <TableCell>{room.roomName}</TableCell>
-                      <TableCell>{room.typeRoom.typeRoomName}</TableCell>
-                      <TableCell>{room.floor.floorName}</TableCell>
-                      <TableCell>{formatPrice(room.typeRoom.pricePerDay)}</TableCell>
-                      <TableCell>
-                        {room.status === 1 ? (
-                          <span style={{ fontSize: 13 }} className="badge badge-pill bg-primary">
-                            Phòng trống
-                          </span>
-                        ) : room.status === 2 ? (
-                          <span style={{ fontSize: 13 }} className="badge badge-pill bg-danger">
-                            Phòng đặt tại quầy
-                          </span>
-                        ) : room.status === 3 ? (
-                          <span style={{ fontSize: 13 }} className="badge badge-pill bg-success">
-                            Đang có người ở
-                          </span>
-                        ) : (
-                          <span style={{ fontSize: 13 }} className="badge badge-pill bg-secondary">
-                            Trạng thái khác
-                          </span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {room.status === 1 && ( // Kiểm tra nếu room.status là 1 thì hiển thị nút
-                          <button
-                            className="btn btn-outline-primary"
-                            onClick={() => handleRoomSelect(room.id)}
-                          >
-                            Chọn
-                          </button>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                  {rooms.map((room, index) => {
+                    const statusData = getStatusButtonColor(room.status);
+                    const statusText = statusData.text;
+                    return (
+                      <TableRow key={room.id}>
+                        <TableCell padding="checkbox">
+                          <div key={index}>
+                            <span>{index + 1}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <img
+                            style={{ height: 200, objectFit: "cover", width: "80%" }}
+                            src={room.photoList[0].url}
+                          />
+                        </TableCell>
+                        <TableCell>{room.roomCode}</TableCell>
+                        <TableCell>{room.roomName}</TableCell>
+                        <TableCell>{room.typeRoom.typeRoomName}</TableCell>
+                        <TableCell>{room.floor.floorName}</TableCell>
+                        <TableCell>{formatPrice(room.typeRoom.pricePerDay)}</TableCell>
+                        <TableCell>
+                          <SeverityPill variant="contained" color={statusData.color}>
+                            {statusText}
+                          </SeverityPill>
+                        </TableCell>
+                        <TableCell>
+                          {room.status === 1 && ( // Kiểm tra nếu room.status là 1 thì hiển thị nút
+                            <button
+                              className="btn btn-outline-primary"
+                              onClick={() => handleRoomSelect(room.id)}
+                            >
+                              Chọn
+                            </button>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
                 </TableBody>
               </Table>
             </Box>
@@ -1191,6 +1198,11 @@ function BookRoom() {
                     </TableCell>
                     <TableCell>{formatPrice(orderDetail.roomPrice)}</TableCell>
                     <TableCell>
+                      <button className="btn btn-primary m-xl-2">
+                        <SvgIcon fontSize="small">
+                          <PencilSquareIcon />
+                        </SvgIcon>
+                      </button>
                       <button className="btn btn-danger m-xl-2">
                         <SvgIcon fontSize="small">
                           <TrashIcon />
@@ -1628,7 +1640,7 @@ function BookRoom() {
             padding: "20px",
             boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
             width: 400,
-            marginLeft: 89,
+            marginLeft: 80,
             marginTop: 30,
           }}
         >
