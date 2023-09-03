@@ -99,8 +99,6 @@ function InputAccount() {
     const districts = districtsInput?.value;
     const wards = wardsInput?.value;
 
-    const parsedBirthday = parse(birthdayAccount, "dd/MM/yyyy", new Date());
-    const formattedBirthday = format(parsedBirthday, "yyyy-MM-dd");
     // Tạo payload dữ liệu để gửi đến API
     const payload = {
       accountCode,
@@ -109,7 +107,7 @@ function InputAccount() {
       fullname,
       email,
       phoneNumber,
-      birthday: formattedBirthday,
+      birthday: birthdayAccount,
       citizenId,
       provinces,
       districts,
@@ -120,12 +118,12 @@ function InputAccount() {
 
     try {
       const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
+      console, log("accessToken ", accessToken);
       // Kiểm tra xem accessToken có tồn tại không
       if (!accessToken) {
         alert("Bạn chưa đăng nhập");
         return false;
       }
-
       axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
 
       const response = await axios.post("http://localhost:2003/api/admin/account/save", payload); // Gọi API /api/service-type/save với payload và access token
@@ -225,7 +223,6 @@ function InputAccount() {
       }
     }
   };
-
   const handleScan = (data) => {
     if (data && data.text) {
       const scannedText = data.text;
