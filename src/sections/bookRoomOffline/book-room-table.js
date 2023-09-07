@@ -16,6 +16,7 @@ import TrashIcon from "@heroicons/react/24/solid/TrashIcon";
 import PencilSquareIcon from "@heroicons/react/24/solid/PencilSquareIcon";
 import Button from "@mui/material/Button";
 import { SeverityPill } from "src/components/severity-pill";
+import Link from 'next/link';
 
 export const BookRoomTable = (props) => {
   const { items = [], selected = [] } = props;
@@ -90,11 +91,11 @@ export const BookRoomTable = (props) => {
                       </SeverityPill>
                     </TableCell>
                     <TableCell>
-                      <a className="btn btn-primary m-xl-2" href={hrefUpdate}>
+                      <Link className="btn btn-primary m-xl-2" href={hrefUpdate}>
                         <SvgIcon fontSize="small">
                           <PencilSquareIcon />
                         </SvgIcon>
-                      </a>
+                      </Link>
                       <button className="btn btn-danger m-xl-2">
                         <SvgIcon fontSize="small">
                           <TrashIcon />

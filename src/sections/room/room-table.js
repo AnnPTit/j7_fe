@@ -17,7 +17,8 @@ import {
 } from "@mui/material";
 import { Scrollbar } from "src/components/scrollbar";
 import TrashIcon from "@heroicons/react/24/solid/TrashIcon";
-import Bars4Icon from "@heroicons/react/24/solid/Bars4Icon";
+import PencilSquareIcon from "@heroicons/react/24/solid/PencilSquareIcon";
+import Link from "next/link";
 
 export const RoomTable = (props) => {
   const { items = [], selected = [] } = props;
@@ -126,11 +127,11 @@ export const RoomTable = (props) => {
                         : "Trạng thái khác"}
                     </TableCell>
                     <TableCell>
-                      <a className="btn btn-info m-xl-2" href={hrefUpdate}>
+                      <Link className="btn btn-primary m-xl-2" href={hrefUpdate}>
                         <SvgIcon fontSize="small">
-                          <Bars4Icon />
+                          <PencilSquareIcon />
                         </SvgIcon>
-                      </a>
+                      </Link>
                       <button className="btn btn-danger m-xl-2" onClick={alertDelete}>
                         <SvgIcon fontSize="small">
                           <TrashIcon />

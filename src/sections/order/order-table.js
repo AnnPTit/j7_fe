@@ -16,8 +16,10 @@ import {
 import { Scrollbar } from "src/components/scrollbar";
 import Button from "@mui/material/Button";
 import { SeverityPill } from "src/components/severity-pill";
+import { useRouter } from "next/router";
 
 export const OrderTable = (props) => {
+  const router = useRouter();
   const { items = [], selected = [] } = props;
 
   const formatPrice = (price) => {
@@ -34,7 +36,7 @@ export const OrderTable = (props) => {
 
   const handleRowClick = (id) => {
     // Navigate to the "orders" page based on the selected row's ID
-    window.location.href = `/orders?id=${id}`;
+    router.push(`/orders?id=${id}`);
   };
 
   const getStatusButtonColor = (status) => {

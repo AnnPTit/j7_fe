@@ -1,22 +1,14 @@
 import MagnifyingGlassIcon from "@heroicons/react/24/solid/MagnifyingGlassIcon";
-import {
-  Card,
-  Button,
-  Grid,
-  TextField,
-  InputAdornment,
-  OutlinedInput,
-  SvgIcon,
-} from "@mui/material";
+import { Card, Button, Grid, InputAdornment, OutlinedInput, SvgIcon } from "@mui/material";
 import PlusIcon from "@heroicons/react/24/solid/PlusIcon";
 import React from "react";
-import { useState } from "react";
 import { usePathname } from "next/navigation";
-import { BrowserRouter as Router, Link } from "react-router-dom";
 import axios from "axios";
+import { useRouter } from "next/router";
 
 export const BookRoomSearch = () => {
   const pathname = usePathname();
+  const router = useRouter();
 
   const item = {
     title: "Add",
@@ -44,7 +36,7 @@ export const BookRoomSearch = () => {
 
       // Ở đây, bạn có thể thực hiện các hành động sau khi đặt phòng thành công,
       // chẳng hạn hiển thị thông báo, điều hướng trang hoặc cập nhật trạng thái.
-      window.location.href = `/room-service?id=${response.data.id}`;
+      router.push(`/room-service?id=${response.data.id}`);
       console.log("Tạo thành công:", response.data);
       console.log("Id:", response.data.id);
     } catch (error) {

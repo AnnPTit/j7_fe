@@ -13,8 +13,6 @@ import {
   TableCell,
   TableHead,
   TableRow,
-  SvgIcon,
-  TextField,
   CardMedia,
   Grid,
   Typography,
@@ -24,6 +22,7 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import { format } from "date-fns";
 import { SeverityPill } from "src/components/severity-pill";
+import Link from 'next/link';
 
 function OrderTimeline() {
   const currentDate = new Date().toLocaleString();
@@ -349,6 +348,8 @@ function OrderTimeline() {
     fetchServiceUsed();
   }, [orderDetail]);
 
+  const hrefReturnRoom = `/room-service?id=${id}`;
+
   return (
     <div
       style={{
@@ -379,6 +380,13 @@ function OrderTimeline() {
         </Timeline>
         <div>
           <div style={{ display: "flex", justifyContent: "flex-end" }}>
+            {order.status === 2 && (
+              <Link href={hrefReturnRoom}>
+                <button style={{ height: 50, width: 130 }} className="btn btn-danger m-xl-2">
+                  Trả phòng
+                </button>
+              </Link>
+            )}
             <button
               onClick={handleShowOrderTimeline}
               style={{ height: 50, width: 130 }}
@@ -609,15 +617,10 @@ function OrderTimeline() {
                     )}
                   </ul>
                 </div>
-                <div style={{ marginLeft: 900 }}>
-                  <span>
-                    Check in: {format(new Date(orderDetail.checkIn), "dd/MM/yyyy - HH:mm")}
-                  </span>
+                <div style={{ marginLeft: 850 }}>
+                  <h6>Check in: {format(new Date(orderDetail.checkIn), "dd/MM/yyyy - HH:mm")}</h6>
                   <br />
-                  <br />
-                  <span>
-                    Check out: {format(new Date(orderDetail.checkOut), "dd/MM/yyyy - HH:mm")}
-                  </span>
+                  <h6>Check out: {format(new Date(orderDetail.checkOut), "dd/MM/yyyy - HH:mm")}</h6>
                 </div>
               </Grid>
               <hr />

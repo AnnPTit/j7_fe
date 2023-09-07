@@ -71,6 +71,7 @@ function BookRoom() {
   const [totalAmount, setTotalAmount] = useState(0);
   const [noteOrder, setNoteOrder] = useState("");
   const [noteReturnRoom, setNoteReturnRoom] = useState("");
+  const [noteCancelRoom, setNoteCancelRoom] = useState("");
   const [givenCustomer, setGivenCustomer] = useState(0);
   const [textSearch, setTextSearch] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -85,6 +86,7 @@ function BookRoom() {
   const [openQuantityNote, setOpenQuantityNote] = React.useState(false);
   const [openAcceptOrder, setOpenAcceptOrder] = React.useState(false);
   const [openReturnRoom, setOpenReturnRoom] = React.useState(false);
+  const [openCancelRoom, setOpenCancelRoom] = React.useState(false);
 
   // QR Code
   const [delay, setDelay] = useState(100);
@@ -208,6 +210,15 @@ function BookRoom() {
     setGivenCustomer("");
     setNoteReturnRoom("");
     setOpenReturnRoom(false);
+  };
+
+  const handleOpenCancelOrder = () => {
+    setOpenCancelRoom(true);
+  };
+
+  const handleCloseCancelOrder = () => {
+    setNoteCancelRoom("");
+    setOpenCancelRoom(false);
   };
 
   const handleOpenQuantityNote = (serviceId) => {
@@ -355,7 +366,11 @@ function BookRoom() {
       case 1:
         return (
           <React.Fragment>
-            <button style={{ width: 100, height: 50 }} className="btn btn-outline-danger">
+            <button
+              style={{ width: 100, height: 50 }}
+              onClick={handleOpenCancelOrder}
+              className="btn btn-outline-danger"
+            >
               Hủy
             </button>
             <button
@@ -381,9 +396,6 @@ function BookRoom() {
       case 2:
         return (
           <React.Fragment>
-            <button style={{ width: 100, height: 50 }} className="btn btn-outline-danger">
-              Hủy
-            </button>
             <button
               onClick={handleSave}
               style={{ marginLeft: 20, width: 100, height: 50 }}
@@ -438,7 +450,7 @@ function BookRoom() {
       toast.success("Nhận phòng thành công!", {
         position: toast.POSITION.BOTTOM_RIGHT,
       });
-      window.location.href = `/orders?id=${id}`;
+      router.push(`/orders?id=${id}`);
     } catch (error) {
       console.log(error);
     }
@@ -458,6 +470,24 @@ function BookRoom() {
       toast.success("Trả phòng thành công!", {
         position: toast.POSITION.BOTTOM_RIGHT,
       });
+      router.push(`/orders?id=${id}`);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleCancelOrder = async () => {
+    try {
+      // Make an API call to update the order status to "Đã xác nhận" (status: 2)
+      await axios.put(`http://localhost:2003/api/admin/order/delete/${id}`, {
+        note: noteOrder,
+      });
+      setOrder({ ...order, status: 0 });
+      handleCloseAcceptOrder();
+      toast.success("Hủy thành công!", {
+        position: toast.POSITION.BOTTOM_RIGHT,
+      });
+      router.push(`/orders?id=${id}`);
     } catch (error) {
       console.log(error);
     }
@@ -465,13 +495,13 @@ function BookRoom() {
 
   const handleSave = async () => {
     const updatedTotalMoney = calculateTotal(); // Lấy giá trị tạm tính
-    // window.location.href = `/room-service?id=${id}`;
     const response = await axios.put(`http://localhost:2003/api/admin/order/update/${id}`, {
       totalMoney: updatedTotalMoney,
     });
     toast.success("Lưu thành công!", {
       position: toast.POSITION.BOTTOM_RIGHT,
     });
+    router.push(`/room-service?id=${id}`);
     console.log(response.data);
   };
 
@@ -1137,10 +1167,13 @@ function BookRoom() {
         </DialogActions>
       </Dialog>
       <div style={{ marginBottom: 20, height: 50, display: "flex", justifyContent: "flex-end" }}>
-        <button onClick={handleOpenSearchRoom} className="btn btn-primary">
-          TÌM PHÒNG
-        </button>
+        {order.status === 1 || order.status === 2 ? (
+          <button onClick={handleOpenSearchRoom} className="btn btn-primary">
+            TÌM PHÒNG
+          </button>
+        ) : null}
       </div>
+
       <Paper
         style={{
           border: "1px solid #ccc",
@@ -1164,7 +1197,9 @@ function BookRoom() {
                   <TableCell>Ngày check-in</TableCell>
                   <TableCell>Ngày check-out</TableCell>
                   <TableCell>Thành tiền</TableCell>
-                  <TableCell>Thao tác</TableCell>
+                  <TableCell>
+                    {order.status === 1 || order.status === 2 ? <>Thao tác</> : null}
+                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -1198,16 +1233,20 @@ function BookRoom() {
                     </TableCell>
                     <TableCell>{formatPrice(orderDetail.roomPrice)}</TableCell>
                     <TableCell>
-                      <button className="btn btn-primary m-xl-2">
-                        <SvgIcon fontSize="small">
-                          <PencilSquareIcon />
-                        </SvgIcon>
-                      </button>
-                      <button className="btn btn-danger m-xl-2">
-                        <SvgIcon fontSize="small">
-                          <TrashIcon />
-                        </SvgIcon>
-                      </button>
+                      {order.status === 1 || order.status === 2 ? (
+                        <>
+                          <button className="btn btn-primary m-xl-2">
+                            <SvgIcon fontSize="small">
+                              <PencilSquareIcon />
+                            </SvgIcon>
+                          </button>
+                          <button className="btn btn-danger m-xl-2">
+                            <SvgIcon fontSize="small">
+                              <TrashIcon />
+                            </SvgIcon>
+                          </button>
+                        </>
+                      ) : null}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -1336,9 +1375,11 @@ function BookRoom() {
             </Scrollbar>
           </DialogContent>
         </Dialog>
-        <button onClick={handleOpenAddService} className="btn btn-primary">
-          THÊM DỊCH VỤ
-        </button>
+        {order.status === 1 || order.status === 2 ? (
+          <button onClick={handleOpenAddService} className="btn btn-primary">
+            THÊM DỊCH VỤ
+          </button>
+        ) : null}
       </div>
       <Paper
         style={{
@@ -1360,7 +1401,9 @@ function BookRoom() {
                   <TableCell>Phòng</TableCell>
                   <TableCell>Số lượng</TableCell>
                   <TableCell>Thành tiền</TableCell>
-                  <TableCell>Thao tác</TableCell>
+                  <TableCell>
+                    {order.status === 1 || order.status === 2 ? <>Thao tác</> : null}
+                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -1372,14 +1415,18 @@ function BookRoom() {
                       <TableCell>{serviceUsed.quantity}</TableCell>
                       <TableCell>{serviceUsed.quantity * serviceUsed.service.price}</TableCell>
                       <TableCell>
-                        <button
-                          onClick={() => handleDeleteServiceUsed(serviceUsed.id)}
-                          className="btn btn-danger m-xl-2"
-                        >
-                          <SvgIcon fontSize="small">
-                            <TrashIcon />
-                          </SvgIcon>
-                        </button>
+                        {order.status === 1 || order.status === 2 ? (
+                          <>
+                            <button
+                              onClick={() => handleDeleteServiceUsed(serviceUsed.id)}
+                              className="btn btn-danger m-xl-2"
+                            >
+                              <SvgIcon fontSize="small">
+                                <TrashIcon />
+                              </SvgIcon>
+                            </button>
+                          </>
+                        ) : null}
                       </TableCell>
                     </TableRow>
                   ))
@@ -1426,7 +1473,9 @@ function BookRoom() {
                   <TableCell>Giới tính</TableCell>
                   <TableCell>Ngày sinh</TableCell>
                   <TableCell>Số điện thoại</TableCell>
-                  <TableCell>Thao tác</TableCell>
+                  <TableCell>
+                    {order.status === 1 || order.status === 2 ? <>Thao tác</> : null}
+                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -1439,14 +1488,18 @@ function BookRoom() {
                       <TableCell>{format(new Date(customer.birthday), "dd/MM/yyyy")}</TableCell>
                       <TableCell>{customer.phoneNumber}</TableCell>
                       <TableCell>
-                        <button
-                          onClick={() => handleDelete(customer.id)}
-                          className="btn btn-danger m-xl-2"
-                        >
-                          <SvgIcon fontSize="small">
-                            <TrashIcon />
-                          </SvgIcon>
-                        </button>
+                        {order.status === 1 || order.status === 2 ? (
+                          <>
+                            <button
+                              onClick={() => handleDelete(customer.id)}
+                              className="btn btn-danger m-xl-2"
+                            >
+                              <SvgIcon fontSize="small">
+                                <TrashIcon />
+                              </SvgIcon>
+                            </button>
+                          </>
+                        ) : null}
                       </TableCell>
                     </TableRow>
                   ))
@@ -1623,13 +1676,15 @@ function BookRoom() {
               </RadioGroup>
             </FormControl>
             <div style={{ display: "flex", justifyContent: "flex-end" }}>
-              <button
-                style={{ width: 200, height: 50 }}
-                className="btn btn-outline-success"
-                onClick={handleAddCustomerToRooms}
-              >
-                Thêm khách hàng
-              </button>
+              {order.status === 1 || order.status === 2 ? (
+                <button
+                  style={{ width: 200, height: 50 }}
+                  className="btn btn-outline-success"
+                  onClick={handleAddCustomerToRooms}
+                >
+                  Thêm khách hàng
+                </button>
+              ) : null}
             </div>
           </div>
         </Paper>
@@ -1765,6 +1820,24 @@ function BookRoom() {
               <button className="btn btn-outline-danger">CHUYỂN KHOẢN</button>
             </DialogActions>
             <br />
+          </Dialog>
+          <Dialog open={openCancelRoom} onClose={handleCloseCancelOrder} maxWidth="md">
+            <DialogTitle>Xác nhận khách hàng hủy phòng</DialogTitle>
+            <DialogContent>
+              <TextareaAutosize
+                className="form-control"
+                placeholder="Ghi chú"
+                name="note"
+                cols={100}
+                style={{ height: 150 }}
+                variant="outlined"
+                value={noteCancelRoom}
+                onChange={(e) => setNoteCancelRoom(e.target.value)}
+              />
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleCancelOrder}>Xác nhận</Button>
+            </DialogActions>
           </Dialog>
         </div>
       </div>
