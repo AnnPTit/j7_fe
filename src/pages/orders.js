@@ -454,8 +454,8 @@ function OrderTimeline() {
             <label style={{ marginLeft: 135 }}>{order.orderCode}</label>
             <br />
             <br />
-            <label>Tổng tiền</label>
-            <span style={{ marginLeft: 155, color: "red" }}>
+            <label>Tổng tiền + (VAT)</label>
+            <span style={{ marginLeft: 93, color: "red" }}>
               {order.totalMoney ? formatPrice(order.totalMoney) : "0 VND"}
             </span>
             <br />

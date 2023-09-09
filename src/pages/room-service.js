@@ -40,6 +40,7 @@ import { RoomSearch } from "src/sections/room/room-search";
 import RoomFilter from "src/sections/room/room-filter";
 import PriceRangeSlider from "src/sections/room/price-slider";
 import { SeverityPill } from "src/components/severity-pill";
+import CryptoJS from "crypto-js";
 
 function BookRoom() {
   const router = useRouter(); // Sử dụng useRouter để truy cập router của Next.js
@@ -443,6 +444,8 @@ function BookRoom() {
     try {
       // Make an API call to update the order status to "Đã xác nhận" (status: 2)
       await axios.put(`http://localhost:2003/api/admin/order/update-accept/${id}`, {
+        totalMoney: sumAmount,
+        vat: vatAmount,
         note: noteOrder,
       });
       setOrder({ ...order, status: 2 });
@@ -457,6 +460,13 @@ function BookRoom() {
   };
 
   const handleReturnRoom = async () => {
+    if (!givenCustomer || givenCustomer < sumAmount) {
+      // Xử lý khi tiền khách trả không hợp lệ, ví dụ: hiển thị thông báo lỗi
+      toast.error("Số tiền khách trả không hợp lệ!", {
+        position: toast.POSITION.BOTTOM_RIGHT,
+      });
+      return;
+    }
     try {
       await axios.put(`http://localhost:2003/api/admin/order/update-return/${id}`, {
         totalMoney: sumAmount,
@@ -494,9 +504,9 @@ function BookRoom() {
   };
 
   const handleSave = async () => {
-    const updatedTotalMoney = calculateTotal(); // Lấy giá trị tạm tính
+    // const updatedTotalMoney = calculateTotal(); // Lấy giá trị tạm tính
     const response = await axios.put(`http://localhost:2003/api/admin/order/update/${id}`, {
-      totalMoney: updatedTotalMoney,
+      totalMoney: sumAmount,
     });
     toast.success("Lưu thành công!", {
       position: toast.POSITION.BOTTOM_RIGHT,
@@ -530,6 +540,13 @@ function BookRoom() {
       quantity: parseInt(quantity), // Convert to number if needed
       note: note,
     };
+
+    if (!quantity) {
+      toast.error("Vui lòng không để trống số lượng!", {
+        position: toast.POSITION.BOTTOM_RIGHT,
+      });
+      return;
+    }
 
     try {
       const response = await axios.post(
@@ -704,6 +721,24 @@ function BookRoom() {
 
       // Xóa khách hàng khỏi danh sách ngay sau khi xóa
       setServiceUsed((prevServices) => prevServices.filter((serviceUsed) => serviceUsed.id !== id));
+      // const newTotal = calculateTotalAmountPriceRoom() + calculateTotalService();
+      // setTotalAmount(newTotal);
+      toast.success("Xóa thành công!", {
+        position: toast.POSITION.BOTTOM_RIGHT,
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleDeleteRoom = async (id) => {
+    try {
+      await axios.delete(`http://localhost:2003/api/order-detail/delete/${id}`);
+
+      // Xóa khách hàng khỏi danh sách ngay sau khi xóa
+      setOrderDetailData((prevOrderDetail) =>
+        prevOrderDetail.filter((orderDetailData) => orderDetailData.id !== id)
+      );
       // const newTotal = calculateTotalAmountPriceRoom() + calculateTotalService();
       // setTotalAmount(newTotal);
       toast.success("Xóa thành công!", {
@@ -927,6 +962,38 @@ function BookRoom() {
 
     fetchData();
   }, [textSearch, floorChose, typeRoomChose, priceRange]);
+
+  const createPayment = async () => {
+    try {
+      const response = await axios.post(`http://localhost:2003/api/payment-method/payment/${id}`);
+      const { finalUrl } = response.data;
+      // Redirect the user to the payment page
+      window.location.href = finalUrl;
+    } catch (error) {
+      console.error("Error creating payment:", error);
+    }
+  };
+
+  // const [response, setResponse] = useState({});
+  // const [momoDTO, setMomoDTO] = useState({
+  //   amount: 1000, // Replace with your desired amount
+  //   orderId: '12345', // Replace with your desired order ID
+  // });
+
+  // const createPayment = async () => {
+  //   try {
+  //     const apiUrl = 'http://localhost:2003/api/momo/create-order'; // Replace YOUR_SERVER_PORT with your server port
+  //     const response = await axios.post(apiUrl, momoDTO, {
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //     });
+
+  //     setResponse(response.data);
+  //   } catch (error) {
+  //     console.error('Error creating payment:', error);
+  //   }
+  // };
 
   return (
     <div
@@ -1233,16 +1300,28 @@ function BookRoom() {
                     </TableCell>
                     <TableCell>{formatPrice(orderDetail.roomPrice)}</TableCell>
                     <TableCell>
-                      {order.status === 1 || order.status === 2 ? (
+                      {order.status === 1 ? (
                         <>
                           <button className="btn btn-primary m-xl-2">
                             <SvgIcon fontSize="small">
                               <PencilSquareIcon />
                             </SvgIcon>
                           </button>
-                          <button className="btn btn-danger m-xl-2">
+                          <button
+                            onClick={() => handleDeleteRoom(orderDetail.id)}
+                            className="btn btn-danger m-xl-2"
+                          >
                             <SvgIcon fontSize="small">
                               <TrashIcon />
+                            </SvgIcon>
+                          </button>
+                        </>
+                      ) : null}
+                      {order.status === 2 ? (
+                        <>
+                          <button className="btn btn-primary m-xl-2">
+                            <SvgIcon fontSize="small">
+                              <PencilSquareIcon />
                             </SvgIcon>
                           </button>
                         </>
@@ -1817,7 +1896,9 @@ function BookRoom() {
               <button onClick={handleReturnRoom} className="btn btn-outline-primary">
                 TIỀN MẶT
               </button>
-              <button className="btn btn-outline-danger">CHUYỂN KHOẢN</button>
+              <button onClick={createPayment} className="btn btn-outline-danger">
+                CHUYỂN KHOẢN
+              </button>
             </DialogActions>
             <br />
           </Dialog>
