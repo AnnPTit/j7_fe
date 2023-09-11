@@ -22,7 +22,11 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import { format } from "date-fns";
 import { SeverityPill } from "src/components/severity-pill";
-import Link from 'next/link';
+import Link from "next/link";
+import { PDFDownloadLink } from "@react-pdf/renderer";
+import PDFDocument from "./update/pdf-document";
+
+// Thêm state để theo dõi khi nút "In hóa đơn" được nhấp
 
 function OrderTimeline() {
   const currentDate = new Date().toLocaleString();
@@ -49,10 +53,16 @@ function OrderTimeline() {
   const [selectedOrderTimelines, setSelectedOrderTimelines] = useState([]);
 
   let totalServiceCost = 0;
+  let totalComboCost = 0;
   const [openDetail, setOpenDetail] = React.useState(false);
+  const [isPrinting, setIsPrinting] = useState(false);
 
   const handleCloseDetail = () => {
     setOpenDetail(false);
+  };
+
+  const handlePrintInvoice = () => {
+    setIsPrinting(true);
   };
 
   const getPaymentMethodColor = (method) => {
@@ -387,6 +397,25 @@ function OrderTimeline() {
                 </button>
               </Link>
             )}
+            {order.status === 3 && (
+              <button
+                // onClick={handlePrintInvoice}
+                style={{ height: 50, width: 130 }}
+                className="btn btn-warning m-xl-2"
+              >
+                In hóa đơn
+              </button>
+            )}
+            {isPrinting && (
+              <PDFDownloadLink
+                document={<PDFDocument order={order} orderDetailData={orderDetailData} />}
+                fileName="invoice.pdf"
+              >
+                {({ blob, url, loading, error }) =>
+                  loading ? "Loading document..." : "Download now!"
+                }
+              </PDFDownloadLink>
+            )}
             <button
               onClick={handleShowOrderTimeline}
               style={{ height: 50, width: 130 }}
@@ -524,7 +553,9 @@ function OrderTimeline() {
                       {statusPaymentText}
                     </SeverityPill>
                   </TableCell>
-                  <TableCell></TableCell>
+                  <TableCell>
+                    {paymentMethod.order.account.fullname}
+                  </TableCell>
                 </TableRow>
               );
             })}
@@ -593,6 +624,19 @@ function OrderTimeline() {
                         <li key={serviceIndex}>
                           {serviceUsed.service.serviceName} x{serviceUsed.quantity} -{" "}
                           {formatPrice(serviceUsed.service.price * serviceUsed.quantity)}
+                          <br />
+                          <br />
+                        </li>
+                      );
+                    })}
+                  </ul>
+                  <ul>
+                    {orderDetail.comboUsedList.map((comboUsed, comboIndex) => {
+                      totalComboCost += comboUsed.combo.price * comboUsed.quantity;
+                      return (
+                        <li key={comboIndex}>
+                          {comboUsed.combo.comboName} x{comboUsed.quantity} -{" "}
+                          {formatPrice(comboUsed.combo.price * comboUsed.quantity)}
                           <br />
                           <br />
                         </li>

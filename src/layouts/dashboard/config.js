@@ -14,8 +14,8 @@ import AdjustmentsVerticalIcon from "@heroicons/react/24/solid/AdjustmentsVertic
 import { SvgIcon } from "@mui/material";
 import Tippy from "@tippyjs/react";
 import "tippy.js/dist/tippy.css";
-import { NavLink } from "react-router-dom";
-import React from "react";
+import React, { useState } from "react";
+import Link from "next/link";
 
 export const items = [
   {
@@ -46,20 +46,40 @@ export const items = [
     ),
   },
   {
-    title: "Quản lý phòng",
+    title: "Quản lý phòng", // Đổi tiêu đề
     icon: (
       <SvgIcon fontSize="small">
-        <ShoppingBagIcon />
+        <HomeIcon /> {/* Đổi icon thành biểu tượng của phòng */}
       </SvgIcon>
     ),
-    items: [
+    children: [
+      // Thêm danh sách con cho "Quản lý phòng"
       {
         title: "Phòng",
         path: "/room",
+        icon: (
+          <SvgIcon fontSize="small">
+            <HomeIcon />
+          </SvgIcon>
+        ),
       },
       {
         title: "Loại phòng",
-        path: "/dashboards/analytics",
+        path: "/type-room",
+        icon: (
+          <SvgIcon fontSize="small">
+            <LockClosedIcon />
+          </SvgIcon>
+        ),
+      },
+      {
+        title: "Tầng",
+        path: "/floor",
+        icon: (
+          <SvgIcon fontSize="small">
+            <ChartBarIcon />
+          </SvgIcon>
+        ),
       },
     ],
   },
@@ -83,33 +103,33 @@ export const items = [
       </SvgIcon>
     ),
   },
-  {
-    title: "Phòng",
-    path: "/room",
-    icon: (
-      <SvgIcon fontSize="small">
-        <HomeIcon />
-      </SvgIcon>
-    ),
-  },
-  {
-    title: "Loại phòng",
-    path: "/type-room",
-    icon: (
-      <SvgIcon fontSize="small">
-        <LockClosedIcon />
-      </SvgIcon>
-    ),
-  },
-  {
-    title: "Tầng",
-    path: "/floor",
-    icon: (
-      <SvgIcon fontSize="small">
-        <ChartBarIcon />
-      </SvgIcon>
-    ),
-  },
+  // {
+  //   title: "Phòng",
+  //   path: "/room",
+  //   icon: (
+  //     <SvgIcon fontSize="small">
+  //       <HomeIcon />
+  //     </SvgIcon>
+  //   ),
+  // },
+  // {
+  //   title: "Loại phòng",
+  //   path: "/type-room",
+  //   icon: (
+  //     <SvgIcon fontSize="small">
+  //       <LockClosedIcon />
+  //     </SvgIcon>
+  //   ),
+  // },
+  // {
+  //   title: "Tầng",
+  //   path: "/floor",
+  //   icon: (
+  //     <SvgIcon fontSize="small">
+  //       <ChartBarIcon />
+  //     </SvgIcon>
+  //   ),
+  // },
   {
     title: "Service",
     path: "/service",
@@ -202,44 +222,31 @@ export const items = [
   },
 ];
 
-function Sidebar() {
-  const [showRoomTooltip, setShowRoomTooltip] = useState(false);
+export const YourMenuComponent = () => {
+  const [isSubMenuOpen, setIsSubMenuOpen] = useState(false);
 
-  const toggleRoomTooltip = () => {
-    setShowRoomTooltip(!showRoomTooltip);
+  const toggleSubMenu = () => {
+    setIsSubMenuOpen(!isSubMenuOpen);
   };
 
   return (
-    <div className="sidebar">
-      {/* Các mục khác */}
-      <div className="sidebar-item">
-        <Tippy
-          content={
-            <div className="tooltip">
-              {/* Hiển thị các mục con */}
-              {items[3].items.map((subItem, index) => (
-                <NavLink
-                  key={index}
-                  to={subItem.path}
-                  onClick={() => setShowRoomTooltip(false)} // Ẩn tooltip khi nhấp vào mục con
-                >
-                  {subItem.title}
-                </NavLink>
-              ))}
-            </div>
-          }
-          visible={showRoomTooltip}
-          placement="right"
-          interactive={true}
-          trigger="click" // Kích hoạt tooltip bằng cách nhấp vào
-          onClickOutside={() => setShowRoomTooltip(false)} // Ẩn tooltip khi nhấp vào bên ngoài
-        >
-          <div onClick={toggleRoomTooltip}>{items[3].icon}</div>
-        </Tippy>
+    <div>
+      <div onClick={toggleSubMenu}>
+        {items[2].icon} {/* Hiển thị biểu tượng của "Quản lý phòng" */}
+        <span>{items[2].title}</span>
       </div>
-      {/* Các mục khác */}
+      {isSubMenuOpen && (
+        <ul>
+          {items[2].children.map((child) => (
+            <li key={child.title}>
+              <Link href={child.path}>
+                <a>{child.title}</a>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+      {/* Hiển thị các mục con nếu biến isSubMenuOpen là true */}
     </div>
   );
-}
-
-export default Sidebar;
+};
