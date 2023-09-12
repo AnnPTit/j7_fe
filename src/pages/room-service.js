@@ -20,13 +20,14 @@ import {
   TextField,
   OutlinedInput,
   InputAdornment,
+  Checkbox,
 } from "@mui/material";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
-import TabPanel from "@mui/lab/TabPanel"; // Import TabPanel từ Material-UI
+import TabPanel from "@mui/lab/TabPanel";
 import TabContext from "@mui/lab/TabContext";
 import { Scrollbar } from "src/components/scrollbar";
-import React, { Component } from "react";
+import React from "react";
 import QrReader from "react-qr-scanner";
 import { useState, useEffect } from "react";
 import axios from "axios";
@@ -121,10 +122,10 @@ function BookRoom() {
     // account: {},
   });
 
-  const [activeTab, setActiveTab] = useState(0); // State để theo dõi tab đang được chọn
+  const [activeTab, setActiveTab] = useState("1"); // Initialize as a string "1"
 
   const handleChange = (event, newValue) => {
-    setActiveTab(newValue);
+    setActiveTab(newValue.toString()); // Convert to string before setting
   };
 
   const [dataForm, setDataForm] = React.useState({
@@ -609,6 +610,7 @@ function BookRoom() {
       setNoteCombo("");
       setOpenQuantityNoteCombo(false);
       setOpenAddCombo(false);
+      setOpenAddService(false);
       setComboUsed((prevComboUsed) => [...prevComboUsed, response.data]);
       // const newTotal = calculateTotal();
       // setTotalAmount(newTotal);
@@ -1435,8 +1437,7 @@ function BookRoom() {
                 {orderDetailData.map((orderDetail, index) => (
                   <TableRow key={index}>
                     <TableCell>
-                      <input
-                        type="checkbox"
+                      <Checkbox
                         checked={selectedOrderDetails === orderDetail.id}
                         onChange={() => handleCheckboxChange(orderDetail.id)}
                       />
@@ -1525,9 +1526,9 @@ function BookRoom() {
             {selectedServiceId !== null &&
               service.find((service) => service.id === selectedServiceId)?.serviceName}
           </DialogTitle>
-          <br />
           <DialogContent>
             <TextField
+              style={{ marginTop: 10 }}
               label="Số lượng"
               fullWidth
               variant="outlined"
@@ -1646,6 +1647,7 @@ function BookRoom() {
           </DialogTitle>
           <DialogContent>
             <TextField
+              style={{ marginTop: 10 }}
               label="Số lượng"
               fullWidth
               variant="outlined"
@@ -1762,12 +1764,12 @@ function BookRoom() {
           <hr /> */}
           <Scrollbar>
             <Box sx={{ minWidth: 800 }}>
-              <Tabs value={activeTab} onChange={handleChange} centered>
-                <Tab label="DỊCH VỤ" value={1} />
-                <Tab label="COMBO DỊCH VỤ" value={2} />
+              <Tabs value={String(activeTab)} onChange={handleChange} centered>
+                <Tab label="DỊCH VỤ" value="1" />
+                <Tab label="COMBO DỊCH VỤ" value="2" />
               </Tabs>
             </Box>
-            <TabPanel value={1}>
+            <TabPanel value="1">
               <Table>
                 <TableHead>
                   <TableRow>
@@ -1828,7 +1830,7 @@ function BookRoom() {
                 Tổng tiền: {formatPrice(calculateTotalAmount())}
               </h6>
             </TabPanel>
-            <TabPanel value={2}>
+            <TabPanel value="2">
               <Table>
                 <TableHead>
                   <TableRow>
@@ -1891,75 +1893,75 @@ function BookRoom() {
             </TabPanel>
           </Scrollbar>
         </Paper>
-        <Paper
-          style={{
-            border: "1px solid #ccc",
-            padding: "20px",
-            boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
-            width: 1150,
-            marginLeft: 140, // Add the box shadow
-            marginTop: 30,
-          }}
-        >
-          <h3 style={{ display: "flex", justifyContent: "center" }}>DANH SÁCH KHÁCH HÀNG</h3>
-          <hr />
-          <Scrollbar>
-            <Box sx={{ minWidth: 800 }}>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>CCCD</TableCell>
-                    <TableCell>Tên khách hàng</TableCell>
-                    <TableCell>Giới tính</TableCell>
-                    <TableCell>Ngày sinh</TableCell>
-                    <TableCell>Số điện thoại</TableCell>
-                    <TableCell>
-                      {order.status === 1 || order.status === 2 ? <>Thao tác</> : null}
-                    </TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {customerInfo.length > 0 ? (
-                    customerInfo.map((customer) => (
-                      <TableRow key={customer.id}>
-                        <TableCell>{customer.citizenId}</TableCell>
-                        <TableCell>{customer.fullname}</TableCell>
-                        <TableCell>{customer.gender == 1 ? "Nam" : "Nữ"}</TableCell>
-                        <TableCell>{format(new Date(customer.birthday), "dd/MM/yyyy")}</TableCell>
-                        <TableCell>{customer.phoneNumber}</TableCell>
-                        <TableCell>
-                          {order.status === 1 || order.status === 2 ? (
-                            <>
-                              <button
-                                onClick={() => handleDelete(customer.id)}
-                                className="btn btn-danger m-xl-2"
-                              >
-                                <SvgIcon fontSize="small">
-                                  <TrashIcon />
-                                </SvgIcon>
-                              </button>
-                            </>
-                          ) : null}
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={6} align="center">
-                        <div>
-                          <span style={{ fontFamily: "monospace", fontSize: 20 }}>
-                            Không có dữ liệu.
-                          </span>
-                        </div>
+      </TabContext>
+      <Paper
+        style={{
+          border: "1px solid #ccc",
+          padding: "20px",
+          boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
+          width: 1150,
+          marginLeft: 140, // Add the box shadow
+          marginTop: 30,
+        }}
+      >
+        <h3 style={{ display: "flex", justifyContent: "center" }}>DANH SÁCH KHÁCH HÀNG</h3>
+        <hr />
+        <Scrollbar>
+          <Box sx={{ minWidth: 800 }}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>CCCD</TableCell>
+                  <TableCell>Tên khách hàng</TableCell>
+                  <TableCell>Giới tính</TableCell>
+                  <TableCell>Ngày sinh</TableCell>
+                  <TableCell>Số điện thoại</TableCell>
+                  <TableCell>
+                    {order.status === 1 || order.status === 2 ? <>Thao tác</> : null}
+                  </TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {customerInfo.length > 0 ? (
+                  customerInfo.map((customer) => (
+                    <TableRow key={customer.id}>
+                      <TableCell>{customer.citizenId}</TableCell>
+                      <TableCell>{customer.fullname}</TableCell>
+                      <TableCell>{customer.gender == 1 ? "Nam" : "Nữ"}</TableCell>
+                      <TableCell>{format(new Date(customer.birthday), "dd/MM/yyyy")}</TableCell>
+                      <TableCell>{customer.phoneNumber}</TableCell>
+                      <TableCell>
+                        {order.status === 1 || order.status === 2 ? (
+                          <>
+                            <button
+                              onClick={() => handleDelete(customer.id)}
+                              className="btn btn-danger m-xl-2"
+                            >
+                              <SvgIcon fontSize="small">
+                                <TrashIcon />
+                              </SvgIcon>
+                            </button>
+                          </>
+                        ) : null}
                       </TableCell>
                     </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </Box>
-          </Scrollbar>
-        </Paper>
-      </TabContext>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={6} align="center">
+                      <div>
+                        <span style={{ fontFamily: "monospace", fontSize: 20 }}>
+                          Không có dữ liệu.
+                        </span>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </Box>
+        </Scrollbar>
+      </Paper>
       <div className="row">
         <Paper
           style={{

@@ -1,7 +1,6 @@
 import MagnifyingGlassIcon from "@heroicons/react/24/solid/MagnifyingGlassIcon";
 import {
   Card,
-  Button,
   Grid,
   TextField,
   InputAdornment,
@@ -14,11 +13,6 @@ import React from "react";
 import { useState } from "react";
 
 export const OrderSearch = () => {
-  const [dataForm, setDataForm] = React.useState({
-    dateFrom: new Date(),
-    dateTo: new Date(),
-  });
-
   const [valueTo, setValueTo] = useState(null);
   const [valueFrom, setValueFrom] = useState(null);
 
@@ -64,7 +58,6 @@ export const OrderSearch = () => {
         />
         <Grid item xs={12} ml={2} mr={2} sm={12} xl={2} lg={3}>
           <DatePicker
-            disablePast
             label="Từ ngày"
             value={valueFrom}
             onChange={handleFromDateChange}
@@ -81,9 +74,7 @@ export const OrderSearch = () => {
         </Grid>
         <Grid item xs={12} sm={12} xl={2} lg={3}>
           <DatePicker
-            disablePast
             label="Đến ngày"
-            minDate={dataForm.dateFrom}
             value={valueTo}
             onChange={handleToDateChange}
             renderInput={(params) => (

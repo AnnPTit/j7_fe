@@ -96,7 +96,7 @@ export const OrderTable = (props) => {
                       </div>
                     </TableCell>
                     <TableCell>{order.orderCode}</TableCell>
-                    <TableCell>{order.typeOfOrder == 1 ? "Tại quầy" : "Tại quầy"}</TableCell>
+                    <TableCell>{order.typeOfOrder == 1 ? "Tại quầy" : "Online"}</TableCell>
                     <TableCell>
                       {order.account && order.account.fullname ? order.account.fullname : "NaN"}
                     </TableCell>
