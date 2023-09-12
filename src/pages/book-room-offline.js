@@ -26,13 +26,15 @@ const useBookRoomIds = (bookRoom) => {
 const Page = () => {
   const [data, setData] = useState([]);
   const [page, setPage] = useState(0);
+  const [dataChange, setDataChange] = useState(false);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const bookRoom = useBookRoom(data, page, rowsPerPage);
   const bookRoomIds = useBookRoomIds(bookRoom);
   const bookRoomSelection = useSelection(bookRoomIds);
-  const [inputModal, setInputModal] = useState(false);
   const [pageNumber, setPageNumber] = useState(0);
+  const [textSearch, setTextSearch] = useState("");
   const [totalPages, setTotalPages] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
 
   const handlePageChange = useCallback((event, value) => {
     setPage(value);
@@ -60,10 +62,14 @@ const Page = () => {
         console.log(accessToken);
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
 
-        const response = await axios.get(
-          `http://localhost:2003/api/admin/order/loadByStatus?current_page=${pageNumber}`
-        ); // Thay đổi URL API của bạn tại đây
+        let Api = `http://localhost:2003/api/admin/order/loadAndSearch?current_page=${pageNumber}`; // Thay đổi URL API của bạn tại đây
+        if (textSearch !== "") {
+          Api = Api + `&key=${textSearch}`;
+        }
+        const response = await axios.get(Api); // Thay đổi URL API của bạn tại đây
+        console.log(response.data);
         setTotalPages(response.data.totalPages);
+        setTotalElements(response.data.totalElements);
         setData(response.data.content);
       } catch (error) {
         if (error.response) {
@@ -80,7 +86,7 @@ const Page = () => {
       }
     };
     fetchData();
-  }, [pageNumber]);
+  }, [pageNumber, dataChange, textSearch]);
 
   return (
     <>
@@ -96,23 +102,16 @@ const Page = () => {
       >
         <Container maxWidth="xl">
           <Stack spacing={3}>
-            <BookRoomSearch />
+            <BookRoomSearch textSearch={textSearch} setTextSearch={setTextSearch} />
             <div style={{ minHeight: 500 }}>
               {" "}
               <BookRoomTable
-                count={data.length}
                 items={bookRoom}
-                onDeselectAll={bookRoomSelection.handleDeselectAll}
-                onDeselectOne={bookRoomSelection.handleDeselectOne}
-                onPageChange={handlePageChange}
-                onRowsPerPageChange={handleRowsPerPageChange}
-                onSelectAll={bookRoomSelection.handleSelectAll}
-                onSelectOne={bookRoomSelection.handleSelectOne}
-                page={page}
-                rowsPerPage={rowsPerPage}
                 selected={bookRoomSelection.selected}
                 onDelete={handleDelete} // Thêm prop onDelete và truyền giá trị của handleDelete vào đây
                 setPageNumber={setPageNumber}
+                totalElements={totalElements}
+                pageNumber={pageNumber}
               />
             </div>
           </Stack>

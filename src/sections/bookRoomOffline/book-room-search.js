@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import axios from "axios";
 import { useRouter } from "next/router";
 
-export const BookRoomSearch = () => {
+export const BookRoomSearch = ({ textSearch, setTextSearch }) => {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -50,16 +50,12 @@ export const BookRoomSearch = () => {
       <Grid container my={2.5}>
         <OutlinedInput
           fullWidth
-          defaultValue=""
-          placeholder="Tìm kiếm"
-          startAdornment={
-            <InputAdornment position="start">
-              <SvgIcon color="action" fontSize="small">
-                <MagnifyingGlassIcon />
-              </SvgIcon>
-            </InputAdornment>
-          }
+          value={textSearch}
+          placeholder="Tìm kiếm theo mã"
           sx={{ maxWidth: 500 }}
+          onChange={(e) => {
+            setTextSearch(e.target.value);
+          }}
         />
 
         <Grid>

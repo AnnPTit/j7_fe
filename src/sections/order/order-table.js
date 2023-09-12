@@ -3,18 +3,8 @@ import moment from "moment";
 import Swal from "sweetalert2";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import {
-  Box,
-  Card,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
-  SvgIcon,
-} from "@mui/material";
+import { Box, Card, Table, TableBody, TableCell, TableHead, TableRow } from "@mui/material";
 import { Scrollbar } from "src/components/scrollbar";
-import Button from "@mui/material/Button";
 import { SeverityPill } from "src/components/severity-pill";
 import { useRouter } from "next/router";
 
@@ -92,7 +82,7 @@ export const OrderTable = (props) => {
                   >
                     <TableCell padding="checkbox">
                       <div key={index}>
-                        <span>{index + 1}</span>
+                        <span>{index + props.pageNumber * 5 + 1}</span>
                       </div>
                     </TableCell>
                     <TableCell>{order.orderCode}</TableCell>

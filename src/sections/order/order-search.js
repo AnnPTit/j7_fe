@@ -1,18 +1,10 @@
-import MagnifyingGlassIcon from "@heroicons/react/24/solid/MagnifyingGlassIcon";
-import {
-  Card,
-  Grid,
-  TextField,
-  InputAdornment,
-  OutlinedInput,
-  SvgIcon,
-} from "@mui/material";
+import { Card, Grid, TextField, OutlinedInput } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers";
 import PlusIcon from "@heroicons/react/24/solid/PlusIcon";
 import React from "react";
 import { useState } from "react";
 
-export const OrderSearch = () => {
+export const OrderSearch = ({ textSearch, setTextSearch }) => {
   const [valueTo, setValueTo] = useState(null);
   const [valueFrom, setValueFrom] = useState(null);
 
@@ -45,16 +37,12 @@ export const OrderSearch = () => {
       <Grid container my={2.5}>
         <OutlinedInput
           fullWidth
-          defaultValue=""
+          value={textSearch}
           placeholder="Tìm kiếm"
-          startAdornment={
-            <InputAdornment position="start">
-              <SvgIcon color="action" fontSize="small">
-                <MagnifyingGlassIcon />
-              </SvgIcon>
-            </InputAdornment>
-          }
           sx={{ maxWidth: 500 }}
+          onChange={(e) => {
+            setTextSearch(e.target.value);
+          }}
         />
         <Grid item xs={12} ml={2} mr={2} sm={12} xl={2} lg={3}>
           <DatePicker

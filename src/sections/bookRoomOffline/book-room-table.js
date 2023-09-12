@@ -16,7 +16,7 @@ import TrashIcon from "@heroicons/react/24/solid/TrashIcon";
 import PencilSquareIcon from "@heroicons/react/24/solid/PencilSquareIcon";
 import Button from "@mui/material/Button";
 import { SeverityPill } from "src/components/severity-pill";
-import Link from 'next/link';
+import Link from "next/link";
 
 export const BookRoomTable = (props) => {
   const { items = [], selected = [] } = props;
@@ -67,7 +67,6 @@ export const BookRoomTable = (props) => {
                 <TableCell>Thao tác</TableCell>
               </TableRow>
             </TableHead>
-
             <TableBody>
               {items.map((order, index) => {
                 const created = moment(order.createAt).format("DD/MM/YYYY - hh:mm:ss");
@@ -79,7 +78,7 @@ export const BookRoomTable = (props) => {
                   <TableRow hover key={order.id}>
                     <TableCell padding="checkbox">
                       <div key={index}>
-                        <span>{index + 1}</span>
+                        <span>{index + props.pageNumber * 5 + 1}</span>
                       </div>
                     </TableCell>
                     <TableCell>{order.orderCode}</TableCell>

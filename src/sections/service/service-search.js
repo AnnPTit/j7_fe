@@ -1,5 +1,4 @@
-import MagnifyingGlassIcon from "@heroicons/react/24/solid/MagnifyingGlassIcon";
-import { Card, InputAdornment, OutlinedInput, SvgIcon } from "@mui/material";
+import { Card, OutlinedInput } from "@mui/material";
 
 export const ServiceSearch = ({ textSearch, setTextSearch }) => (
   <Card sx={{ p: 2 }}>
