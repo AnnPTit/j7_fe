@@ -1,5 +1,12 @@
 import { Timeline, TimelineEvent } from "@mailtop/horizontal-timeline";
-import { FaBug, FaRegCalendarCheck, FaRegFileAlt, FaTimesCircle, FaHome } from "react-icons/fa";
+import {
+  FaBug,
+  FaRegCalendarCheck,
+  FaRegFileAlt,
+  FaTimesCircle,
+  FaHome,
+  FaSignInAlt,
+} from "react-icons/fa";
 import { Layout as DashboardLayout } from "src/layouts/dashboard/layout";
 import React, { Component } from "react";
 import axios from "axios";
@@ -172,6 +179,11 @@ function OrderTimeline() {
                   eventIcon = FaHome;
                   eventTitle = "Khách hàng trả phòng";
                   break;
+                case 4:
+                  eventColor = "#FFD700";
+                  eventIcon = FaSignInAlt;
+                  eventTitle = "Trả phòng đi trước";
+                  break;
                 default:
                   eventColor = "default";
                   eventIcon = FaBug;
@@ -239,6 +251,8 @@ function OrderTimeline() {
         return <FaRegCalendarCheck style={{ fontSize: "50px", color: "#00CC66" }} />;
       case 3:
         return <FaHome style={{ fontSize: "50px", color: "#00CC66" }} />;
+      case 4:
+        return <FaSignInAlt style={{ fontSize: "50px", color: "#FFD700" }} />;
       default:
         return <FaBug style={{ fontSize: "50px", color: "default" }} />;
     }
@@ -254,6 +268,8 @@ function OrderTimeline() {
         return "Khách hàng đã nhận phòng";
       case 3:
         return "Khách hàng trả phòng";
+      case 4:
+        return "Trả phòng đi trước";
       default:
         return "Unknown Type";
     }
@@ -553,9 +569,7 @@ function OrderTimeline() {
                       {statusPaymentText}
                     </SeverityPill>
                   </TableCell>
-                  <TableCell>
-                    {paymentMethod.order.account.fullname}
-                  </TableCell>
+                  <TableCell>{paymentMethod.order.account.fullname}</TableCell>
                 </TableRow>
               );
             })}

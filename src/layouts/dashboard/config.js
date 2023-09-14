@@ -15,7 +15,6 @@ import { SvgIcon } from "@mui/material";
 import Tippy from "@tippyjs/react";
 import "tippy.js/dist/tippy.css";
 import React, { useState } from "react";
-import Link from "next/link";
 
 export const items = [
   {
@@ -103,33 +102,33 @@ export const items = [
       </SvgIcon>
     ),
   },
-  // {
-  //   title: "Phòng",
-  //   path: "/room",
-  //   icon: (
-  //     <SvgIcon fontSize="small">
-  //       <HomeIcon />
-  //     </SvgIcon>
-  //   ),
-  // },
-  // {
-  //   title: "Loại phòng",
-  //   path: "/type-room",
-  //   icon: (
-  //     <SvgIcon fontSize="small">
-  //       <LockClosedIcon />
-  //     </SvgIcon>
-  //   ),
-  // },
-  // {
-  //   title: "Tầng",
-  //   path: "/floor",
-  //   icon: (
-  //     <SvgIcon fontSize="small">
-  //       <ChartBarIcon />
-  //     </SvgIcon>
-  //   ),
-  // },
+  {
+    title: "Phòng",
+    path: "/room",
+    icon: (
+      <SvgIcon fontSize="small">
+        <HomeIcon />
+      </SvgIcon>
+    ),
+  },
+  {
+    title: "Loại phòng",
+    path: "/type-room",
+    icon: (
+      <SvgIcon fontSize="small">
+        <LockClosedIcon />
+      </SvgIcon>
+    ),
+  },
+  {
+    title: "Tầng",
+    path: "/floor",
+    icon: (
+      <SvgIcon fontSize="small">
+        <ChartBarIcon />
+      </SvgIcon>
+    ),
+  },
   {
     title: "Service",
     path: "/service",
@@ -221,32 +220,3 @@ export const items = [
     ),
   },
 ];
-
-export const YourMenuComponent = () => {
-  const [isSubMenuOpen, setIsSubMenuOpen] = useState(false);
-
-  const toggleSubMenu = () => {
-    setIsSubMenuOpen(!isSubMenuOpen);
-  };
-
-  return (
-    <div>
-      <div onClick={toggleSubMenu}>
-        {items[2].icon} {/* Hiển thị biểu tượng của "Quản lý phòng" */}
-        <span>{items[2].title}</span>
-      </div>
-      {isSubMenuOpen && (
-        <ul>
-          {items[2].children.map((child) => (
-            <li key={child.title}>
-              <Link href={child.path}>
-                <a>{child.title}</a>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      )}
-      {/* Hiển thị các mục con nếu biến isSubMenuOpen là true */}
-    </div>
-  );
-};

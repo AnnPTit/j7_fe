@@ -26,6 +26,8 @@ import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import TabPanel from "@mui/lab/TabPanel";
 import TabContext from "@mui/lab/TabContext";
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
 import { Scrollbar } from "src/components/scrollbar";
 import React from "react";
 import QrReader from "react-qr-scanner";
@@ -63,6 +65,7 @@ function BookRoom() {
   const [selectedOrderDetails, setSelectedOrderDetails] = useState(null);
   const [selectedServiceId, setSelectedServiceId] = useState(null);
   const [selectedComboId, setSelectedComboId] = useState(null);
+  const [selectedOrderDetailId, setSelectedOrderDetailId] = useState(null);
   const [quantity, setQuantity] = useState("");
   const [note, setNote] = useState("");
   const [quantityCombo, setQuantityCombo] = useState("");
@@ -82,12 +85,16 @@ function BookRoom() {
   const [totalAmount, setTotalAmount] = useState(0);
   const [noteOrder, setNoteOrder] = useState("");
   const [noteReturnRoom, setNoteReturnRoom] = useState("");
+  const [noteReturnOneRoom, setNoteReturnOneRoom] = useState("");
   const [noteCancelRoom, setNoteCancelRoom] = useState("");
   const [givenCustomer, setGivenCustomer] = useState(0);
+  const [givenCustomerOneRoom, setGivenCustomerOneRoom] = useState(0);
   const [textSearch, setTextSearch] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [priceRange, setPriceRange] = useState([0, 3000000]);
   const [roomPricePerDay, setRoomPricePerDay] = useState(0); // Thêm state để lưu giá theo ngày của phòng
+  const [activeTab, setActiveTab] = useState("1");
+  const [isEditing, setIsEditing] = useState(false);
 
   // Dialogs
   const [openSeacrhRoom, setOpenSeacrhRoom] = React.useState(false);
@@ -100,6 +107,7 @@ function BookRoom() {
   const [openAcceptOrder, setOpenAcceptOrder] = React.useState(false);
   const [openReturnRoom, setOpenReturnRoom] = React.useState(false);
   const [openCancelRoom, setOpenCancelRoom] = React.useState(false);
+  const [openReturnOneRoom, setOpenReturnOneRoom] = React.useState(false);
 
   // QR Code
   const [delay, setDelay] = useState(100);
@@ -122,10 +130,18 @@ function BookRoom() {
     // account: {},
   });
 
-  const [activeTab, setActiveTab] = useState("1"); // Initialize as a string "1"
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const open = Boolean(anchorEl);
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
 
+  // Xử lí handle các hàm
   const handleChange = (event, newValue) => {
-    setActiveTab(newValue.toString()); // Convert to string before setting
+    setActiveTab(newValue.toString());
   };
 
   const [dataForm, setDataForm] = React.useState({
@@ -237,6 +253,23 @@ function BookRoom() {
     setGivenCustomer("");
     setNoteReturnRoom("");
     setOpenReturnRoom(false);
+  };
+
+  const handleOpenReturnOneRoom = (orderDetailId) => {
+    if (!selectedOrderDetails) {
+      toast.error("Vui lòng chọn phòng trước khi trả phòng!", {
+        position: toast.POSITION.BOTTOM_RIGHT,
+      });
+      return;
+    }
+    setOpenReturnOneRoom(true);
+    setAnchorEl(null);
+  };
+
+  const handleCloseReturnOneRoom = () => {
+    setGivenCustomerOneRoom("");
+    setNoteReturnOneRoom("");
+    setOpenReturnOneRoom(false);
   };
 
   const handleOpenCancelOrder = () => {
@@ -361,6 +394,35 @@ function BookRoom() {
     }
   };
 
+  const calculateTotalCostForOrderDetail = (orderDetailId) => {
+    let totalComboCost = 0;
+    let totalServiceCost = 0;
+    let totalRoomCost = 0;
+
+    // Tìm orderDetail cụ thể dựa trên orderDetailId
+    const orderDetail = orderDetailData.find((detail) => detail.id === orderDetailId);
+
+    if (orderDetail) {
+      orderDetail.comboUsedList.forEach((comboUsed) => {
+        totalComboCost += comboUsed.combo.price * comboUsed.quantity;
+      });
+
+      orderDetail.serviceUsedList.forEach((serviceUsed) => {
+        totalServiceCost += serviceUsed.service.price * serviceUsed.quantity;
+      });
+
+      totalRoomCost = orderDetail.roomPrice;
+
+      const total = totalComboCost + totalServiceCost + totalRoomCost;
+      return total;
+    }
+
+    return 0;
+  };
+
+  // Sử dụng hàm calculateTotalCostForOrderDetail để tính tổng tiền cho orderDetail có id tương ứng
+  const totalCostForOrderDetail = calculateTotalCostForOrderDetail(selectedOrderDetails);
+
   const calculateTotalAmountPriceRoom = () => {
     let total = 0;
     orderDetailData.forEach((orderDetail) => {
@@ -409,6 +471,9 @@ function BookRoom() {
     return calculateTotalAmountPriceRoom() + calculateTotalService() + calculateTotalCombo();
   };
 
+  const vatOrderDetail = totalCostForOrderDetail * 0.05;
+  const sumOrderDetail = totalCostForOrderDetail + vatOrderDetail;
+  const moneyReturnCustomerOneRoom = givenCustomerOneRoom - sumOrderDetail;
   const vatAmount = totalAmount * 0.05;
   const sumAmount = totalAmount + vatAmount;
   const moneyReturnCustomer = givenCustomer - sumAmount;
@@ -496,6 +561,7 @@ function BookRoom() {
     }
   };
 
+  // Xác nhận phòng
   const handleConfirmOrder = async () => {
     try {
       // Make an API call to update the order status to "Đã xác nhận" (status: 2)
@@ -515,6 +581,38 @@ function BookRoom() {
     }
   };
 
+  //Trả 1 phòng
+  const handleReturnOneRoom = async () => {
+    if (!givenCustomerOneRoom || givenCustomerOneRoom < sumOrderDetail) {
+      // Xử lý khi tiền khách trả không hợp lệ, ví dụ: hiển thị thông báo lỗi
+      toast.error("Số tiền khách trả không hợp lệ!", {
+        position: toast.POSITION.BOTTOM_RIGHT,
+      });
+      return;
+    }
+    try {
+      const response = await axios.post(
+        `http://localhost:2003/api/admin/order/return/${selectedOrderDetails}`,
+        {
+          totalMoney: sumOrderDetail,
+          vat: vatOrderDetail,
+          moneyGivenByCustomer: givenCustomerOneRoom,
+          excessMoney: moneyReturnCustomerOneRoom,
+          note: noteReturnOneRoom,
+        }
+      );
+      const orderId = response.data.id;
+      handleCloseReturnOneRoom();
+      toast.success("Trả phòng thành công!", {
+        position: toast.POSITION.BOTTOM_RIGHT,
+      });
+      router.push(`/orders?id=${orderId}`);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  //Trả phòng
   const handleReturnRoom = async () => {
     if (!givenCustomer || givenCustomer < sumAmount) {
       // Xử lý khi tiền khách trả không hợp lệ, ví dụ: hiển thị thông báo lỗi
@@ -542,6 +640,7 @@ function BookRoom() {
     }
   };
 
+  // Hủy hóa đơn
   const handleCancelOrder = async () => {
     try {
       // Make an API call to update the order status to "Đã xác nhận" (status: 2)
@@ -571,6 +670,7 @@ function BookRoom() {
     console.log(response.data);
   };
 
+  // Thêm combo
   const handleConfirmCombo = async () => {
     if (!selectedOrderDetails) {
       toast.error("Vui lòng chọn phòng trước khi thêm combo!", {
@@ -623,6 +723,7 @@ function BookRoom() {
     }
   };
 
+  // Thêm dịch vụ
   const handleConfirm = async () => {
     if (!selectedOrderDetails) {
       toast.error("Vui lòng chọn phòng trước khi thêm dịch vụ!", {
@@ -677,6 +778,7 @@ function BookRoom() {
     }
   };
 
+  // Thêm khách hàng cho từng phòng
   const handleAddCustomerToRooms = async () => {
     if (!selectedOrderDetails) {
       toast.error("Vui lòng chọn phòng trước khi thêm thông tin khách hàng!", {
@@ -771,6 +873,7 @@ function BookRoom() {
     setPhoneNumber("");
   };
 
+  // Load combo sử dụng khi tích vào từng phòng
   useEffect(() => {
     if (selectedOrderDetails) {
       const fetchComboUsed = async () => {
@@ -789,6 +892,7 @@ function BookRoom() {
     }
   }, [selectedOrderDetails]);
 
+  // Load dịch vụ sử dụng khi tích vào từng phòng
   useEffect(() => {
     if (selectedOrderDetails) {
       const fetchServiceUsed = async () => {
@@ -808,6 +912,7 @@ function BookRoom() {
     }
   }, [selectedOrderDetails]);
 
+  // Load thông tin khách hàng khi tích vào từng phòng
   useEffect(() => {
     if (selectedOrderDetails) {
       const fetchCustomerInfo = async () => {
@@ -827,6 +932,7 @@ function BookRoom() {
     }
   }, [selectedOrderDetails]);
 
+  // Xóa thông tin khách hàng
   const handleDelete = async (id) => {
     try {
       await axios.delete(`http://localhost:2003/api/information-customer/delete/${id}`);
@@ -841,10 +947,10 @@ function BookRoom() {
     }
   };
 
+  // Xóa combo sử dụng
   const handleDeleteComboUsed = async (id) => {
     try {
       await axios.delete(`http://localhost:2003/api/combo-used/delete/${id}`);
-
       // Xóa khách hàng khỏi danh sách ngay sau khi xóa
       setComboUsed((prevCombos) => prevCombos.filter((comboUsed) => comboUsed.id !== id));
       // const newTotal = calculateTotalAmountPriceRoom() + calculateTotalService();
@@ -857,6 +963,7 @@ function BookRoom() {
     }
   };
 
+  // Xóa dịch vụ sử dụng
   const handleDeleteServiceUsed = async (id) => {
     try {
       await axios.delete(`http://localhost:2003/api/service-used/delete/${id}`);
@@ -873,6 +980,7 @@ function BookRoom() {
     }
   };
 
+  // Xóa phòng
   const handleDeleteRoom = async (id) => {
     try {
       await axios.delete(`http://localhost:2003/api/order-detail/delete/${id}`);
@@ -886,11 +994,13 @@ function BookRoom() {
       toast.success("Xóa thành công!", {
         position: toast.POSITION.BOTTOM_RIGHT,
       });
+      setAnchorEl(null);
     } catch (error) {
       console.log(error);
     }
   };
 
+  // Load phòng
   useEffect(() => {
     async function fetchData() {
       try {
@@ -911,6 +1021,7 @@ function BookRoom() {
     fetchData();
   }, []);
 
+  // Load combo
   useEffect(() => {
     async function fetchData() {
       try {
@@ -931,6 +1042,7 @@ function BookRoom() {
     fetchData();
   }, []);
 
+  // Load dịch vụ
   useEffect(() => {
     async function fetchData() {
       try {
@@ -951,6 +1063,7 @@ function BookRoom() {
     fetchData();
   }, []);
 
+  // Load
   useEffect(() => {
     // Định nghĩa hàm fetchData bên trong useEffect
     async function fetchData() {
@@ -986,6 +1099,7 @@ function BookRoom() {
     fetchData();
   }, []);
 
+  // Load hóa đơn chi tiết theo id hóa đơn
   useEffect(() => {
     async function fetchData() {
       try {
@@ -1007,6 +1121,7 @@ function BookRoom() {
     fetchData();
   }, [id]);
 
+  // Load hóa đơn theo id
   useEffect(() => {
     console.log("Fetching order details for ID:", id); // Add this line
     async function fetchData() {
@@ -1036,6 +1151,7 @@ function BookRoom() {
     }
   }, [selectedRoomId, rooms]);
 
+  // Tạo phòng
   const createOrderDetail = async () => {
     // Thực hiện xử lý khi ngày được xác nhận
     if (selectedRoomId && valueFrom && valueTo && valueTimeFrom && valueTimeTo) {
@@ -1074,6 +1190,7 @@ function BookRoom() {
     }
   };
 
+  // Load and search book room
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -1127,6 +1244,7 @@ function BookRoom() {
     fetchData();
   }, [textSearch, floorChose, typeRoomChose, priceRange]);
 
+  // Tạo phương phức thanh toán quá Bank
   const createPayment = async () => {
     try {
       const response = await axios.post(`http://localhost:2003/api/payment-method/payment/${id}`);
@@ -1465,28 +1583,76 @@ function BookRoom() {
                     <TableCell>
                       {order.status === 1 ? (
                         <>
-                          <button className="btn btn-primary m-xl-2">
+                          <Button
+                            className="btn btn-primary m-xl-2"
+                            id="demo-positioned-button"
+                            aria-controls={open ? "demo-positioned-menu" : undefined}
+                            aria-haspopup="true"
+                            aria-expanded={open ? "true" : undefined}
+                            onClick={handleClick}
+                          >
                             <SvgIcon fontSize="small">
                               <PencilSquareIcon />
                             </SvgIcon>
-                          </button>
-                          <button
-                            onClick={() => handleDeleteRoom(orderDetail.id)}
-                            className="btn btn-danger m-xl-2"
+                          </Button>
+                          <Menu
+                            id="demo-positioned-menu"
+                            aria-labelledby="demo-positioned-button"
+                            anchorEl={anchorEl}
+                            open={open}
+                            onClose={handleClose}
+                            anchorOrigin={{
+                              vertical: "top",
+                              horizontal: "left",
+                            }}
+                            transformOrigin={{
+                              vertical: "top",
+                              horizontal: "left",
+                            }}
                           >
-                            <SvgIcon fontSize="small">
-                              <TrashIcon />
-                            </SvgIcon>
-                          </button>
+                            <MenuItem onClick={handleClose}>Chuyển phòng</MenuItem>
+                            <MenuItem onClick={() => handleDeleteRoom(orderDetail.id)}>
+                              Hủy phòng
+                            </MenuItem>
+                          </Menu>
                         </>
                       ) : null}
                       {order.status === 2 ? (
                         <>
-                          <button className="btn btn-primary m-xl-2">
+                          <Button
+                            className="btn btn-primary m-xl-2"
+                            id="demo-positioned-button"
+                            aria-controls={open ? "demo-positioned-menu" : undefined}
+                            aria-haspopup="true"
+                            aria-expanded={open ? "true" : undefined}
+                            onClick={handleClick}
+                          >
                             <SvgIcon fontSize="small">
                               <PencilSquareIcon />
                             </SvgIcon>
-                          </button>
+                          </Button>
+                          <Menu
+                            id="demo-positioned-menu"
+                            aria-labelledby="demo-positioned-button"
+                            anchorEl={anchorEl}
+                            open={open}
+                            onClose={handleClose}
+                            anchorOrigin={{
+                              vertical: "top",
+                              horizontal: "left",
+                            }}
+                            transformOrigin={{
+                              vertical: "top",
+                              horizontal: "left",
+                            }}
+                          >
+                            <MenuItem onClick={handleClose}>Chuyển phòng</MenuItem>
+                            {orderDetailData.length > 1 && (
+                              <MenuItem onClick={() => handleOpenReturnOneRoom(orderDetail.id)}>
+                                Trả phòng
+                              </MenuItem>
+                            )}
+                          </Menu>
                         </>
                       ) : null}
                     </TableCell>
@@ -1502,6 +1668,78 @@ function BookRoom() {
           </Box>
         </Scrollbar>
       </Paper>
+      <Dialog open={openReturnOneRoom} onClose={handleCloseReturnOneRoom} maxWidth="md">
+        <DialogTitle>XÁC NHẬN THANH TOÁN</DialogTitle>
+        <DialogContent>
+          <br />
+          <div style={{ display: "flex" }}>
+            <br />
+            <TextField
+              style={{ width: 520, marginRight: 30 }}
+              disabled
+              label="Số tiền"
+              value={totalCostForOrderDetail}
+              fullWidth
+              variant="outlined"
+            />
+            <br />
+            <br />
+            <TextField
+              style={{ width: 550 }}
+              disabled
+              label="VAT"
+              value={vatOrderDetail}
+              fullWidth
+              variant="outlined"
+            />
+          </div>
+          <br />
+          <TextField
+            disabled
+            label="Tổng tiền"
+            value={sumOrderDetail}
+            fullWidth
+            variant="outlined"
+          />
+          <br />
+          <br />
+          <TextField
+            label="Khách hàng trả"
+            value={givenCustomerOneRoom}
+            onChange={(e) => setGivenCustomerOneRoom(e.target.value)}
+            fullWidth
+            variant="outlined"
+          />
+          <br />
+          <br />
+          <TextField
+            disabled
+            label="Tiền trả lại"
+            value={givenCustomerOneRoom - sumOrderDetail}
+            fullWidth
+            variant="outlined"
+          />
+          <br />
+          <br />
+          <TextareaAutosize
+            className="form-control"
+            placeholder="Ghi chú"
+            name="note"
+            value={noteReturnOneRoom}
+            onChange={(e) => setNoteReturnOneRoom(e.target.value)}
+            cols={80}
+            style={{ height: 150 }}
+            variant="outlined"
+          />
+        </DialogContent>
+        <DialogActions>
+          <button onClick={handleReturnOneRoom} className="btn btn-outline-primary">
+            TIỀN MẶT
+          </button>
+          {/* <button className="btn btn-outline-danger">CHUYỂN KHOẢN</button> */}
+        </DialogActions>
+        <br />
+      </Dialog>
       <div
         style={{
           marginBottom: 20,
