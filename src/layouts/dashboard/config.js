@@ -11,6 +11,7 @@ import XCircleIcon from "@heroicons/react/24/solid/XCircleIcon";
 import HomeIcon from "@heroicons/react/24/solid/HomeIcon";
 import TVIcon from "@heroicons/react/24/solid/TVIcon";
 import AdjustmentsVerticalIcon from "@heroicons/react/24/solid/AdjustmentsVerticalIcon";
+import ScaleIcon from "@heroicons/react/24/solid/ScaleIcon";
 import { SvgIcon } from "@mui/material";
 import Tippy from "@tippyjs/react";
 import "tippy.js/dist/tippy.css";
@@ -41,6 +42,15 @@ export const items = [
     icon: (
       <SvgIcon fontSize="small">
         <ShoppingBagIcon />
+      </SvgIcon>
+    ),
+  },
+  {
+    title: "Quản lý giao dịch",
+    path: "/deal",
+    icon: (
+      <SvgIcon fontSize="small">
+        <ScaleIcon />
       </SvgIcon>
     ),
   },

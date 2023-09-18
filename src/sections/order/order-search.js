@@ -1,12 +1,17 @@
-import { Card, Grid, TextField, OutlinedInput } from "@mui/material";
+import { Card, TextField, Button, Grid, OutlinedInput, SvgIcon } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers";
 import PlusIcon from "@heroicons/react/24/solid/PlusIcon";
+import { usePathname } from "next/navigation";
+import axios from "axios";
 import React from "react";
 import { useState } from "react";
+import { useRouter } from "next/router";
 
 export const OrderSearch = ({ textSearch, setTextSearch }) => {
   const [valueTo, setValueTo] = useState(null);
   const [valueFrom, setValueFrom] = useState(null);
+  const pathname = usePathname();
+  const router = useRouter();
 
   const handleFromDateChange = (newValue) => {
     setValueFrom(newValue);
@@ -30,6 +35,36 @@ export const OrderSearch = ({ textSearch, setTextSearch }) => {
     const month = (date.getMonth() + 1).toString().padStart(2, "0");
     const year = date.getFullYear();
     return `${day}/${month}/${year}`;
+  };
+
+  const item = {
+    title: "Add",
+    path: "/room-service",
+    icon: (
+      <SvgIcon fontSize="small">
+        <PlusIcon />
+      </SvgIcon>
+    ),
+  };
+  const active = item.path ? pathname === item.path : false;
+
+  const orderData = {};
+
+  const createOrder = async () => {
+    try {
+      const accessToken = localStorage.getItem("accessToken");
+      if (!accessToken) {
+        alert("Bạn chưa đăng nhập");
+        return;
+      }
+      // Gửi yêu cầu POST đến server để đặt phòng
+      const response = await axios.post("http://localhost:2003/api/admin/order/save", orderData);
+      router.push(`/room-service?id=${response.data.id}`);
+      console.log("Tạo thành công:", response.data);
+      console.log("Id:", response.data.id);
+    } catch (error) {
+      console.log("Lỗi khi đặt phòng:", error);
+    }
   };
 
   return (
@@ -76,23 +111,24 @@ export const OrderSearch = ({ textSearch, setTextSearch }) => {
             )}
           />
         </Grid>
-        {/* <Grid>
+        <Grid>
           <Button
             className="btn btn-primary"
             style={{
               height: 55,
               width: 170,
-              marginLeft: 160,
-              backgroundColor: "dimgray",
+              marginLeft: 170,
+              backgroundColor: "darkblue",
               color: "white",
             }}
+            onClick={createOrder}
           >
-            <SvgIcon style={{ marginRight: 10 }} fontSize="small">
+            <SvgIcon fontSize="small">
               <PlusIcon />
-            </SvgIcon>
+            </SvgIcon>{" "}
             Tạo Hóa Đơn
           </Button>
-        </Grid> */}
+        </Grid>
       </Grid>
     </Card>
   );

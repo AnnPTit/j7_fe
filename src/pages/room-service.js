@@ -1522,8 +1522,7 @@ function BookRoom() {
           </button>
         ) : null}
       </div>
-
-      <Paper
+      <Box
         style={{
           border: "1px solid #ccc",
           padding: "20px",
@@ -1667,7 +1666,7 @@ function BookRoom() {
             </h6>
           </Box>
         </Scrollbar>
-      </Paper>
+      </Box>
       <Dialog open={openReturnOneRoom} onClose={handleCloseReturnOneRoom} maxWidth="md">
         <DialogTitle>XÁC NHẬN THANH TOÁN</DialogTitle>
         <DialogContent>
@@ -1989,7 +1988,7 @@ function BookRoom() {
         </Dialog>
       </div>
       <TabContext value={activeTab}>
-        <Paper
+        <Box
           style={{
             border: "1px solid #ccc",
             padding: "20px",
@@ -2130,9 +2129,9 @@ function BookRoom() {
               </h6>
             </TabPanel>
           </Scrollbar>
-        </Paper>
+        </Box>
       </TabContext>
-      <Paper
+      <Box
         style={{
           border: "1px solid #ccc",
           padding: "20px",
@@ -2199,18 +2198,18 @@ function BookRoom() {
             </Table>
           </Box>
         </Scrollbar>
-      </Paper>
+      </Box>
       <div className="row">
-        <Paper
+        <Box
           style={{
-            flexDirection: "row", // Arrange items horizontally
-            justifyContent: "space-between", // Evenly distribute the sections
+            flexDirection: "row",
+            justifyContent: "space-between",
             alignItems: "center",
             border: "1px solid #ccc",
             padding: "20px",
             boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
             width: 650,
-            marginLeft: 150, // Add the box shadow
+            marginLeft: 150,
             marginTop: 30,
           }}
         >
@@ -2368,8 +2367,8 @@ function BookRoom() {
               ) : null}
             </div>
           </div>
-        </Paper>
-        <Paper
+        </Box>
+        <Box
           style={{
             height: 400,
             border: "1px solid #ccc",
@@ -2398,7 +2397,7 @@ function BookRoom() {
               {cameraEnabled ? "Disable Camera" : "Enable Camera"}
             </button>
           </div>
-        </Paper>
+        </Box>
         <div
           style={{
             marginTop: 20,

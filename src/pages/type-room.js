@@ -129,11 +129,10 @@ const Page = () => {
         }}
       >
         <Container maxWidth="xl">
-          <Stack spacing={3}>
+          <Stack spacing={2}>
             <Stack direction="row" justifyContent="space-between" spacing={4}>
-              <Stack spacing={1}>
-                <Typography variant="h4">Loại Phòng</Typography>
-                <Stack alignItems="center" direction="row" spacing={1}></Stack>
+              <Stack spacing={0}>
+                <Stack alignItems="center" direction="row" spacing={0}></Stack>
               </Stack>
               <div>
                 <Button
@@ -145,7 +144,7 @@ const Page = () => {
                   }
                   variant="contained"
                 >
-                  Add
+                  Thêm mới
                 </Button>
               </div>
             </Stack>

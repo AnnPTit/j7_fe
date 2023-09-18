@@ -34,15 +34,11 @@ export const OrderTable = (props) => {
       case 0:
         return { color: "error", text: "Đã hủy" };
       case 1:
-        return { color: "primary", text: "Chờ xác nhận" };
+        return { color: "warning", text: "Chờ xác nhận" };
       case 2:
-        return { color: "warning", text: "Đã nhận phòng" };
+        return { color: "primary", text: "Đã nhận phòng" };
       case 3:
         return { color: "success", text: "Đã trả phòng" };
-      case 4:
-        return { color: "warning", text: "Pending" };
-      case 5:
-        return { color: "info", text: "Processing" };
       default:
         return { color: "default", text: "Unknown" };
     }
@@ -69,7 +65,7 @@ export const OrderTable = (props) => {
 
             <TableBody>
               {items.map((order, index) => {
-                const created = moment(order.createAt).format("DD/MM/YYYY - hh:mm:ss");
+                const created = moment(order.createAt).format("DD/MM/YYYY - HH:mm:ss");
                 const statusData = getStatusButtonColor(order.status);
                 const statusText = statusData.text;
 
@@ -90,9 +86,8 @@ export const OrderTable = (props) => {
                     <TableCell>
                       {order.account && order.account.fullname ? order.account.fullname : "NaN"}
                     </TableCell>
-
                     <TableCell>{order.customer.fullname}</TableCell>
-                    <TableCell>{formatPrice(order.totalMoney)}</TableCell>
+                    <TableCell style={{ color: "red" }}>{formatPrice(order.totalMoney)}</TableCell>
                     <TableCell>{order.note}</TableCell>
                     <TableCell>{created}</TableCell>
                     <TableCell>

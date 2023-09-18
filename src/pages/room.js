@@ -52,7 +52,7 @@ const Page = () => {
   const pathname = usePathname();
 
   const item = {
-    title: "Add",
+    title: "Thêm mới",
     path: "input/inputRoom/inputRoom",
     icon: (
       <SvgIcon fontSize="small">
@@ -156,8 +156,7 @@ const Page = () => {
         <Container maxWidth="xl">
           <Stack spacing={3}>
             <Stack direction="row" justifyContent="space-between" spacing={4}>
-              <Stack spacing={1}>
-                <Typography variant="h4">Phòng</Typography>
+              <Stack spacing={0}>
               </Stack>
               <div>
                 <SideNavItem

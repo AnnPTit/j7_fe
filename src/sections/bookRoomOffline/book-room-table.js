@@ -38,15 +38,11 @@ export const BookRoomTable = (props) => {
       case 0:
         return { color: "error", text: "Đã hủy" };
       case 1:
-        return { color: "primary", text: "Chờ xác nhận" };
+        return { color: "warning", text: "Chờ xác nhận" };
       case 2:
-        return { color: "warning", text: "Đã nhận phòng" };
+        return { color: "primary", text: "Đã nhận phòng" };
       case 3:
         return { color: "success", text: "Đã trả phòng" };
-      case 4:
-        return { color: "warning", text: "Pending" };
-      case 5:
-        return { color: "info", text: "Processing" };
       default:
         return { color: "default", text: "Unknown" };
     }
@@ -69,7 +65,7 @@ export const BookRoomTable = (props) => {
             </TableHead>
             <TableBody>
               {items.map((order, index) => {
-                const created = moment(order.createAt).format("DD/MM/YYYY - hh:mm:ss");
+                const created = moment(order.createAt).format("DD/MM/YYYY - HH:mm:ss");
                 const statusData = getStatusButtonColor(order.status);
                 const statusText = statusData.text;
                 const hrefUpdate = `/room-service?id=${order.id}`;
@@ -82,7 +78,7 @@ export const BookRoomTable = (props) => {
                       </div>
                     </TableCell>
                     <TableCell>{order.orderCode}</TableCell>
-                    <TableCell>{formatPrice(order.totalMoney)}</TableCell>
+                    <TableCell style={{ color: "red" }}>{formatPrice(order.totalMoney)}</TableCell>
                     <TableCell>{created}</TableCell>
                     <TableCell>
                       <SeverityPill variant="contained" color={statusData.color}>

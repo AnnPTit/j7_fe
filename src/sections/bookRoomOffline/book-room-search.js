@@ -1,5 +1,4 @@
-import MagnifyingGlassIcon from "@heroicons/react/24/solid/MagnifyingGlassIcon";
-import { Card, Button, Grid, InputAdornment, OutlinedInput, SvgIcon } from "@mui/material";
+import { Card, Button, Grid, OutlinedInput, SvgIcon } from "@mui/material";
 import PlusIcon from "@heroicons/react/24/solid/PlusIcon";
 import React from "react";
 import { usePathname } from "next/navigation";
@@ -30,18 +29,13 @@ export const BookRoomSearch = ({ textSearch, setTextSearch }) => {
         alert("Bạn chưa đăng nhập");
         return;
       }
-
       // Gửi yêu cầu POST đến server để đặt phòng
       const response = await axios.post("http://localhost:2003/api/admin/order/save", orderData);
-
-      // Ở đây, bạn có thể thực hiện các hành động sau khi đặt phòng thành công,
-      // chẳng hạn hiển thị thông báo, điều hướng trang hoặc cập nhật trạng thái.
       router.push(`/room-service?id=${response.data.id}`);
       console.log("Tạo thành công:", response.data);
       console.log("Id:", response.data.id);
     } catch (error) {
       console.log("Lỗi khi đặt phòng:", error);
-      // Xử lý lỗi nếu có
     }
   };
 
@@ -57,7 +51,6 @@ export const BookRoomSearch = ({ textSearch, setTextSearch }) => {
             setTextSearch(e.target.value);
           }}
         />
-
         <Grid>
           <Button
             className="btn btn-primary"

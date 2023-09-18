@@ -23,6 +23,7 @@ import {
   CardMedia,
   Grid,
   Typography,
+  Paper,
 } from "@mui/material";
 import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
@@ -384,7 +385,7 @@ function OrderTimeline() {
         width: "100%", // Center the timeline container horizontally
       }}
     >
-      <Card
+      <Box
         style={{
           border: "1px solid #ccc",
           padding: "20px",
@@ -474,8 +475,8 @@ function OrderTimeline() {
             </DialogContent>
           </Dialog>
         </div>
-      </Card>
-      <Card
+      </Box>
+      <Box
         style={{
           border: "1px solid #ccc",
           padding: "20px",
@@ -521,8 +522,8 @@ function OrderTimeline() {
             <br />
           </div>
         </div>
-      </Card>
-      <Card
+      </Box>
+      <Box
         style={{
           border: "1px solid #ccc",
           padding: "20px",
@@ -575,8 +576,8 @@ function OrderTimeline() {
             })}
           </TableBody>
         </Table>
-      </Card>
-      <Card
+      </Box>
+      <Box
         style={{
           border: "1px solid #ccc",
           padding: "20px",
@@ -593,7 +594,7 @@ function OrderTimeline() {
           <hr />
 
           {orderDetailData.map((orderDetail, index) => (
-            <Card key={index}>
+            <Box key={index}>
               <Grid container spacing={2}>
                 <Grid item xs={12} sm={6} md={4} lg={3}>
                   {/* Render the main room image */}
@@ -682,10 +683,10 @@ function OrderTimeline() {
                 </div>
               </Grid>
               <hr />
-            </Card>
+            </Box>
           ))}
         </div>
-      </Card>
+      </Box>
     </div>
   );
 }
