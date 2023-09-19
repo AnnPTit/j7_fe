@@ -28,10 +28,6 @@ export const BookRoomTable = (props) => {
     return price.toLocaleString({ style: "currency", currency: "VND" }).replace(/\D00(?=\D*$)/, "");
   };
 
-  const handleDelete = (id) => {
-    props.onDelete(id);
-  };
-
   const getStatusButtonColor = (status) => {
     switch (status) {
       case 0:
