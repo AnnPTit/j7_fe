@@ -9,7 +9,6 @@ import MagnifyingGlassIcon from "@heroicons/react/24/solid/MagnifyingGlassIcon";
 import { useRouter } from "next/router";
 import {
   Box,
-  Paper,
   TextareaAutosize,
   Table,
   TableBody,

@@ -7,7 +7,7 @@ import { Layout as DashboardLayout } from "src/layouts/dashboard/layout";
 import { OrderTable } from "src/sections/order/order-table";
 import { OrderSearch } from "src/sections/order/order-search";
 import { applyPagination } from "src/utils/apply-pagination";
-import Pagination from "src/components/Pagination";
+import MyPagination from "src/components/Pagination";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 const useOrder = (data, page, rowsPerPage) => {
@@ -95,7 +95,7 @@ const Page = () => {
             </div>
           </Stack>
 
-          <Pagination
+          <MyPagination
             pageNumber={pageNumber}
             totalPages={totalPages}
             setPageNumber={setPageNumber}

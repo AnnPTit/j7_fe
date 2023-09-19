@@ -9,7 +9,7 @@ import { TypeRoomTable } from "src/sections/typeRoom/type-room-table";
 import { TypeRoomSearch } from "src/sections/typeRoom/type-room-search";
 import { applyPagination } from "src/utils/apply-pagination";
 import InputTypeRoom from "src/components/InputTypeRoom/InputTypeRoom";
-import Pagination from "src/components/Pagination";
+import MyPagination from "src/components/Pagination";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 const useTypeRoom = (data, page, rowsPerPage) => {
@@ -162,7 +162,7 @@ const Page = () => {
               />
             </div>
           </Stack>
-          <Pagination
+          <MyPagination
             pageNumber={pageNumber}
             totalPages={totalPages}
             setPageNumber={setPageNumber}

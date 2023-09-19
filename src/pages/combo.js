@@ -13,7 +13,7 @@ import { ComboSearch } from "src/sections/combo/combo-search";
 import { applyPagination } from "src/utils/apply-pagination";
 import ComboFilter from "src/sections/combo/combo-filter";
 import PriceRangeSlider from "src/sections/combo/combo-slider";
-import Pagination from "src/components/Pagination";
+import MyPagination from "src/components/Pagination";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 const useCustomers = (data, page, rowsPerPage) => {
@@ -235,7 +235,7 @@ const Page = () => {
             </div>
           </Stack>
 
-          <Pagination
+          <MyPagination
             pageNumber={pageNumber}
             totalPages={totalPages}
             setPageNumber={setPageNumber}

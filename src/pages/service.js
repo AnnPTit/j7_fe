@@ -10,7 +10,7 @@ import { ServiceSearch } from "src/sections/service/service-search";
 import ServiceFilter from "src/sections/service/service-filter";
 import { Service } from "src/sections/service/service-table";
 import { applyPagination } from "src/utils/apply-pagination";
-import Pagination from "src/components/Pagination";
+import MyPagination from "src/components/Pagination";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { SideNavItem } from "src/layouts/dashboard/side-nav-item";
 import { usePathname } from "next/navigation";
@@ -238,7 +238,7 @@ const Page = () => {
             </div>
           </Stack>
 
-          <Pagination
+          <MyPagination
             pageNumber={pageNumber}
             totalPages={totalPages}
             setPageNumber={setPageNumber}

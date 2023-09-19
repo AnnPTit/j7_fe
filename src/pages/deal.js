@@ -7,7 +7,7 @@ import { Layout as DashboardLayout } from "src/layouts/dashboard/layout";
 import { DealTable } from "src/sections/deal/deal-table";
 import { DealSearch } from "src/sections/deal/deal-search";
 import { applyPagination } from "src/utils/apply-pagination";
-import Pagination from "src/components/Pagination";
+import MyPagination from "src/components/Pagination";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 const useDeal = (data, page, rowsPerPage) => {
@@ -91,7 +91,7 @@ const Page = () => {
               pageNumber={pageNumber}
             />
           </Stack>
-          <Pagination
+          <MyPagination
             pageNumber={pageNumber}
             totalPages={totalPages}
             setPageNumber={setPageNumber}

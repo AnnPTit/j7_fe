@@ -10,7 +10,7 @@ import { RoomSearch } from "src/sections/room/room-search";
 import RoomFilter from "src/sections/room/room-filter";
 import { RoomTable } from "src/sections/room/room-table";
 import { applyPagination } from "src/utils/apply-pagination";
-import Pagination from "src/components/Pagination";
+import MyPagination from "src/components/Pagination";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { SideNavItem } from "src/layouts/dashboard/side-nav-item";
 import { usePathname } from "next/navigation";
@@ -193,7 +193,7 @@ const Page = () => {
               />
             </div>
           </Stack>
-          <Pagination
+          <MyPagination
             pageNumber={pageNumber}
             totalPages={totalPages}
             setPageNumber={setPageNumber}

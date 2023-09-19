@@ -45,7 +45,7 @@ export const OrderTable = (props) => {
   };
 
   return (
-    <Card>
+    <Card style={{ marginBottom: 30 }}>
       <Scrollbar>
         <Box sx={{ minWidth: 800 }}>
           <Table>
@@ -73,7 +73,7 @@ export const OrderTable = (props) => {
                   <TableRow
                     hover
                     key={order.id}
-                    style={{ cursor: "pointer" }}
+                    style={{ cursor: "pointer", height: 80 }}
                     onClick={() => handleRowClick(order.id)}
                   >
                     <TableCell padding="checkbox">

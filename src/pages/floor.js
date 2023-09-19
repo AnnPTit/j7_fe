@@ -10,7 +10,7 @@ import { FloorTable } from "src/sections/floor/floor-table";
 import { FloorSearch } from "src/sections/floor/floor-search";
 import { applyPagination } from "src/utils/apply-pagination";
 import InputFloor from "src/components/InputFloor/InputFloor";
-import Pagination from "src/components/Pagination";
+import MyPagination from "src/components/Pagination";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 const useFloor = (data, page, rowsPerPage) => {
@@ -166,7 +166,7 @@ const Page = () => {
             </div>
           </Stack>
 
-          <Pagination
+          <MyPagination
             pageNumber={pageNumber}
             totalPages={totalPages}
             setPageNumber={setPageNumber}

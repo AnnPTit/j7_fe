@@ -8,13 +8,12 @@ import {
   FaSignInAlt,
 } from "react-icons/fa";
 import { Layout as DashboardLayout } from "src/layouts/dashboard/layout";
-import React, { Component } from "react";
+import React from "react";
 import axios from "axios";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import {
   Box,
-  Card,
   Table,
   TableBody,
   TableCell,
@@ -23,7 +22,6 @@ import {
   CardMedia,
   Grid,
   Typography,
-  Paper,
 } from "@mui/material";
 import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
@@ -191,7 +189,7 @@ function OrderTimeline() {
                   eventTitle = "Unknown Type";
                   break;
               }
-              const formattedDate = format(new Date(event.createAt), "dd-MM-yyyy hh:mm:ss");
+              const formattedDate = format(new Date(event.createAt), "dd/MM/yyyy HH:mm:ss");
               return {
                 color: eventColor,
                 icon: eventIcon,
@@ -200,10 +198,8 @@ function OrderTimeline() {
                 type: event.type,
               };
             });
-            // Update the timelineEvents state with the new events
             setTimelineEvents(timelineEventsData);
           } else {
-            // If there are no order timeline events, set a default event
             setTimelineEvents([
               {
                 color: "default",
@@ -382,7 +378,7 @@ function OrderTimeline() {
       style={{
         justifyContent: "center",
         marginTop: 30,
-        width: "100%", // Center the timeline container horizontally
+        width: "100%",
       }}
     >
       <Box
@@ -391,7 +387,7 @@ function OrderTimeline() {
           padding: "20px",
           boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
           width: 1150,
-          marginLeft: 140, // Add the box shadow
+          marginLeft: 140,
         }}
       >
         <Timeline minEvents={5} placeholder>

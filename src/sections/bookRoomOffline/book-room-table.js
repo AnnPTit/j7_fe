@@ -14,7 +14,6 @@ import {
 import { Scrollbar } from "src/components/scrollbar";
 import TrashIcon from "@heroicons/react/24/solid/TrashIcon";
 import PencilSquareIcon from "@heroicons/react/24/solid/PencilSquareIcon";
-import Button from "@mui/material/Button";
 import { SeverityPill } from "src/components/severity-pill";
 import Link from "next/link";
 

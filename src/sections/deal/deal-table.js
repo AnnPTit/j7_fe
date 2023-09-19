@@ -62,10 +62,10 @@ export const DealTable = (props) => {
                 const statusPaymentText = statusPayment.text;
 
                 return (
-                  <TableRow hover key={payment.id}>
+                  <TableRow style={{ height: 80 }} hover key={payment.id}>
                     <TableCell padding="checkbox">
                       <div key={index}>
-                        <span>{index + 1}</span>
+                        <span>{index + props.pageNumber * 5 + 1}</span>
                       </div>
                     </TableCell>
                     <TableCell>{payment.order.orderCode}</TableCell>

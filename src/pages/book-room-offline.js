@@ -7,7 +7,7 @@ import { Layout as DashboardLayout } from "src/layouts/dashboard/layout";
 import { BookRoomTable } from "src/sections/bookRoomOffline/book-room-table";
 import { BookRoomSearch } from "src/sections/bookRoomOffline/book-room-search";
 import { applyPagination } from "src/utils/apply-pagination";
-import Pagination from "src/components/Pagination";
+import MyPagination from "src/components/Pagination";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 const useBookRoom = (data, page, rowsPerPage) => {
@@ -35,14 +35,6 @@ const Page = () => {
   const [textSearch, setTextSearch] = useState("");
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
-
-  const handlePageChange = useCallback((event, value) => {
-    setPage(value);
-  }, []);
-
-  const handleRowsPerPageChange = useCallback((event) => {
-    setRowsPerPage(event.target.value);
-  }, []);
 
   // Delete bookRoom
   const handleDelete = async (id) => {
@@ -108,7 +100,7 @@ const Page = () => {
               <BookRoomTable
                 items={bookRoom}
                 selected={bookRoomSelection.selected}
-                onDelete={handleDelete} // Thêm prop onDelete và truyền giá trị của handleDelete vào đây
+                // onDelete={handleDelete} // Thêm prop onDelete và truyền giá trị của handleDelete vào đây
                 setPageNumber={setPageNumber}
                 totalElements={totalElements}
                 pageNumber={pageNumber}
@@ -116,7 +108,7 @@ const Page = () => {
             </div>
           </Stack>
 
-          <Pagination
+          <MyPagination
             pageNumber={pageNumber}
             totalPages={totalPages}
             setPageNumber={setPageNumber}
