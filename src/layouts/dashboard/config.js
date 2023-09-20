@@ -56,96 +56,99 @@ export const items = [
     ),
   },
   {
-    title: "Quản lý phòng",
+    title: "",
     icon: (
-      <Accordion style={{ width: 230, background: "none", boxShadow: "none" }}>
-        <AccordionSummary
-          expandIcon={<ExpandMoreIcon />}
-          aria-controls="room-management-content"
-          id="room-management-header"
-          style={{ width: 230, color: "darkgray", padding: 0 }}
-        >
-          <SvgIcon fontSize="small" style={{ marginRight: 15 }}>
-            <BuildingLibraryIcon />
-          </SvgIcon>
-          <Typography style={{ fontWeight: "bold" }}>Quản lý phòng</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <Typography>
-            {/* Use the Next.js Link component for navigation */}
-            <Link href="/room">
-              <Typography
-                component="a"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  color: "lightgray",
-                  textDecorationColor: "#1C2536",
-                }}
-              >
-                <SvgIcon fontSize="small" style={{ marginRight: "8px" }}>
-                  <MinusSmallIcon />
-                </SvgIcon>
-                Phòng
-              </Typography>
-            </Link>
-          </Typography>
-          <br />
-          <Typography>
-            <Link href="/type-room">
-              <Typography
-                component="a"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  color: "lightgray",
-                  textDecorationColor: "#1C2536",
-                }}
-              >
-                <SvgIcon fontSize="small" style={{ marginRight: "8px" }}>
-                  <MinusSmallIcon />
-                </SvgIcon>
-                Loại phòng
-              </Typography>
-            </Link>
-          </Typography>
-          <br />
-          <Typography>
-            <Link href="/floor">
-              <Typography
-                component="a"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  color: "lightgray",
-                  textDecorationColor: "#1C2536",
-                }}
-              >
-                <SvgIcon fontSize="small" style={{ marginRight: "8px" }}>
-                  <MinusSmallIcon />
-                </SvgIcon>
-                Tầng
-              </Typography>
-            </Link>
-          </Typography>
-        </AccordionDetails>
-      </Accordion>
+      <div style={{ margin: 0 }}>
+        <Accordion style={{ width: 230, background: "none" }}>
+          <AccordionSummary
+            expandIcon={<ExpandMoreIcon />}
+            aria-controls="room-management-content"
+            id="room-management-header"
+            style={{ width: 230, color: "#9DA4AE", padding: 0 }}
+          >
+            <SvgIcon fontSize="small" style={{ marginRight: 15 }}>
+              <BuildingLibraryIcon />
+            </SvgIcon>
+            <Typography style={{ fontWeight: 600, fontSize: 14, margin: 0 }}>
+              Quản lý phòng
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Typography>
+              <Link href="/room">
+                <Typography
+                  component="a"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    color: "lightgray",
+                    textDecorationColor: "#1C2536",
+                  }}
+                >
+                  <SvgIcon fontSize="small" style={{ marginRight: "8px" }}>
+                    <MinusSmallIcon />
+                  </SvgIcon>
+                  Phòng
+                </Typography>
+              </Link>
+            </Typography>
+            <br />
+            <Typography>
+              <Link href="/type-room">
+                <Typography
+                  component="a"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    color: "lightgray",
+                    textDecorationColor: "#1C2536",
+                  }}
+                >
+                  <SvgIcon fontSize="small" style={{ marginRight: "8px" }}>
+                    <MinusSmallIcon />
+                  </SvgIcon>
+                  Loại phòng
+                </Typography>
+              </Link>
+            </Typography>
+            <br />
+            <Typography>
+              <Link href="/floor">
+                <Typography
+                  component="a"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    color: "lightgray",
+                    textDecorationColor: "#1C2536",
+                  }}
+                >
+                  <SvgIcon fontSize="small" style={{ marginRight: "8px" }}>
+                    <MinusSmallIcon />
+                  </SvgIcon>
+                  Tầng
+                </Typography>
+              </Link>
+            </Typography>
+          </AccordionDetails>
+        </Accordion>
+      </div>
     ),
   },
   {
-    title: "Quản lý dịch vụ",
+    title: ".",
     icon: (
       <Accordion style={{ width: 230, background: "none", boxShadow: "none" }}>
         <AccordionSummary
           expandIcon={<ExpandMoreIcon />}
           aria-controls="room-management-content"
           id="room-management-header"
-          style={{ width: 230, color: "darkgray", padding: 0 }}
+          style={{ width: 230, color: "#9DA4AE", padding: 0 }}
         >
           <SvgIcon fontSize="small" style={{ marginRight: 15 }}>
             <QueueListIcon />
           </SvgIcon>
-          <Typography style={{ fontWeight: "bold" }}>Quản lý dịch vụ</Typography>
+          <Typography style={{ fontWeight: 600, fontSize: 14 }}>Quản lý dịch vụ</Typography>
         </AccordionSummary>
         <AccordionDetails>
           <Typography>
@@ -210,19 +213,19 @@ export const items = [
     ),
   },
   {
-    title: "Quản lý tài khoản",
+    title: ",",
     icon: (
       <Accordion style={{ width: 230, background: "none", boxShadow: "none" }}>
         <AccordionSummary
           expandIcon={<ExpandMoreIcon />}
           aria-controls="room-management-content"
           id="room-management-header"
-          style={{ width: 230, color: "darkgray", padding: 0, margin: 0 }}
+          style={{ width: 230, color: "#9DA4AE", padding: 0 }}
         >
           <SvgIcon fontSize="small" style={{ marginRight: 15 }}>
             <UsersIcon />
           </SvgIcon>
-          <Typography style={{ fontWeight: "bold" }}>Quản lý tài khoản</Typography>
+          <Typography style={{ fontWeight: 600, fontSize: 14 }}>Quản lý tài khoản</Typography>
         </AccordionSummary>
         <AccordionDetails>
           <Typography>
