@@ -20,6 +20,10 @@ import {
   OutlinedInput,
   InputAdornment,
   Checkbox,
+  Select,
+  InputLabel,
+  NativeSelect,
+  Option,
 } from "@mui/material";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
@@ -93,7 +97,8 @@ function BookRoom() {
   const [priceRange, setPriceRange] = useState([0, 3000000]);
   const [roomPricePerDay, setRoomPricePerDay] = useState(0); // Thêm state để lưu giá theo ngày của phòng
   const [activeTab, setActiveTab] = useState("1");
-  const [isEditing, setIsEditing] = useState(false);
+  const [selectedCustomerAccept, setSelectedCustomerAccept] = useState("");
+  const [selectedCustomerReturn, setSelectedCustomerReturn] = useState("");
 
   // Dialogs
   const [openSeacrhRoom, setOpenSeacrhRoom] = React.useState(false);
@@ -565,6 +570,7 @@ function BookRoom() {
     try {
       // Make an API call to update the order status to "Đã xác nhận" (status: 2)
       await axios.put(`http://localhost:2003/api/admin/order/update-accept/${id}`, {
+        customerId: selectedCustomerAccept,
         totalMoney: sumAmount,
         vat: vatAmount,
         note: noteOrder,
@@ -593,6 +599,7 @@ function BookRoom() {
       const response = await axios.post(
         `http://localhost:2003/api/admin/order/return/${selectedOrderDetails}`,
         {
+          customerId: selectedCustomerReturn,
           totalMoney: sumOrderDetail,
           vat: vatOrderDetail,
           moneyGivenByCustomer: givenCustomerOneRoom,
@@ -1710,14 +1717,37 @@ function BookRoom() {
           />
           <br />
           <br />
-          <TextField
-            disabled
-            label="Tiền trả lại"
-            value={givenCustomerOneRoom - sumOrderDetail}
-            fullWidth
-            variant="outlined"
-          />
-          <br />
+          <div style={{ display: "flex" }}>
+            <FormControl>
+              <InputLabel variant="standard" htmlFor="uncontrolled-native">
+                Khách hàng
+              </InputLabel>
+              {customer.length > 0 ? (
+                <NativeSelect
+                  style={{ width: 300 }}
+                  inputProps={{
+                    id: "uncontrolled-native",
+                  }}
+                  onChange={(event) => setSelectedCustomerReturn(event.target.value)}
+                >
+                  {customer.map((customer) => (
+                    <option key={customer.id} value={customer.id}>
+                      {customer.fullname}
+                    </option>
+                  ))}
+                </NativeSelect>
+              ) : (
+                <p>Loading...</p>
+              )}
+            </FormControl>
+            <TextField
+              style={{ marginLeft: 135, width: 500 }}
+              disabled
+              label="Tiền trả lại"
+              value={givenCustomerOneRoom - sumOrderDetail}
+              variant="outlined"
+            />
+          </div>
           <br />
           <TextareaAutosize
             className="form-control"
@@ -2412,12 +2442,39 @@ function BookRoom() {
           {renderButtonsBasedOnStatus()}
           <Dialog open={openAcceptOrder} onClose={handleCloseAcceptOrder} maxWidth="md">
             <DialogTitle>Xác nhận khách hàng nhận phòng</DialogTitle>
+            <hr />
             <DialogContent>
+              <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+                <FormControl>
+                  <InputLabel variant="standard" htmlFor="uncontrolled-native">
+                    Khách hàng
+                  </InputLabel>
+                  {customer.length > 0 ? (
+                    <NativeSelect
+                      style={{ width: 200 }}
+                      inputProps={{
+                        id: "uncontrolled-native",
+                      }}
+                      onChange={(event) => setSelectedCustomerAccept(event.target.value)}
+                    >
+                      {customer.map((customer) => (
+                        <option key={customer.id} value={customer.id}>
+                          {customer.fullname}
+                        </option>
+                      ))}
+                    </NativeSelect>
+                  ) : (
+                    <p>Loading...</p>
+                  )}
+                </FormControl>
+              </div>
+              <br />
+              <br />
               <TextareaAutosize
                 className="form-control"
                 placeholder="Ghi chú"
                 name="note"
-                cols={100}
+                cols={50}
                 style={{ height: 150 }}
                 variant="outlined"
                 value={noteOrder}
