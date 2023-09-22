@@ -64,6 +64,7 @@ function BookRoom() {
   const [typeRoomChose, setTypeRoomChose] = useState("");
   const [serviceType, setServiceType] = useState([]);
   const [unit, setUnit] = useState([]);
+  const [orderDetail, setOrderDetail] = useState([]);
   const [selectedRoomId, setSelectedRoomId] = useState(null);
   const [selectedOrderDetails, setSelectedOrderDetails] = useState(null);
   const [selectedServiceId, setSelectedServiceId] = useState(null);
@@ -820,10 +821,25 @@ function BookRoom() {
       return;
     }
 
-    const isCustomerAdded = customerInfo.some((customer) => customer.citizenId === cccd);
+    const isCustomer = customerInfo.some((customer) => customer.citizenId === cccd);
+    if (isCustomer) {
+      toast.error("Khách hàng đã tồn tại trong danh sách của phòng này!", {
+        position: toast.POSITION.BOTTOM_RIGHT,
+      });
+      return;
+    }
+
+    console.log("List: ", orderDetailData);
+    const isCustomerAdded = orderDetailData.some((orderDetail) => {
+      // Kiểm tra xem orderDetail và customerInfo có tồn tại
+      if (orderDetail && orderDetail.informationCustomerList) {
+        return orderDetail.informationCustomerList.some((customer) => customer.citizenId === cccd);
+      }
+      return false; // Trường hợp nếu orderDetail hoặc customerInfo không tồn tại
+    });
 
     if (isCustomerAdded) {
-      toast.error("Khách hàng đã tồn tại trong danh sách của phòng này!", {
+      toast.error("Khách hàng đã có mặt trong 1 phòng khác!", {
         position: toast.POSITION.BOTTOM_RIGHT,
       });
       return;
@@ -867,10 +883,15 @@ function BookRoom() {
         response.data
       );
     } catch (error) {
-      console.error(
-        `Error adding information customer to orderDetail ${selectedOrderDetails}:`,
-        error
-      );
+      if (error.response) {
+        // Xử lý response lỗi
+        if (error.response.status === 403) {
+          alert("Bạn không có quyền truy cập vào trang này");
+          window.location.href = "/auth/login"; // Chuyển hướng đến trang đăng nhập
+        } else if (error.response.status === 400) {
+          console.log(error.response.data);
+        }
+      }
     }
     setCccd("");
     setCustomerName("");
