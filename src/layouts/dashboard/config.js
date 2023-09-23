@@ -35,8 +35,8 @@ export const items = [
     ),
   },
   {
-    title: "Customers",
-    path: "/customers",
+    title: "Khách Hàng",
+    path: "/customer",
     icon: (
       <Tippy content="Hello">
         <SvgIcon fontSize="small">
