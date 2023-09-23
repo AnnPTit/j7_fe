@@ -1,73 +1,33 @@
-function Pagination({ pageNumber, totalPages, setPageNumber }) {
+import React from "react";
+import Pagination from "@mui/material/Pagination";
+import Stack from "@mui/material/Stack";
+
+const containerStyle = {
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  marginTop: "20px", // Có thể điều chỉnh khoảng cách trên dưới theo nhu cầu của bạn
+};
+
+function MyPagination({ pageNumber, totalPages, setPageNumber }) {
+  const handleChange = (event, value) => {
+    setPageNumber(value - 1); // Giá trị `value` bắt đầu từ 1, còn `pageNumber` của bạn bắt đầu từ 0
+  };
+
   return (
-    <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
-      <nav aria-label="...">
-        <ul className="pagination">
-          {pageNumber > 0 ? (
-            <li className="page-item">
-              <button
-                className="page-link"
-                onClick={() => {
-                  setPageNumber(pageNumber - 1);
-                }}
-              >
-                Previous
-              </button>
-            </li>
-          ) : (
-            <li className="page-item disabled">
-              <button
-                className="page-link"
-                onClick={() => {
-                  setPageNumber(pageNumber - 1);
-                }}
-              >
-                Previous
-              </button>
-            </li>
-          )}
-
-          {/* Tạo vòng lặp */}
-          {Array.from({ length: totalPages }, (_, index) => (
-            <li className="page-item" key={index}>
-              <button
-                className="page-link"
-                onClick={() => {
-                  setPageNumber(index);
-                }}
-              >
-                {index + 1}
-              </button>
-            </li>
-          ))}
-
-          {pageNumber < totalPages - 1 ? (
-            <li className="page-item">
-              <button
-                className="page-link"
-                onClick={() => {
-                  setPageNumber(pageNumber + 1);
-                }}
-              >
-                Next
-              </button>
-            </li>
-          ) : (
-            <li className="page-item disabled">
-              <button
-                className="page-link"
-                onClick={() => {
-                  setPageNumber(pageNumber + 1);
-                }}
-              >
-                Next
-              </button>
-            </li>
-          )}
-        </ul>
-      </nav>
+    <div style={containerStyle}> {/* Sử dụng inline style để căn giữa */}
+      <Stack spacing={2}>
+        <Pagination
+          count={totalPages}
+          page={pageNumber + 1} // Bắt đầu từ 1, còn `pageNumber` của bạn bắt đầu từ 0
+          onChange={handleChange}
+          shape="rounded"
+          size="large"
+          color="primary"
+        />
+      </Stack>
     </div>
   );
 }
 
-export default Pagination;
+export default MyPagination;

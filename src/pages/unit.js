@@ -11,7 +11,7 @@ import { Layout as DashboardLayout } from "src/layouts/dashboard/layout";
 import { Unit } from "src/sections/unit/unit-table";
 import { applyPagination } from "src/utils/apply-pagination";
 import InputServiceType from "src/pages/input/inputServiceType/inputServiceType";
-import Pagination from "src/components/Pagination";
+import MyPagination from "src/components/Pagination";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 const useCustomers = (data, page, rowsPerPage) => {
@@ -64,7 +64,7 @@ const Page = () => {
       </SvgIcon>
     ),
   };
-
+  
   // Delete Customer
   const handleDelete = async (id) => {
     try {
@@ -179,7 +179,7 @@ const Page = () => {
             </div>
           </Stack>
 
-          <Pagination
+          <MyPagination
             pageNumber={pageNumber}
             totalPages={totalPages}
             setPageNumber={setPageNumber}

@@ -24,7 +24,7 @@ import {
 } from "@mui/material";
 import { Scrollbar } from "src/components/scrollbar";
 import TrashIcon from "@heroicons/react/24/solid/TrashIcon";
-import Bars4Icon from "@heroicons/react/24/solid/Bars4Icon";
+import PencilSquareIcon from "@heroicons/react/24/solid/PencilSquareIcon";
 
 export const TypeRoomTable = (props) => {
   const {
@@ -103,9 +103,6 @@ export const TypeRoomTable = (props) => {
                 <TableCell>Tên</TableCell>
                 <TableCell>Giá theo ngày</TableCell>
                 <TableCell>Giá theo giờ</TableCell>
-                <TableCell>Giá qua ngày</TableCell>
-                <TableCell>Giá qua đêm</TableCell>
-                <TableCell>Giá quá giờ</TableCell>
                 <TableCell>Sức chứa</TableCell>
                 <TableCell>Ghi chú</TableCell>
                 <TableCell>Trạng thái</TableCell>
@@ -145,16 +142,13 @@ export const TypeRoomTable = (props) => {
                     <TableCell>{typeRoom.typeRoomName}</TableCell>
                     <TableCell>{formatPrice(typeRoom.pricePerDay)}</TableCell>
                     <TableCell>{formatPrice(typeRoom.pricePerHours)}</TableCell>
-                    <TableCell>{formatPrice(typeRoom.pricePerDaytime)}</TableCell>
-                    <TableCell>{formatPrice(typeRoom.pricePerNighttime)}</TableCell>
-                    <TableCell>{formatPrice(typeRoom.priceOvertime)}</TableCell>
                     <TableCell>{typeRoom.capacity}</TableCell>
                     <TableCell>{typeRoom.note}</TableCell>
                     <TableCell>{typeRoom.status == 1 ? "Hoạt động" : "Unactive"}</TableCell>
                     <TableCell>
                       <button className="btn btn-primary" onClick={() => handleEdit(typeRoom.id)}>
                         <SvgIcon fontSize="small">
-                          <Bars4Icon /> 
+                          <PencilSquareIcon />
                         </SvgIcon>
                       </button>
                       <button className="btn btn-danger m-xl-2" onClick={alertDelete}>
@@ -282,27 +276,6 @@ export const TypeRoomTable = (props) => {
                       </TableCell>
                       <TableCell>
                         <Input
-                          onChange={handlePricePerDaytime}
-                          name="pricePerDaytime"
-                          value={editedTypeRoom.pricePerDaytime}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Input
-                          onChange={handlePricePerNighttime}
-                          name="pricePerNighttime"
-                          value={editedTypeRoom.pricePerNighttime}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Input
-                          onChange={handlePriceOvertime}
-                          name="priceOvertime"
-                          value={editedTypeRoom.priceOvertime}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Input
                           onChange={handleCapacity}
                           name="capacity"
                           value={editedTypeRoom.capacity}
@@ -314,10 +287,14 @@ export const TypeRoomTable = (props) => {
                       <TableCell>{typeRoom.status == 1 ? "Hoạt động" : "Unactive"}</TableCell>
                       <TableCell>
                         <button className="btn btn-primary" onClick={alertEdit}>
-                          Update
+                          <SvgIcon fontSize="small">
+                            <PencilSquareIcon />
+                          </SvgIcon>
                         </button>
                         <button className="btn btn-danger m-xl-2" onClick={handldeCancel}>
-                          Cancel
+                          <SvgIcon fontSize="small">
+                            <TrashIcon />
+                          </SvgIcon>
                         </button>
                         <ToastContainer />
                       </TableCell>

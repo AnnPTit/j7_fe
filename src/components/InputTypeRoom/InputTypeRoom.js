@@ -13,9 +13,6 @@ const handleSubmit = async (event) => {
   const typeRoomNameInput = document.querySelector('input[name="typeRoomName"]');
   const pricePerDayInput = document.querySelector('input[name="pricePerDay"]');
   const pricePerHoursInput = document.querySelector('input[name="pricePerHours"]');
-  const pricePerDaytimeInput = document.querySelector('input[name="pricePerDaytime"]');
-  const pricePerNighttimeInput = document.querySelector('input[name="pricePerNighttime"]');
-  const priceOvertimeInput = document.querySelector('input[name="priceOvertime"]');
   const capacityInput = document.querySelector('input[name="capacity"]');
   const noteInput = document.querySelector('textarea[name="note"]');
 
@@ -23,9 +20,6 @@ const handleSubmit = async (event) => {
   const typeRoomName = typeRoomNameInput?.value;
   const pricePerDay = pricePerDayInput?.value;
   const pricePerHours = pricePerHoursInput?.value;
-  const pricePerDaytime = pricePerDaytimeInput?.value;
-  const pricePerNighttime = pricePerNighttimeInput?.value;
-  const priceOvertime = priceOvertimeInput?.value;
   const capacity = capacityInput?.value;
   const note = noteInput?.value;
 
@@ -34,9 +28,6 @@ const handleSubmit = async (event) => {
     typeRoomName,
     pricePerDay,
     pricePerHours,
-    pricePerDaytime,
-    pricePerNighttime,
-    priceOvertime,
     capacity,
     note,
   };
@@ -129,23 +120,6 @@ function InputTypeRoom() {
             </div>
           </div>
           <div className={cx("form-row")}>
-            <div className={cx("input-data")}>
-              <input type="number" required name="pricePerDaytime" />
-              <div className={cx("underline")}></div>
-              <label>Giá qua ngày</label>
-            </div>
-            <div className={cx("input-data")}>
-              <input type="number" required name="pricePerNighttime" />
-              <div className={cx("underline")}></div>
-              <label>Giá qua đêm</label>
-            </div>
-          </div>
-          <div className={cx("form-row")}>
-            <div className={cx("input-data")}>
-              <input type="number" required name="priceOvertime" />
-              <div className={cx("underline")}></div>
-              <label>Giá quá giờ</label>
-            </div>
             <div className={cx("input-data")}>
               <input type="number" required name="capacity" />
               <div className={cx("underline")}></div>

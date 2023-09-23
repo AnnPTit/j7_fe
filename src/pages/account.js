@@ -8,7 +8,7 @@ import { Layout as DashboardLayout } from "src/layouts/dashboard/layout";
 import { AccountTable } from "src/sections/account/account-table";
 import { AccountSearch } from "src/sections/account/account-search";
 import { applyPagination } from "src/utils/apply-pagination";
-import Pagination from "src/components/Pagination";
+import MyPagination from "src/components/Pagination";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { SideNavItem } from "src/layouts/dashboard/side-nav-item";
 import { usePathname } from "next/navigation";
@@ -194,7 +194,7 @@ const Page = () => {
             </div>
           </Stack>
 
-          <Pagination
+          <MyPagination
             pageNumber={pageNumber}
             totalPages={totalPages}
             setPageNumber={setPageNumber}

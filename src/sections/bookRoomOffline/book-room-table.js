@@ -1,15 +1,23 @@
 import PropTypes from "prop-types";
 import moment from "moment";
-import Swal from "sweetalert2";
-import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { Box, Card, Table, TableBody, TableCell, TableHead, TableRow } from "@mui/material";
+import {
+  Box,
+  Card,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  SvgIcon,
+} from "@mui/material";
 import { Scrollbar } from "src/components/scrollbar";
+import TrashIcon from "@heroicons/react/24/solid/TrashIcon";
+import PencilSquareIcon from "@heroicons/react/24/solid/PencilSquareIcon";
 import { SeverityPill } from "src/components/severity-pill";
-import { useRouter } from "next/router";
+import Link from "next/link";
 
-export const OrderTable = (props) => {
-  const router = useRouter();
+export const BookRoomTable = (props) => {
   const { items = [], selected = [] } = props;
 
   const formatPrice = (price) => {
@@ -18,15 +26,6 @@ export const OrderTable = (props) => {
     }
 
     return price.toLocaleString({ style: "currency", currency: "VND" }).replace(/\D00(?=\D*$)/, "");
-  };
-
-  const handleDelete = (id) => {
-    props.onDelete(id);
-  };
-
-  const handleRowClick = (id) => {
-    // Navigate to the "orders" page based on the selected row's ID
-    router.push(`/orders?id=${id}`);
   };
 
   const getStatusButtonColor = (status) => {
@@ -45,55 +44,53 @@ export const OrderTable = (props) => {
   };
 
   return (
-    <Card style={{ marginBottom: 30 }}>
+    <Card>
       <Scrollbar>
         <Box sx={{ minWidth: 800 }}>
           <Table>
             <TableHead>
               <TableRow>
                 <TableCell padding="checkbox">STT</TableCell>
-                <TableCell>Mã HĐ</TableCell>
-                <TableCell>Loại HĐ</TableCell>
-                <TableCell>Nhân viên</TableCell>
-                <TableCell>Khách hàng</TableCell>
+                <TableCell>Mã hóa đơn</TableCell>
                 <TableCell>Tổng tiền</TableCell>
-                <TableCell>Ghi chú</TableCell>
                 <TableCell>Ngày tạo</TableCell>
                 <TableCell>Trạng thái</TableCell>
+                <TableCell>Thao tác</TableCell>
               </TableRow>
             </TableHead>
-
             <TableBody>
               {items.map((order, index) => {
                 const created = moment(order.createAt).format("DD/MM/YYYY - HH:mm:ss");
                 const statusData = getStatusButtonColor(order.status);
                 const statusText = statusData.text;
+                const hrefUpdate = `/room-service?id=${order.id}`;
 
                 return (
-                  <TableRow
-                    hover
-                    key={order.id}
-                    style={{ cursor: "pointer", height: 80 }}
-                    onClick={() => handleRowClick(order.id)}
-                  >
+                  <TableRow hover key={order.id}>
                     <TableCell padding="checkbox">
                       <div key={index}>
                         <span>{index + props.pageNumber * 5 + 1}</span>
                       </div>
                     </TableCell>
                     <TableCell>{order.orderCode}</TableCell>
-                    <TableCell>{order.typeOfOrder == 1 ? "Tại quầy" : "Online"}</TableCell>
-                    <TableCell>
-                      {order.account && order.account.fullname ? order.account.fullname : "NaN"}
-                    </TableCell>
-                    <TableCell>{order.customer.fullname}</TableCell>
                     <TableCell style={{ color: "red" }}>{formatPrice(order.totalMoney)}</TableCell>
-                    <TableCell>{order.note}</TableCell>
                     <TableCell>{created}</TableCell>
                     <TableCell>
                       <SeverityPill variant="contained" color={statusData.color}>
                         {statusText}
                       </SeverityPill>
+                    </TableCell>
+                    <TableCell>
+                      <Link className="btn btn-primary m-xl-2" href={hrefUpdate}>
+                        <SvgIcon fontSize="small">
+                          <PencilSquareIcon />
+                        </SvgIcon>
+                      </Link>
+                      <button className="btn btn-danger m-xl-2">
+                        <SvgIcon fontSize="small">
+                          <TrashIcon />
+                        </SvgIcon>
+                      </button>
                     </TableCell>
                   </TableRow>
                 );
@@ -106,7 +103,7 @@ export const OrderTable = (props) => {
   );
 };
 
-OrderTable.propTypes = {
+BookRoomTable.propTypes = {
   count: PropTypes.number,
   items: PropTypes.array,
   onDeselectAll: PropTypes.func,

@@ -27,7 +27,6 @@ const handleSubmit = async (event, selectedServiceCodes) => {
   const priceString = priceInpt.value; // Lấy giá trị dạng chuỗi từ trường input
   const cleanedPriceString = priceString.replace(/[^0-9]/g, ""); // Loại bỏ các ký tự không phải số
   // const price0 = parseInt(cleanedPriceString, 10); // Chuyển chuỗi thành số nguyên
-
   const comboCode = comboCodeInpt?.value;
   const comboName = comboNameInpt?.value;
   const note = noteInpt?.value;

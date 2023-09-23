@@ -1,11 +1,11 @@
 import { Card, OutlinedInput } from "@mui/material";
 
-export const ServiceSearch = ({ textSearch, setTextSearch }) => (
+export const DealSearch = ({ textSearch, setTextSearch }) => (
   <Card sx={{ p: 2 }}>
     <OutlinedInput
       value={textSearch}
       fullWidth
-      placeholder="Tìm kiếm theo mã hoặc tên"
+      placeholder="Tìm kiếm"
       sx={{ maxWidth: 500 }}
       onChange={(e) => {
         setTextSearch(e.target.value);

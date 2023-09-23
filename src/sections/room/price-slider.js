@@ -1,0 +1,42 @@
+import React, { useState } from "react";
+import { Slider, Typography } from "@mui/material";
+
+const formatCurrency = (value) => {
+  return new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND", // Đổi VND thành đơn vị tiền tệ mong muốn (Việt Nam Đồng)
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(value);
+};
+
+const PriceRangeSlider = ({ priceRange, setPriceRange }) => {
+  const handleChange = (event, newValue) => {
+    setPriceRange(newValue);
+  };
+
+  return (
+    <div>
+      <Typography
+        style={{ display: "flex", justifyContent: "center" }}
+        id="range-slider"
+        gutterBottom
+      >
+        Khoảng giá
+      </Typography>
+      <Slider
+        value={priceRange}
+        onChange={handleChange}
+        valueLabelDisplay="auto"
+        aria-labelledby="range-slider"
+        min={0}
+        max={3000000}
+      />
+      <Typography style={{ display: "flex", justifyContent: "center" }}>{`${formatCurrency(
+        priceRange[0]
+      )} - ${formatCurrency(priceRange[1])}`}</Typography>
+    </div>
+  );
+};
+
+export default PriceRangeSlider;

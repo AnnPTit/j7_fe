@@ -10,7 +10,7 @@ import { RoomSearch } from "src/sections/room/room-search";
 import RoomFilter from "src/sections/room/room-filter";
 import { RoomTable } from "src/sections/room/room-table";
 import { applyPagination } from "src/utils/apply-pagination";
-import Pagination from "src/components/Pagination";
+import MyPagination from "src/components/Pagination";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { SideNavItem } from "src/layouts/dashboard/side-nav-item";
 import { usePathname } from "next/navigation";
@@ -36,11 +36,11 @@ const Page = () => {
   const room = useRoom(data, page, rowsPerPage);
   const roomIds = useRoomIds(room);
   const roomSelection = useSelection(roomIds);
-  const [inputModal, setInputModal] = useState(false);
   const [pageNumber, setPageNumber] = useState(0);
 
+  // Search
   const [textSearch, setTextSearch] = useState("");
-  // filter
+  // Filter
   const [floor, setFloor] = useState([]);
   const [typeRoom, setTypeRoom] = useState([]);
   const [floorChose, setFloorChose] = useState("");
@@ -52,7 +52,7 @@ const Page = () => {
   const pathname = usePathname();
 
   const item = {
-    title: "Add",
+    title: "Thêm mới",
     path: "input/inputRoom/inputRoom",
     icon: (
       <SvgIcon fontSize="small">
@@ -61,10 +61,6 @@ const Page = () => {
     ),
   };
   const active = item.path ? pathname === item.path : false;
-
-  // const openModelInput = () => {
-  //   setInputModal(!inputModal);
-  // };
 
   // Delete room
   const handleDelete = async (id) => {
@@ -98,7 +94,6 @@ const Page = () => {
         console.log(error);
       }
     }
-
     // Gọi hàm fetchData ngay lập tức
     fetchData();
   }, []);
@@ -161,11 +156,10 @@ const Page = () => {
         <Container maxWidth="xl">
           <Stack spacing={3}>
             <Stack direction="row" justifyContent="space-between" spacing={4}>
-              <Stack spacing={1}>
-                <Typography variant="h4">Phòng</Typography>
+              <Stack spacing={0}>
               </Stack>
               <div>
-              <SideNavItem
+                <SideNavItem
                   style={{ backgroundColor: "red" }}
                   active={active}
                   disabled={item.disabled}
@@ -199,7 +193,7 @@ const Page = () => {
               />
             </div>
           </Stack>
-          <Pagination
+          <MyPagination
             pageNumber={pageNumber}
             totalPages={totalPages}
             setPageNumber={setPageNumber}

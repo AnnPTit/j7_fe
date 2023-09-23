@@ -1,19 +1,22 @@
 import ChartBarIcon from "@heroicons/react/24/solid/ChartBarIcon";
-import Bars3Icon from "@heroicons/react/24/solid/Bars3Icon";
-import DocumentIcon from "@heroicons/react/24/solid/DocumentIcon";
-import CogIcon from "@heroicons/react/24/solid/CogIcon";
-import LockClosedIcon from "@heroicons/react/24/solid/LockClosedIcon";
 import ShoppingBagIcon from "@heroicons/react/24/solid/ShoppingBagIcon";
-import HeartIcon from "@heroicons/react/24/solid/HeartIcon";
 import UserPlusIcon from "@heroicons/react/24/solid/UserPlusIcon";
 import UsersIcon from "@heroicons/react/24/solid/UsersIcon";
 import XCircleIcon from "@heroicons/react/24/solid/XCircleIcon";
-import HomeIcon from "@heroicons/react/24/solid/HomeIcon";
-import AdjustmentsVerticalIcon from "@heroicons/react/24/solid/AdjustmentsVerticalIcon";
+import TVIcon from "@heroicons/react/24/solid/TVIcon";
+import ScaleIcon from "@heroicons/react/24/solid/ScaleIcon";
+import BuildingLibraryIcon from "@heroicons/react/24/solid/BuildingLibraryIcon";
+import MinusSmallIcon from "@heroicons/react/24/solid/MinusSmallIcon";
+import QueueListIcon from "@heroicons/react/24/solid/QueueListIcon";
+import ClipboardIcon from "@heroicons/react/24/solid/ClipboardIcon";
 import { SvgIcon } from "@mui/material";
-import Tippy from "@tippyjs/react";
-
 import React, { useState } from "react";
+import Accordion from "@mui/material/Accordion";
+import AccordionSummary from "@mui/material/AccordionSummary";
+import AccordionDetails from "@mui/material/AccordionDetails";
+import Typography from "@mui/material/Typography";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import Link from "next/link";
 
 export const items = [
   {
@@ -22,6 +25,15 @@ export const items = [
     icon: (
       <SvgIcon fontSize="small">
         <ChartBarIcon />
+      </SvgIcon>
+    ),
+  },
+  {
+    title: "Đặt phòng tại quầy",
+    path: "/book-room-offline",
+    icon: (
+      <SvgIcon fontSize="small">
+        <TVIcon />
       </SvgIcon>
     ),
   },
@@ -35,86 +47,223 @@ export const items = [
     ),
   },
   {
-    title: "Khách Hàng",
-    path: "/customer",
-    icon: (
-      <Tippy content="Hello">
-        <SvgIcon fontSize="small">
-          <UsersIcon />
-        </SvgIcon>
-      </Tippy>
-    ),
-  },
-  {
-    title: "Account",
-    path: "/account",
+    title: "Quản lý giao dịch",
+    path: "/deal",
     icon: (
       <SvgIcon fontSize="small">
-        <HeartIcon />
+        <ScaleIcon />
       </SvgIcon>
     ),
   },
   {
-    title: "Phòng",
-    path: "/room",
+    title: "",
     icon: (
-      <SvgIcon fontSize="small">
-        <HomeIcon />
-      </SvgIcon>
+      <Accordion style={{ width: 230, background: "none" }}>
+        <AccordionSummary
+          expandIcon={<ExpandMoreIcon />}
+          aria-controls="room-management-content"
+          id="room-management-header"
+          style={{ width: 230, color: "#9DA4AE", padding: 0 }}
+        >
+          <SvgIcon fontSize="small" style={{ marginRight: 15 }}>
+            <BuildingLibraryIcon />
+          </SvgIcon>
+          <Typography style={{ fontWeight: 600, fontSize: 14 }}>Quản lý phòng</Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <Typography>
+            <Link href="/room">
+              <Typography
+                component="a"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  color: "lightgray",
+                  textDecorationColor: "#1C2536",
+                }}
+              >
+                <SvgIcon fontSize="small" style={{ marginRight: "8px" }}>
+                  <MinusSmallIcon />
+                </SvgIcon>
+                Phòng
+              </Typography>
+            </Link>
+          </Typography>
+          <br />
+          <Typography>
+            <Link href="/type-room">
+              <Typography
+                component="a"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  color: "lightgray",
+                  textDecorationColor: "#1C2536",
+                }}
+              >
+                <SvgIcon fontSize="small" style={{ marginRight: "8px" }}>
+                  <MinusSmallIcon />
+                </SvgIcon>
+                Loại phòng
+              </Typography>
+            </Link>
+          </Typography>
+          <br />
+          <Typography>
+            <Link href="/floor">
+              <Typography
+                component="a"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  color: "lightgray",
+                  textDecorationColor: "#1C2536",
+                }}
+              >
+                <SvgIcon fontSize="small" style={{ marginRight: "8px" }}>
+                  <MinusSmallIcon />
+                </SvgIcon>
+                Tầng
+              </Typography>
+            </Link>
+          </Typography>
+        </AccordionDetails>
+      </Accordion>
     ),
   },
   {
-    title: "Loại phòng",
-    path: "/type-room",
+    title: ".",
     icon: (
-      <SvgIcon fontSize="small">
-        <LockClosedIcon />
-      </SvgIcon>
+      <Accordion style={{ width: 230, background: "none", boxShadow: "none" }}>
+        <AccordionSummary
+          expandIcon={<ExpandMoreIcon />}
+          aria-controls="room-management-content"
+          id="room-management-header"
+          style={{ width: 230, color: "#9DA4AE", padding: 0 }}
+        >
+          <SvgIcon fontSize="small" style={{ marginRight: 15 }}>
+            <QueueListIcon />
+          </SvgIcon>
+          <Typography style={{ fontWeight: 600, fontSize: 14 }}>Quản lý dịch vụ</Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <Typography>
+            {/* Use the Next.js Link component for navigation */}
+            <Link href="/service">
+              <Typography
+                component="a"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  color: "lightgray",
+                  textDecorationColor: "#1C2536",
+                }}
+              >
+                <SvgIcon fontSize="small" style={{ marginRight: "8px" }}>
+                  <MinusSmallIcon />
+                </SvgIcon>
+                Dịch vụ
+              </Typography>
+            </Link>
+          </Typography>
+          <br />
+          <Typography>
+            <Link href="/serviceType">
+              <Typography
+                component="a"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  color: "lightgray",
+                  textDecorationColor: "#1C2536",
+                }}
+              >
+                <SvgIcon fontSize="small" style={{ marginRight: "8px" }}>
+                  <MinusSmallIcon />
+                </SvgIcon>
+                Loại dịch vụ
+              </Typography>
+            </Link>
+          </Typography>
+          <br />
+          <Typography>
+            <Link href="/combo">
+              <Typography
+                component="a"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  color: "lightgray",
+                  textDecorationColor: "#1C2536",
+                }}
+              >
+                <SvgIcon fontSize="small" style={{ marginRight: "8px" }}>
+                  <MinusSmallIcon />
+                </SvgIcon>
+                Combo
+              </Typography>
+            </Link>
+          </Typography>
+        </AccordionDetails>
+      </Accordion>
     ),
   },
   {
-    title: "Tầng",
-    path: "/floor",
+    title: ",",
     icon: (
-      <SvgIcon fontSize="small">
-        <ChartBarIcon />
-      </SvgIcon>
-    ),
-  },
-  {
-    title: "Service",
-    path: "/service",
-    icon: (
-      <SvgIcon fontSize="small">
-        <DocumentIcon />
-      </SvgIcon>
-    ),
-  },
-  {
-    title: "ServiceType",
-    path: "/serviceType",
-    icon: (
-      <SvgIcon fontSize="small">
-        <Bars3Icon />
-      </SvgIcon>
-    ),
-  },
-  {
-    title: "Combo",
-    path: "/combo",
-    icon: (
-      <SvgIcon fontSize="small">
-        <AdjustmentsVerticalIcon />
-      </SvgIcon>
-    ),
-  },
-  {
-    title: "Webcam",
-    path: "/webcam",
-    icon: (
-      <SvgIcon fontSize="small">
-        <ShoppingBagIcon />
-      </SvgIcon>
+      <Accordion style={{ width: 230, background: "none", boxShadow: "none" }}>
+        <AccordionSummary
+          expandIcon={<ExpandMoreIcon />}
+          aria-controls="room-management-content"
+          id="room-management-header"
+          style={{ width: 230, color: "#9DA4AE", padding: 0 }}
+        >
+          <SvgIcon fontSize="small" style={{ marginRight: 15 }}>
+            <UsersIcon />
+          </SvgIcon>
+          <Typography style={{ fontWeight: 600, fontSize: 14 }}>Quản lý tài khoản</Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <Typography>
+            {/* Use the Next.js Link component for navigation */}
+            <Link href="/account" passHref>
+              <Typography
+                component="a"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  color: "lightgray",
+                  textDecorationColor: "#1C2536",
+                }}
+              >
+                <SvgIcon fontSize="small" style={{ marginRight: "8px" }}>
+                  <MinusSmallIcon />
+                </SvgIcon>
+                Nhân viên
+              </Typography>
+            </Link>
+          </Typography>
+          <br />
+          <Typography>
+            <Link href="/customer">
+              <Typography
+                component="a"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  color: "lightgray",
+                  textDecorationColor: "#1C2536",
+                }}
+              >
+                <SvgIcon fontSize="small" style={{ marginRight: "8px" }}>
+                  <MinusSmallIcon />
+                </SvgIcon>
+                Khách hàng
+              </Typography>
+            </Link>
+          </Typography>
+        </AccordionDetails>
+      </Accordion>
     ),
   },
   {
@@ -122,34 +271,7 @@ export const items = [
     path: "/unit",
     icon: (
       <SvgIcon fontSize="small">
-        <ShoppingBagIcon />
-      </SvgIcon>
-    ),
-  },
-  {
-    title: "Companies",
-    path: "/companies",
-    icon: (
-      <SvgIcon fontSize="small">
-        <ShoppingBagIcon />
-      </SvgIcon>
-    ),
-  },
-  {
-    title: "Settings",
-    path: "/settings",
-    icon: (
-      <SvgIcon fontSize="small">
-        <CogIcon />
-      </SvgIcon>
-    ),
-  },
-  {
-    title: "Login",
-    path: "/auth/login",
-    icon: (
-      <SvgIcon fontSize="small">
-        <LockClosedIcon />
+        <ClipboardIcon />
       </SvgIcon>
     ),
   },

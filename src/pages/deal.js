@@ -1,26 +1,26 @@
 import { useCallback, useMemo, useState, useEffect } from "react";
 import axios from "axios";
 import Head from "next/head";
-import { Box, Button, Container, Link, Stack, SvgIcon, Typography } from "@mui/material";
+import { Box, Container, Stack } from "@mui/material";
 import { useSelection } from "src/hooks/use-selection";
 import { Layout as DashboardLayout } from "src/layouts/dashboard/layout";
-import { BookRoomTable } from "src/sections/bookRoomOffline/book-room-table";
-import { BookRoomSearch } from "src/sections/bookRoomOffline/book-room-search";
+import { DealTable } from "src/sections/deal/deal-table";
+import { DealSearch } from "src/sections/deal/deal-search";
 import { applyPagination } from "src/utils/apply-pagination";
 import MyPagination from "src/components/Pagination";
 import "bootstrap/dist/css/bootstrap.min.css";
 
-const useBookRoom = (data, page, rowsPerPage) => {
+const useDeal = (data, page, rowsPerPage) => {
   return useMemo(() => {
     console.log("data : ", data);
     return applyPagination(data, page, rowsPerPage);
   }, [data, page, rowsPerPage]);
 };
 
-const useBookRoomIds = (bookRoom) => {
+const useDealIds = (deal) => {
   return useMemo(() => {
-    return bookRoom.map((bookRoom) => bookRoom.id);
-  }, [bookRoom]);
+    return deal.map((deal) => deal.id);
+  }, [deal]);
 };
 
 const Page = () => {
@@ -28,24 +28,13 @@ const Page = () => {
   const [page, setPage] = useState(0);
   const [dataChange, setDataChange] = useState(false);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  const bookRoom = useBookRoom(data, page, rowsPerPage);
-  const bookRoomIds = useBookRoomIds(bookRoom);
-  const bookRoomSelection = useSelection(bookRoomIds);
+  const deal = useDeal(data, page, rowsPerPage);
+  const dealIds = useDealIds(deal);
+  const dealSelection = useSelection(dealIds);
   const [pageNumber, setPageNumber] = useState(0);
   const [textSearch, setTextSearch] = useState("");
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
-
-  // Delete bookRoom
-  const handleDelete = async (id) => {
-    try {
-      await axios.delete(`http://localhost:2003/api/admin/order/delete/${id}`);
-      const updatedData = data.filter((bookRoom) => bookRoom.id !== id);
-      setData(updatedData);
-    } catch (error) {
-      console.log(error);
-    }
-  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -53,8 +42,7 @@ const Page = () => {
         const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
         console.log(accessToken);
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
-
-        let Api = `http://localhost:2003/api/admin/order/loadAndSearch?current_page=${pageNumber}`; // Thay đổi URL API của bạn tại đây
+        let Api = `http://localhost:2003/api/payment-method/loadAndSearch?current_page=${pageNumber}`; // Thay đổi URL API của bạn tại đây
         if (textSearch !== "") {
           Api = Api + `&key=${textSearch}`;
         }
@@ -83,7 +71,7 @@ const Page = () => {
   return (
     <>
       <Head>
-        <title>Đặt phòng tại quầy | Hotel Finder</title>
+        <title>Quản lý giao dịch | Hotel Finder</title>
       </Head>
       <Box
         component="main"
@@ -94,20 +82,15 @@ const Page = () => {
       >
         <Container maxWidth="xl">
           <Stack spacing={3}>
-            <BookRoomSearch textSearch={textSearch} setTextSearch={setTextSearch} />
-            <div style={{ minHeight: 500 }}>
-              {" "}
-              <BookRoomTable
-                items={bookRoom}
-                selected={bookRoomSelection.selected}
-                // onDelete={handleDelete} // Thêm prop onDelete và truyền giá trị của handleDelete vào đây
-                setPageNumber={setPageNumber}
-                totalElements={totalElements}
-                pageNumber={pageNumber}
-              />
-            </div>
+            <DealSearch textSearch={textSearch} setTextSearch={setTextSearch}/>
+            <DealTable
+              items={deal}
+              selected={dealSelection.selected}
+              setPageNumber={setPageNumber}
+              totalElements={totalElements}
+              pageNumber={pageNumber}
+            />
           </Stack>
-
           <MyPagination
             pageNumber={pageNumber}
             totalPages={totalPages}

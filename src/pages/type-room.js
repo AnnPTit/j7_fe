@@ -9,7 +9,7 @@ import { TypeRoomTable } from "src/sections/typeRoom/type-room-table";
 import { TypeRoomSearch } from "src/sections/typeRoom/type-room-search";
 import { applyPagination } from "src/utils/apply-pagination";
 import InputTypeRoom from "src/components/InputTypeRoom/InputTypeRoom";
-import Pagination from "src/components/Pagination";
+import MyPagination from "src/components/Pagination";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 const useTypeRoom = (data, page, rowsPerPage) => {
@@ -129,11 +129,10 @@ const Page = () => {
         }}
       >
         <Container maxWidth="xl">
-          <Stack spacing={3}>
+          <Stack spacing={2}>
             <Stack direction="row" justifyContent="space-between" spacing={4}>
-              <Stack spacing={1}>
-                <Typography variant="h4">Loại Phòng</Typography>
-                <Stack alignItems="center" direction="row" spacing={1}></Stack>
+              <Stack spacing={0}>
+                <Stack alignItems="center" direction="row" spacing={0}></Stack>
               </Stack>
               <div>
                 <Button
@@ -145,7 +144,7 @@ const Page = () => {
                   }
                   variant="contained"
                 >
-                  Add
+                  Thêm mới
                 </Button>
               </div>
             </Stack>
@@ -163,7 +162,7 @@ const Page = () => {
               />
             </div>
           </Stack>
-          <Pagination
+          <MyPagination
             pageNumber={pageNumber}
             totalPages={totalPages}
             setPageNumber={setPageNumber}

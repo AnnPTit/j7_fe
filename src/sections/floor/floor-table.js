@@ -18,7 +18,7 @@ import {
 } from "@mui/material";
 import { Scrollbar } from "src/components/scrollbar";
 import TrashIcon from "@heroicons/react/24/solid/TrashIcon";
-import Bars4Icon from "@heroicons/react/24/solid/Bars4Icon";
+import PencilSquareIcon from "@heroicons/react/24/solid/PencilSquareIcon";
 
 export const FloorTable = (props) => {
   const { items = [], selected = [] } = props;
@@ -100,7 +100,7 @@ export const FloorTable = (props) => {
                     <TableCell>
                       <button className="btn btn-primary" onClick={() => handleEdit(floor.id)}>
                         <SvgIcon fontSize="small">
-                          <Bars4Icon />
+                          <PencilSquareIcon />
                         </SvgIcon>
                       </button>
                       <button className="btn btn-danger m-xl-2" onClick={alertDelete}>
@@ -172,6 +172,12 @@ export const FloorTable = (props) => {
                         </div>
                       </TableCell>
                       <TableCell>
+                      <Input
+                          name="floorCode"
+                          value={editedFloor.floorCode}
+                        />
+                      </TableCell>
+                      <TableCell>
                         <Input
                           onChange={handleFloorName}
                           name="floorName"
@@ -184,10 +190,14 @@ export const FloorTable = (props) => {
                       <TableCell>{floor.status == 1 ? "Active" : "Unactive"}</TableCell>
                       <TableCell>
                         <button className="btn btn-primary" onClick={alertEdit}>
-                          Update
+                        <SvgIcon fontSize="small">
+                          <PencilSquareIcon />
+                        </SvgIcon>
                         </button>
                         <button className="btn btn-danger m-xl-2" onClick={handldeCancel}>
-                          Cancel
+                        <SvgIcon fontSize="small">
+                          <TrashIcon />
+                        </SvgIcon>
                         </button>
                         <ToastContainer />
                       </TableCell>
