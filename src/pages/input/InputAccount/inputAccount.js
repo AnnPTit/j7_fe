@@ -470,3 +470,4 @@ function InputAccount() {
 InputAccount.getLayout = (page) => <DashboardLayout>{page}</DashboardLayout>;
 
 export default InputAccount;
+// Test pull request 
