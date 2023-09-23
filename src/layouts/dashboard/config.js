@@ -245,7 +245,7 @@ export const items = [
           </Typography>
           <br />
           <Typography>
-            <Link href="/customers">
+            <Link href="/customer">
               <Typography
                 component="a"
                 style={{
