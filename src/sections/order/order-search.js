@@ -6,6 +6,7 @@ import axios from "axios";
 import React from "react";
 import { useState } from "react";
 import { useRouter } from "next/router";
+import { height, style } from "@mui/system";
 
 export const OrderSearch = ({ textSearch, setTextSearch }) => {
   const [valueTo, setValueTo] = useState(null);
@@ -68,12 +69,12 @@ export const OrderSearch = ({ textSearch, setTextSearch }) => {
   };
 
   return (
-    <Card sx={{ p: 2 }}>
-      <Grid container my={2.5}>
+    <Card style={{ height : 160, marginTop: -50 }} sx={{ p: 2 }}>
+      <Grid container my={2}>
         <OutlinedInput
           fullWidth
           value={textSearch}
-          placeholder="Tìm kiếm"
+          placeholder="Tìm kiếm theo hóa đơn hoặc khách hàng"
           sx={{ maxWidth: 500 }}
           onChange={(e) => {
             setTextSearch(e.target.value);
@@ -117,7 +118,7 @@ export const OrderSearch = ({ textSearch, setTextSearch }) => {
             style={{
               height: 55,
               width: 170,
-              marginLeft: 170,
+              marginLeft: 150,
               backgroundColor: "darkblue",
               color: "white",
             }}

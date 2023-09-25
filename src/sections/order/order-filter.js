@@ -1,57 +1,38 @@
-import { MenuItem, Select } from "@mui/material";
+import { MenuItem, FormControl, InputLabel, Select } from "@mui/material";
 
-function OrderFilter({
-  serviceType,
-  unit,
-  serviceTypeChose,
-  unitChose,
-  setServiceTypeChose,
-  setUnitChose,
-}) {
+function OrderFilter({ typeOfOrderChoose, statusChoose, setTypeOfOrderChoose, setStatusChoose }) {
   return (
-    <div
-      style={{
-        display: "flex",
-      }}
-    >
-      {serviceType.length > 0 ? (
+    <div style={{ marginTop: -110 }}>
+      <FormControl variant="standard" style={{ marginLeft: 100 }} sx={{ minWidth: 180 }}>
+        <InputLabel id="demo-simple-select-standard-label">Loại đơn</InputLabel>
         <Select
-          style={{
-            width: 500,
-            marginLeft: 20,
-          }}
-          value={serviceTypeChose}
-          onChange={(e) => setServiceTypeChose(e.target.value)}
+          labelId="demo-simple-select-standard-label"
+          id="demo-simple-select-standard"
+          label="Loại đơn"
+          value={typeOfOrderChoose}
+          onChange={(e) => setTypeOfOrderChoose(e.target.value)}
         >
-          <MenuItem value="">All</MenuItem>
-          {serviceType.map((service) => (
-            <MenuItem key={service.id} value={service.id}>
-              {service.serviceTypeName}
-            </MenuItem>
-          ))}
+          <MenuItem value="">Tất cả</MenuItem>
+          <MenuItem value={0}>Online</MenuItem>
+          <MenuItem value={1}>Tại quầy</MenuItem>
         </Select>
-      ) : (
-        <p>Loading...</p>
-      )}
-      {unit.length > 0 ? (
+      </FormControl>
+      <FormControl variant="standard" style={{ marginLeft: 50 }} sx={{ minWidth: 180 }}>
+        <InputLabel id="demo-simple-select-standard-label">Trạng thái</InputLabel>
         <Select
-          style={{
-            width: 500,
-            marginLeft: 20,
-          }}
-          value={unitChose}
-          onChange={(e) => setUnitChose(e.target.value)}
+          labelId="demo-simple-select-standard-label"
+          id="demo-simple-select-standard"
+          label="Trạng thái"
+          value={statusChoose}
+          onChange={(e) => setStatusChoose(e.target.value)}
         >
-          <MenuItem value="">All</MenuItem>
-          {unit.map((unit) => (
-            <MenuItem key={unit.id} value={unit.id}>
-              {unit.unitName}
-            </MenuItem>
-          ))}
+          <MenuItem value="">Tất cả</MenuItem>
+          <MenuItem value="0">Đã hủy</MenuItem>
+          <MenuItem value="1">Chờ xác nhận</MenuItem>
+          <MenuItem value="2">Đã nhận phòng</MenuItem>
+          <MenuItem value="3">Đã trả phòng</MenuItem>
         </Select>
-      ) : (
-        <p>Loading...</p>
-      )}
+      </FormControl>
     </div>
   );
 }

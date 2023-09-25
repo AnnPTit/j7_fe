@@ -54,6 +54,14 @@ import { SeverityPill } from "src/components/severity-pill";
 function BookRoom() {
   const router = useRouter(); // Sử dụng useRouter để truy cập router của Next.js
   const { id } = router.query;
+  const [order, setOrder] = useState({
+    id: "",
+    typeOfOrder: "",
+    orderCode: "",
+    status: "",
+    // customer: {},
+    // account: {},
+  });
   const [rooms, setRooms] = useState([]);
   const [service, setService] = useState([]);
   const [combo, setCombo] = useState([]);
@@ -64,12 +72,10 @@ function BookRoom() {
   const [typeRoomChose, setTypeRoomChose] = useState("");
   const [serviceType, setServiceType] = useState([]);
   const [unit, setUnit] = useState([]);
-  const [orderDetail, setOrderDetail] = useState([]);
   const [selectedRoomId, setSelectedRoomId] = useState(null);
   const [selectedOrderDetails, setSelectedOrderDetails] = useState(null);
   const [selectedServiceId, setSelectedServiceId] = useState(null);
   const [selectedComboId, setSelectedComboId] = useState(null);
-  const [selectedOrderDetailId, setSelectedOrderDetailId] = useState(null);
   const [quantity, setQuantity] = useState("");
   const [note, setNote] = useState("");
   const [quantityCombo, setQuantityCombo] = useState("");
@@ -125,15 +131,6 @@ function BookRoom() {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [birthday, setBirthday] = useState(null);
   const [gender, setGender] = useState("Nam");
-
-  const [order, setOrder] = useState({
-    id: "",
-    typeOfOrder: "",
-    orderCode: "",
-    status: "",
-    // customer: {},
-    // account: {},
-  });
 
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
@@ -568,6 +565,13 @@ function BookRoom() {
 
   // Xác nhận phòng
   const handleConfirmOrder = async () => {
+    if (orderDetailData.length == 0) {
+      toast.error("Chưa chọn phòng!", {
+        position: toast.POSITION.BOTTOM_RIGHT,
+      });
+      return;
+    }
+
     try {
       // Make an API call to update the order status to "Đã xác nhận" (status: 2)
       await axios.put(`http://localhost:2003/api/admin/order/update-accept/${id}`, {
@@ -1739,24 +1743,24 @@ function BookRoom() {
           <br />
           <br />
           <div style={{ display: "flex" }}>
-            <FormControl>
-              <InputLabel variant="standard" htmlFor="uncontrolled-native">
+            <FormControl variant="standard">
+              <InputLabel id="demo-simple-select-standard-label">
                 Khách hàng
               </InputLabel>
               {customer.length > 0 ? (
-                <NativeSelect
+                <Select
+                  labelId="demo-simple-select-standard-label"
+                  id="demo-simple-select-standard"
+                  label="Khách hàng"
                   style={{ width: 300 }}
-                  inputProps={{
-                    id: "uncontrolled-native",
-                  }}
                   onChange={(event) => setSelectedCustomerReturn(event.target.value)}
                 >
                   {customer.map((customer) => (
-                    <option key={customer.id} value={customer.id}>
+                    <MenuItem key={customer.id} value={customer.id}>
                       {customer.fullname}
-                    </option>
+                    </MenuItem>
                   ))}
-                </NativeSelect>
+                </Select>
               ) : (
                 <p>Loading...</p>
               )}
@@ -2466,24 +2470,22 @@ function BookRoom() {
             <hr />
             <DialogContent>
               <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
-                <FormControl>
-                  <InputLabel variant="standard" htmlFor="uncontrolled-native">
-                    Khách hàng
-                  </InputLabel>
+                <FormControl variant="standard">
+                  <InputLabel id="demo-simple-select-standard-label">Khách hàng</InputLabel>
                   {customer.length > 0 ? (
-                    <NativeSelect
+                    <Select
+                      labelId="demo-simple-select-standard-label"
+                      id="demo-simple-select-standard"
+                      label="Khách hàng"
                       style={{ width: 200 }}
-                      inputProps={{
-                        id: "uncontrolled-native",
-                      }}
                       onChange={(event) => setSelectedCustomerAccept(event.target.value)}
                     >
                       {customer.map((customer) => (
-                        <option key={customer.id} value={customer.id}>
+                        <MenuItem key={customer.id} value={customer.id}>
                           {customer.fullname}
-                        </option>
+                        </MenuItem>
                       ))}
-                    </NativeSelect>
+                    </Select>
                   ) : (
                     <p>Loading...</p>
                   )}
