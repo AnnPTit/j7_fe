@@ -1,5 +1,6 @@
 import PropTypes from "prop-types";
 import moment from "moment";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import {
   Box,
@@ -14,11 +15,24 @@ import {
 import { Scrollbar } from "src/components/scrollbar";
 import TrashIcon from "@heroicons/react/24/solid/TrashIcon";
 import PencilSquareIcon from "@heroicons/react/24/solid/PencilSquareIcon";
+import EyeIcon from "@heroicons/react/24/solid/EyeIcon";
 import { SeverityPill } from "src/components/severity-pill";
 import Link from "next/link";
+import { useState } from "react";
+import axios from "axios";
+import { useRouter } from "next/router";
 
 export const BookRoomTable = (props) => {
   const { items = [], selected = [] } = props;
+  const router = useRouter(); // Sử dụng useRouter để truy cập router của Next.js
+  const [order, setOrder] = useState({
+    id: "",
+    typeOfOrder: "",
+    orderCode: "",
+    status: "",
+    // customer: {},
+    // account: {},
+  });
 
   const formatPrice = (price) => {
     if (typeof price !== "number" || isNaN(price)) {
@@ -40,6 +54,21 @@ export const BookRoomTable = (props) => {
         return { color: "success", text: "Đã trả phòng" };
       default:
         return { color: "default", text: "Unknown" };
+    }
+  };
+
+  // Hủy hóa đơn
+  const handleCancelOrder = async (id) => {
+    try {
+      // Make an API call to update the order status to "Đã xác nhận" (status: 2)
+      await axios.put(`http://localhost:2003/api/admin/order/delete/${id}`);
+      setOrder({ ...order, status: 0 });
+      toast.success("Hủy thành công!", {
+        position: toast.POSITION.BOTTOM_RIGHT,
+      });
+      router.push(`/orders?id=${id}`);
+    } catch (error) {
+      console.log(error);
     }
   };
 
@@ -81,16 +110,42 @@ export const BookRoomTable = (props) => {
                       </SeverityPill>
                     </TableCell>
                     <TableCell>
-                      <Link className="btn btn-primary m-xl-2" href={hrefUpdate}>
-                        <SvgIcon fontSize="small">
-                          <PencilSquareIcon />
-                        </SvgIcon>
-                      </Link>
-                      <button className="btn btn-danger m-xl-2">
-                        <SvgIcon fontSize="small">
-                          <TrashIcon />
-                        </SvgIcon>
-                      </button>
+                      {order.status === 1 ? (
+                        <>
+                          <Link className="btn btn-primary m-xl-2" href={hrefUpdate}>
+                            <SvgIcon fontSize="small">
+                              <PencilSquareIcon />
+                            </SvgIcon>
+                          </Link>
+                          <button
+                            onClick={() => handleCancelOrder(order.id)}
+                            className="btn btn-danger m-xl-2"
+                          >
+                            <SvgIcon fontSize="small">
+                              <TrashIcon />
+                            </SvgIcon>
+                          </button>
+                        </>
+                      ) : null}
+                      {order.status === 2 ? (
+                        <>
+                          <Link className="btn btn-primary m-xl-2" href={hrefUpdate}>
+                            <SvgIcon fontSize="small">
+                              <PencilSquareIcon />
+                            </SvgIcon>
+                          </Link>
+                        </>
+                      ) : null}
+                      {order.status === 3 ? (
+                        <>
+                          <Link className="btn btn-warning m-xl-2" href={hrefUpdate}>
+                            <SvgIcon fontSize="small">
+                              <EyeIcon />
+                            </SvgIcon>
+                          </Link>
+                        </>
+                      ) : null}
+                      {order.status === 0 ? <></> : null}
                     </TableCell>
                   </TableRow>
                 );

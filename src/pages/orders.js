@@ -487,9 +487,9 @@ function OrderTimeline() {
         <div style={{ display: "flex" }}>
           <div style={{ marginLeft: 30, fontFamily: "inherit", fontSize: "17px" }}>
             <label>Loại</label>
-            <label style={{ marginLeft: 193 }}>
+            <SeverityPill style={{ marginLeft: 190 }}>
               {order.typeOfOrder == 0 ? "Online" : "Tại quầy"}
-            </label>
+            </SeverityPill>
             <br />
             <br />
             <label>Mã hóa đơn</label>

@@ -9,6 +9,7 @@ import { OrderSearch } from "src/sections/order/order-search";
 import { applyPagination } from "src/utils/apply-pagination";
 import MyPagination from "src/components/Pagination";
 import "bootstrap/dist/css/bootstrap.min.css";
+import OrderFilter from "src/sections/order/order-filter";
 
 const useOrder = (data, page, rowsPerPage) => {
   return useMemo(() => {
@@ -33,6 +34,8 @@ const Page = () => {
   const orderSelection = useSelection(orderIds);
   const [pageNumber, setPageNumber] = useState(0);
   const [textSearch, setTextSearch] = useState("");
+  const [typeOfOrderChoose, setTypeOfOrderChoose] = useState("");
+  const [statusChoose, setStatusChoose] = useState("");
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
 
@@ -45,6 +48,12 @@ const Page = () => {
         let Api = `http://localhost:2003/api/admin/order/loadAndSearch?current_page=${pageNumber}`; // Thay đổi URL API của bạn tại đây
         if (textSearch !== "") {
           Api = Api + `&key=${textSearch}`;
+        }
+        if (typeOfOrderChoose !== "") {
+          Api = Api + `&typeOfOrder=${typeOfOrderChoose}`;
+        }
+        if (statusChoose !== "") {
+          Api = Api + `&status=${statusChoose}`;
         }
         const response = await axios.get(Api); // Thay đổi URL API của bạn tại đây
         console.log(response.data);
@@ -66,7 +75,7 @@ const Page = () => {
       }
     };
     fetchData();
-  }, [pageNumber, dataChange, textSearch]);
+  }, [pageNumber, dataChange, textSearch, typeOfOrderChoose, statusChoose]);
 
   return (
     <>
@@ -83,7 +92,23 @@ const Page = () => {
         <Container maxWidth="xl">
           <Stack spacing={3}>
             <OrderSearch textSearch={textSearch} setTextSearch={setTextSearch} />
-            <div style={{ minHeight: 350 }}>
+            <p
+              style={{
+                marginLeft: 20,
+              }}
+            >
+            </p>
+            <div>
+              <div>
+                <OrderFilter
+                  typeOfOrderChoose={typeOfOrderChoose}
+                  statusChoose={statusChoose}
+                  setTypeOfOrderChoose={setTypeOfOrderChoose}
+                  setStatusChoose={setStatusChoose}
+                />
+              </div>
+            </div>
+            <div style={{ minHeight: 350, marginTop: -20 }}>
               {" "}
               <OrderTable
                 items={order}
