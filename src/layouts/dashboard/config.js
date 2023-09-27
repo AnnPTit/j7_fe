@@ -267,7 +267,7 @@ export const items = [
     ),
   },
   {
-    title: "Unit",
+    title: "Đơn vị",
     path: "/unit",
     icon: (
       <SvgIcon fontSize="small">
@@ -276,7 +276,7 @@ export const items = [
     ),
   },
   {
-    title: "Register",
+    title: "Đăng kí",
     path: "/auth/register",
     icon: (
       <SvgIcon fontSize="small">

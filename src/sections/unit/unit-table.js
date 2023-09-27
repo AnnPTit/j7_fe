@@ -5,8 +5,20 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { Input, Box, Card, Table, TableBody, TableCell, TableHead, TableRow } from "@mui/material";
+import {
+  Input,
+  Box,
+  Card,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  SvgIcon,
+} from "@mui/material";
 import { Scrollbar } from "src/components/scrollbar";
+import PencilSquareIcon from "@heroicons/react/24/solid/PencilSquareIcon";
+import TrashIcon from "@heroicons/react/24/solid/TrashIcon";
 
 export const Unit = (props) => {
   const { items = [], selected = [] } = props;
@@ -34,8 +46,8 @@ export const Unit = (props) => {
               <TableRow>
                 <TableCell padding="checkbox">STT</TableCell>
                 <TableCell>Tên Đơn Vị</TableCell>
-                <TableCell>Status</TableCell>
-                <TableCell>Actions</TableCell>
+                <TableCell>Trạng Thái </TableCell>
+                <TableCell>Hành động</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -77,10 +89,14 @@ export const Unit = (props) => {
                     <TableCell>{unit.status == 1 ? "Active" : "Unactive"}</TableCell>
                     <TableCell>
                       <button className="btn btn-primary" onClick={() => handleEdit(unit.id)}>
-                        Edit
+                        <SvgIcon>
+                          <PencilSquareIcon />
+                        </SvgIcon>
                       </button>
                       <button className="btn btn-danger m-xl-2" onClick={alertDelete}>
-                        Delete
+                        <SvgIcon>
+                          <TrashIcon />
+                        </SvgIcon>
                       </button>
                       <ToastContainer />
                     </TableCell>
