@@ -230,7 +230,7 @@ export const items = [
             </Typography>
           </Link>
           <br />
-          <Link href="/customers">
+          <Link href="/customer">
             <Typography
               // component="a"
               style={{
