@@ -36,9 +36,6 @@ const handleSubmit = async (event) => {
     }
     axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
     const response = await axios.post("http://localhost:2003/api/admin/service-type/save", payload); // Gọi API /api/service-type/save với payload và access token
-    toast.success("Add Successfully!", {
-      position: toast.POSITION.BOTTOM_RIGHT,
-    });
     console.log(response); //
 
     if (response.status === 200) {
@@ -60,7 +57,7 @@ const handleSubmit = async (event) => {
       // Xử lý response lỗi
       if (error.response.status === 403) {
         alert("Bạn không có quyền truy cập vào trang này");
-        window.location.href = "/auth/login"; // Chuyển hướng đến trang đăng nhập
+        window.location.href = "/";
         return false;
       } else if (error.response.status === 400) {
         console.log(error.response);
@@ -125,8 +122,8 @@ function InputServiceType() {
         className={(cx("input-btn"), "btn btn-primary")}
         onClick={() => {
           Swal.fire({
-            title: "Are you sure?",
-            text: "You won't be able to revert this!",
+            title: "Bạn có chắc chắn muốn thêm ? ",
+            text: "",
             icon: "warning",
             showCancelButton: true,
             confirmButtonColor: "#3085d6",
@@ -136,7 +133,7 @@ function InputServiceType() {
             if (result.isConfirmed) {
               const isSubmitSuccess = await handleSubmit(event);
               if (isSubmitSuccess) {
-                Swal.fire("Add!", "Your data has been Add.", "success");
+                Swal.fire("Thêm thành công !", "Thêm thành công !", "success");
               }
             }
           });
