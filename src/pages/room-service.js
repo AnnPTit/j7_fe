@@ -424,6 +424,9 @@ function BookRoom() {
 
   // Sử dụng hàm calculateTotalCostForOrderDetail để tính tổng tiền cho orderDetail có id tương ứng
   const totalCostForOrderDetail = calculateTotalCostForOrderDetail(selectedOrderDetails);
+  const [totalPriceRoom, setTotalPriceRoom] = useState(0);
+  const [totalPriceCombo, setTotalPriceCombo] = useState(0);
+  const [totalPriceService, setTotalPriceService] = useState(0);
 
   const calculateTotalAmountPriceRoom = () => {
     let total = 0;
@@ -1110,7 +1113,7 @@ function BookRoom() {
         const response2 = await axios.get("http://localhost:2003/api/admin/type-room/getList");
         const response3 = await axios.get("http://localhost:2003/api/admin/service-type/getAll");
         const response4 = await axios.get("http://localhost:2003/api/admin/unit/getAll");
-        const response5 = await axios.get("http://localhost:2003/api/customers/getList");
+        const response5 = await axios.get("http://localhost:2003/api/admin/customer/getAll");
         const response6 = await axios.get("http://localhost:2003/api/service-used/load");
         const response7 = await axios.get("http://localhost:2003/api/combo-used/load");
         console.log(response.data);
@@ -1278,7 +1281,9 @@ function BookRoom() {
   // Tạo phương phức thanh toán quá Bank
   const createPayment = async () => {
     try {
-      const response = await axios.post(`http://localhost:2003/api/payment-method/payment/${id}`);
+      const response = await axios.post(
+        `http://localhost:2003/api/payment-method/payment-vnpay/${id}`
+      );
       const { finalUrl } = response.data;
       // Redirect the user to the payment page
       window.location.href = finalUrl;
@@ -1287,26 +1292,29 @@ function BookRoom() {
     }
   };
 
-  // const [response, setResponse] = useState({});
-  // const [momoDTO, setMomoDTO] = useState({
-  //   amount: 1000, // Replace with your desired amount
-  //   orderId: '12345', // Replace with your desired order ID
-  // });
+  const createPaymentMomo = async () => {
+    try {
+      const response = await axios.post(
+        `http://localhost:2003/api/payment-method/payment-momo/${id}`
+      );
+      console.log("MomoUrl: ", response.data);
+      window.location.href = response.data.payUrl;  
+    } catch (error) {
+      console.error("Error creating payment:", error);
+    }
+  };
 
-  // const createPayment = async () => {
-  //   try {
-  //     const apiUrl = 'http://localhost:2003/api/momo/create-order'; // Replace YOUR_SERVER_PORT with your server port
-  //     const response = await axios.post(apiUrl, momoDTO, {
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //       },
-  //     });
-
-  //     setResponse(response.data);
-  //   } catch (error) {
-  //     console.error('Error creating payment:', error);
-  //   }
-  // };
+  const createPaymentZaloPay = async () => {
+    try {
+      const response = await axios.post(
+        `http://localhost:2003/api/payment-method/payment-zalo/${id}`
+      );
+      console.log("ZaloPayUrl: ", response.data);
+      window.location.href = response.data.orderurl; // Chuyển hướng đến trang đăng nhập
+    } catch (error) {
+      console.error("Error creating payment:", error);
+    }
+  };
 
   return (
     <div
@@ -1744,9 +1752,7 @@ function BookRoom() {
           <br />
           <div style={{ display: "flex" }}>
             <FormControl variant="standard">
-              <InputLabel id="demo-simple-select-standard-label">
-                Khách hàng
-              </InputLabel>
+              <InputLabel id="demo-simple-select-standard-label">Khách hàng</InputLabel>
               {customer.length > 0 ? (
                 <Select
                   labelId="demo-simple-select-standard-label"
@@ -2574,10 +2580,16 @@ function BookRoom() {
             </DialogContent>
             <DialogActions>
               <button onClick={handleReturnRoom} className="btn btn-outline-primary">
-                TIỀN MẶT
+                Tiền mặt
               </button>
-              <button onClick={createPayment} className="btn btn-outline-danger">
-                CHUYỂN KHOẢN
+              <button onClick={createPaymentZaloPay} className="btn btn-outline-primary">
+                Zalo Pay
+              </button>
+              <button onClick={createPaymentMomo} className="btn btn-outline-danger">
+                Thanh toán MOMO
+              </button>
+              <button onClick={createPayment} className="btn btn-outline-dark">
+                Chuyển khoản ngân hàng
               </button>
             </DialogActions>
             <br />

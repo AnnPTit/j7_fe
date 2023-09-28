@@ -66,7 +66,7 @@ export const BookRoomTable = (props) => {
       toast.success("Hủy thành công!", {
         position: toast.POSITION.BOTTOM_RIGHT,
       });
-      router.push(`/orders?id=${id}`);
+      // router.push(`/orders?id=${id}`);
     } catch (error) {
       console.log(error);
     }

@@ -47,7 +47,7 @@ export const items = [
     ),
   },
   {
-    title: "Quản lý giao dịch",
+    title: "Lịch sử giao dịch",
     path: "/deal",
     icon: (
       <SvgIcon fontSize="small">
@@ -71,62 +71,56 @@ export const items = [
           <Typography style={{ fontWeight: 600, fontSize: 14 }}>Quản lý phòng</Typography>
         </AccordionSummary>
         <AccordionDetails>
-          <Typography>
-            <Link href="/room">
-              <Typography
-                component="a"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  color: "lightgray",
-                  textDecorationColor: "#1C2536",
-                }}
-              >
-                <SvgIcon fontSize="small" style={{ marginRight: "8px" }}>
-                  <MinusSmallIcon />
-                </SvgIcon>
-                Phòng
-              </Typography>
-            </Link>
-          </Typography>
+          <Link href="/room">
+            <Typography
+              // component="a"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                color: "lightgray",
+                textDecorationColor: "#1C2536",
+              }}
+            >
+              <SvgIcon fontSize="small" style={{ marginRight: "8px" }}>
+                <MinusSmallIcon />
+              </SvgIcon>
+              Phòng
+            </Typography>
+          </Link>
           <br />
-          <Typography>
-            <Link href="/type-room">
-              <Typography
-                component="a"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  color: "lightgray",
-                  textDecorationColor: "#1C2536",
-                }}
-              >
-                <SvgIcon fontSize="small" style={{ marginRight: "8px" }}>
-                  <MinusSmallIcon />
-                </SvgIcon>
-                Loại phòng
-              </Typography>
-            </Link>
-          </Typography>
+          <Link href="/type-room">
+            <Typography
+              // component="a"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                color: "lightgray",
+                textDecorationColor: "#1C2536",
+              }}
+            >
+              <SvgIcon fontSize="small" style={{ marginRight: "8px" }}>
+                <MinusSmallIcon />
+              </SvgIcon>
+              Loại phòng
+            </Typography>
+          </Link>
           <br />
-          <Typography>
-            <Link href="/floor">
-              <Typography
-                component="a"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  color: "lightgray",
-                  textDecorationColor: "#1C2536",
-                }}
-              >
-                <SvgIcon fontSize="small" style={{ marginRight: "8px" }}>
-                  <MinusSmallIcon />
-                </SvgIcon>
-                Tầng
-              </Typography>
-            </Link>
-          </Typography>
+          <Link href="/floor">
+            <Typography
+              // component="a"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                color: "lightgray",
+                textDecorationColor: "#1C2536",
+              }}
+            >
+              <SvgIcon fontSize="small" style={{ marginRight: "8px" }}>
+                <MinusSmallIcon />
+              </SvgIcon>
+              Tầng
+            </Typography>
+          </Link>
         </AccordionDetails>
       </Accordion>
     ),
@@ -147,63 +141,57 @@ export const items = [
           <Typography style={{ fontWeight: 600, fontSize: 14 }}>Quản lý dịch vụ</Typography>
         </AccordionSummary>
         <AccordionDetails>
-          <Typography>
-            {/* Use the Next.js Link component for navigation */}
-            <Link href="/service">
-              <Typography
-                component="a"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  color: "lightgray",
-                  textDecorationColor: "#1C2536",
-                }}
-              >
-                <SvgIcon fontSize="small" style={{ marginRight: "8px" }}>
-                  <MinusSmallIcon />
-                </SvgIcon>
-                Dịch vụ
-              </Typography>
-            </Link>
-          </Typography>
+          {/* Use the Next.js Link component for navigation */}
+          <Link href="/service">
+            <Typography
+              // component="a"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                color: "lightgray",
+                textDecorationColor: "#1C2536",
+              }}
+            >
+              <SvgIcon fontSize="small" style={{ marginRight: "8px" }}>
+                <MinusSmallIcon />
+              </SvgIcon>
+              Dịch vụ
+            </Typography>
+          </Link>
           <br />
-          <Typography>
-            <Link href="/serviceType">
-              <Typography
-                component="a"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  color: "lightgray",
-                  textDecorationColor: "#1C2536",
-                }}
-              >
-                <SvgIcon fontSize="small" style={{ marginRight: "8px" }}>
-                  <MinusSmallIcon />
-                </SvgIcon>
-                Loại dịch vụ
-              </Typography>
-            </Link>
-          </Typography>
+          <Link href="/serviceType">
+            <Typography
+              // component="a"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                color: "lightgray",
+                textDecorationColor: "#1C2536",
+              }}
+            >
+              <SvgIcon fontSize="small" style={{ marginRight: "8px" }}>
+                <MinusSmallIcon />
+              </SvgIcon>
+              Loại dịch vụ
+            </Typography>
+          </Link>
           <br />
-          <Typography>
-            <Link href="/combo">
-              <Typography
-                component="a"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  color: "lightgray",
-                  textDecorationColor: "#1C2536",
-                }}
-              >
-                <SvgIcon fontSize="small" style={{ marginRight: "8px" }}>
-                  <MinusSmallIcon />
-                </SvgIcon>
-                Combo
-              </Typography>
-            </Link>
-          </Typography>
+          <Link href="/combo">
+            <Typography
+              // component="a"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                color: "lightgray",
+                textDecorationColor: "#1C2536",
+              }}
+            >
+              <SvgIcon fontSize="small" style={{ marginRight: "8px" }}>
+                <MinusSmallIcon />
+              </SvgIcon>
+              Combo
+            </Typography>
+          </Link>
         </AccordionDetails>
       </Accordion>
     ),
@@ -224,44 +212,40 @@ export const items = [
           <Typography style={{ fontWeight: 600, fontSize: 14 }}>Quản lý tài khoản</Typography>
         </AccordionSummary>
         <AccordionDetails>
-          <Typography>
-            {/* Use the Next.js Link component for navigation */}
-            <Link href="/account" passHref>
-              <Typography
-                component="a"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  color: "lightgray",
-                  textDecorationColor: "#1C2536",
-                }}
-              >
-                <SvgIcon fontSize="small" style={{ marginRight: "8px" }}>
-                  <MinusSmallIcon />
-                </SvgIcon>
-                Nhân viên
-              </Typography>
-            </Link>
-          </Typography>
+          {/* Use the Next.js Link component for navigation */}
+          <Link href="/account" passHref>
+            <Typography
+              // component="a"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                color: "lightgray",
+                textDecorationColor: "#1C2536",
+              }}
+            >
+              <SvgIcon fontSize="small" style={{ marginRight: "8px" }}>
+                <MinusSmallIcon />
+              </SvgIcon>
+              Nhân viên
+            </Typography>
+          </Link>
           <br />
-          <Typography>
-            <Link href="/customers">
-              <Typography
-                component="a"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  color: "lightgray",
-                  textDecorationColor: "#1C2536",
-                }}
-              >
-                <SvgIcon fontSize="small" style={{ marginRight: "8px" }}>
-                  <MinusSmallIcon />
-                </SvgIcon>
-                Khách hàng
-              </Typography>
-            </Link>
-          </Typography>
+          <Link href="/customers">
+            <Typography
+              // component="a"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                color: "lightgray",
+                textDecorationColor: "#1C2536",
+              }}
+            >
+              <SvgIcon fontSize="small" style={{ marginRight: "8px" }}>
+                <MinusSmallIcon />
+              </SvgIcon>
+              Khách hàng
+            </Typography>
+          </Link>
         </AccordionDetails>
       </Accordion>
     ),
