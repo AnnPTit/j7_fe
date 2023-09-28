@@ -33,9 +33,9 @@ const handleSubmit = async (event, id, comboUpdate, selectedServiceCodes) => {
     }
     axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
     const response = await axios.put(`http://localhost:2003/api/admin/combo/update/${id}`, payload); // Gọi API /api/combo/save với payload và access token
-    toast.success("Update Successfully!", {
-      position: toast.POSITION.BOTTOM_RIGHT,
-    });
+    // toast.success("Update Successfully!", {
+    //   position: toast.POSITION.BOTTOM_RIGHT,
+    // });
     console.log(response); //
 
     if (response.status === 200) {
@@ -317,8 +317,8 @@ function Updatecombo() {
         className={(cx("input-btn"), "btn btn-primary")}
         onClick={() => {
           Swal.fire({
-            title: "Are you sure?",
-            text: "You won't be able to revert this!",
+            title: "Bạn có chắc chắn muốn cập nhật ?",
+            text: "",
             icon: "warning",
             showCancelButton: true,
             confirmButtonColor: "#3085d6",
@@ -333,7 +333,7 @@ function Updatecombo() {
                 selectedServiceCodes
               );
               if (isSubmitSuccess) {
-                Swal.fire("Update!", "Your data has been Update.", "success");
+                Swal.fire("Cập nhật thành công !", "Cập nhật thành công !", "success");
               }
             }
           });

@@ -66,13 +66,7 @@ const handleSubmit = async (event, price1) => {
     axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
 
     const response = await axios.post("http://localhost:2003/api/admin/service/save", payload); // Gọi API /api/service-type/save với payload và access token
-    toast.success("Add Successfully!", {
-      position: toast.POSITION.BOTTOM_RIGHT,
-    });
     console.log(response);
-
-    //
-
     if (response.status === 200) {
       // Xử lý khi API thành công
       console.log("API call successful");
@@ -308,8 +302,8 @@ function InputService() {
         className={(cx("input-btn"), "btn btn-primary")}
         onClick={() => {
           Swal.fire({
-            title: "Are you sure?",
-            text: "You won't be able to revert this!",
+            title: "Bạn có chắc chắn muốn thêm ?",
+            text: "",
             icon: "warning",
             showCancelButton: true,
             confirmButtonColor: "#3085d6",
@@ -319,8 +313,8 @@ function InputService() {
             if (result.isConfirmed) {
               const isSubmitSuccess = await handleSubmit(event, price);
               if (isSubmitSuccess) {
-                Swal.fire("Add!", "Your data has been Add.", "success");
-                toast.success("Add Successfully!");
+                Swal.fire("Thêm thành công !", "Thêm thành công !", "success");
+                toast.success("Thêm Thành Công !");
               }
             }
           });

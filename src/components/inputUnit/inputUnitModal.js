@@ -27,7 +27,7 @@ const handleSubmit = async (code) => {
       // Xử lý khi API thành công
       console.log("API call successful");
       window.location.href = `/input/inputService/inputService?code=${code}`;
-      toast.success("Add Successfully!");
+      toast.success("Thêm Thành Công !");
       // Thực hiện các hành động khác sau khi API thành công
     } else {
       // Xử lý khi API gặp lỗi

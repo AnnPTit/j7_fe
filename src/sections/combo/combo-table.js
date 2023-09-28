@@ -50,8 +50,8 @@ export const Combo = (props) => {
                 const isSelected = selected.includes(combo.id);
                 const alertDelete = () => {
                   Swal.fire({
-                    title: "Are you sure?",
-                    text: "You won't be able to revert this!",
+                    title: "Bạn có chắc chắn muốn xóa ? ",
+                    text: "",
                     icon: "warning",
                     showCancelButton: true,
                     confirmButtonColor: "#3085d6",
@@ -59,9 +59,9 @@ export const Combo = (props) => {
                     confirmButtonText: "Yes, delete it!",
                   }).then((result) => {
                     if (result.isConfirmed) {
-                      Swal.fire("Deleted!", "Your data has been deleted.", "success");
+                      Swal.fire("Xóa thành công !", "Xóa thành công !", "success");
                       handleDelete(combo.id);
-                      toast.success("Delete Successfully!");
+                      toast.success("Xóa thành công !");
                     }
                   });
                 };
