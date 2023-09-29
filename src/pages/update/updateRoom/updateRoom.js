@@ -484,12 +484,12 @@ function UpdateRoom() {
             showCancelButton: true,
             confirmButtonColor: "#3085d6",
             cancelButtonColor: "#d33",
-            confirmButtonText: "Yes, Update it!",
+            confirmButtonText: "Cập nhật!",
           }).then(async (result) => {
             if (result.isConfirmed) {
               const isSubmitSuccess = await handleSubmit(event, id, roomUpdate, selectedImages);
               if (isSubmitSuccess) {
-                Swal.fire("Update!", "Your data has been Update.", "success");
+                Swal.fire("Cập nhật!", "Cập nhật thành công", "success");
                 toast.success("Cập nhật thành công!");
               }
             }
