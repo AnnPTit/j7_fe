@@ -382,7 +382,7 @@ function InputRoom() {
               if (result.isConfirmed) {
                 const isSubmitSuccess = await handleSubmit(event);
                 if (isSubmitSuccess) {
-                  Swal.fire("Add!", "Your data has been Add.", "success");
+                  Swal.fire("Thêm!", "Đã thêm vào danh sách.", "success");
                   toast.success("Thêm thành công!");
                 }
               }

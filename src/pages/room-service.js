@@ -48,7 +48,6 @@ import { RoomSearch } from "src/sections/room/room-search";
 import RoomFilter from "src/sections/room/room-filter";
 import PriceRangeSlider from "src/sections/room/price-slider";
 import { SeverityPill } from "src/components/severity-pill";
-
 function BookRoom() {
   const router = useRouter(); // Sử dụng useRouter để truy cập router của Next.js
   const { id } = router.query;
@@ -64,6 +63,7 @@ function BookRoom() {
   const [service, setService] = useState([]);
   const [combo, setCombo] = useState([]);
   const [customer, setCustomer] = useState([]);
+  const [customerOrder, setCustomerOrder] = useState([]);
   const [floor, setFloor] = useState([]);
   const [typeRoom, setTypeRoom] = useState([]);
   const [floorChose, setFloorChose] = useState("");
@@ -79,6 +79,7 @@ function BookRoom() {
   const [quantityCombo, setQuantityCombo] = useState("");
   const [noteCombo, setNoteCombo] = useState("");
   const [customerInfo, setCustomerInfo] = useState([]);
+  const [infoCustomer, setInfoCustomer] = useState([]);
   const [serviceUsed, setServiceUsed] = useState([]);
   const [comboUsed, setComboUsed] = useState([]);
   const [serviceUsedTotalPrice, setServiceUsedTotalPrice] = useState([]);
@@ -377,7 +378,8 @@ function BookRoom() {
   };
 
   const handleBirthDayChange = (date) => {
-    setBirthday(date); // Update the birthday state with the selected date
+    const formattedDate = format(date, "dd/MM/yyyy");
+    setBirthday(formattedDate);
   };
 
   const previewStyle = {
@@ -573,6 +575,29 @@ function BookRoom() {
       return;
     }
 
+    if (!selectedCustomerAccept) {
+      toast.error("Chưa chọn khách hàng!", {
+        position: toast.POSITION.BOTTOM_RIGHT,
+      });
+      return;
+    }
+
+    // {orderDetailData.map((orderDetailData) => {
+    //   if (orderDetailData.informationCustomerList.length == 0) {
+    //     toast.error("Có phòng chưa có khách ở!", {
+    //       position: toast.POSITION.BOTTOM_RIGHT,
+    //     });
+    //     return;
+    //   }
+    // })}
+
+    if (infoCustomer.length == 0) {
+      toast.error("Phòng chưa có khách ở!", {
+        position: toast.POSITION.BOTTOM_RIGHT,
+      });
+      return;
+    }
+
     try {
       // Make an API call to update the order status to "Đã xác nhận" (status: 2)
       await axios.put(`http://localhost:2003/api/admin/order/update-accept/${id}`, {
@@ -723,13 +748,14 @@ function BookRoom() {
       setOpenQuantityNoteCombo(false);
       setOpenAddCombo(false);
       setOpenAddService(false);
-      setComboUsed((prevComboUsed) => [...prevComboUsed, response.data]);
+      setComboUsed(response.data);
       // const newTotal = calculateTotal();
       // setTotalAmount(newTotal);
       console.log("Combo added to comboUsed: ", response.data);
       toast.success("Thêm thành công!", {
         position: toast.POSITION.BOTTOM_RIGHT,
       });
+      window.location.href = `/room-service?id=${id}`;
     } catch (error) {
       console.error("Error adding to combo used");
     }
@@ -778,13 +804,14 @@ function BookRoom() {
       setNote("");
       setOpenQuantityNote(false);
       setOpenAddService(false);
-      setServiceUsed((prevServiceUsed) => [...prevServiceUsed, response.data]);
+      setServiceUsed(response.data);
       const newTotal = calculateTotal();
       setTotalAmount(newTotal);
       console.log("Service added to serviceUsed: ", response.data);
       toast.success("Thêm thành công!", {
         position: toast.POSITION.BOTTOM_RIGHT,
       });
+      window.location.href = `/room-service?id=${id}`;
     } catch (error) {
       console.error("Error adding to service used");
     }
@@ -853,9 +880,10 @@ function BookRoom() {
     const selectedOrderDetail = orderDetailData.find(
       (detail) => detail.id === selectedOrderDetails
     );
-    const { room } = selectedOrderDetail;
+    console.log(selectedOrderDetail);
+    // const { room } = selectedOrderDetail;
 
-    if (customerInfo.length >= room.typeRoom.capacity) {
+    if (customerInfo.length >= selectedOrderDetail.customerQuantity) {
       toast.error("Sức chứa của phòng đã đầy, không thể thêm khách hàng mới!", {
         position: toast.POSITION.BOTTOM_RIGHT,
       });
@@ -879,10 +907,11 @@ function BookRoom() {
         `http://localhost:2003/api/information-customer/save/${selectedOrderDetails}`,
         customerInfor
       );
-      setCustomerInfo((prevCustomerInfo) => [...prevCustomerInfo, response.data]);
+      setCustomerInfo(response.data);
       toast.success("Thêm thành công!", {
         position: toast.POSITION.BOTTOM_RIGHT,
       });
+      window.location.href = `/room-service?id=${id}`;
       console.log(
         `Information customer added to orderDetail ${selectedOrderDetails}:`,
         response.data
@@ -1018,9 +1047,10 @@ function BookRoom() {
       await axios.delete(`http://localhost:2003/api/order-detail/delete/${id}`);
 
       // Xóa khách hàng khỏi danh sách ngay sau khi xóa
-      setOrderDetailData((prevOrderDetail) =>
-        prevOrderDetail.filter((orderDetailData) => orderDetailData.id !== id)
-      );
+      // setOrderDetailData((prevOrderDetail) =>
+      //   prevOrderDetail.filter((orderDetailData) => orderDetailData.id !== id)
+      // );
+      router.push(`/room-service?id=${id}`);
       // const newTotal = calculateTotalAmountPriceRoom() + calculateTotalService();
       // setTotalAmount(newTotal);
       toast.success("Xóa thành công!", {
@@ -1114,8 +1144,12 @@ function BookRoom() {
         const response5 = await axios.get("http://localhost:2003/api/admin/customer/getAll");
         const response6 = await axios.get("http://localhost:2003/api/service-used/load");
         const response7 = await axios.get("http://localhost:2003/api/combo-used/load");
+        const response8 = await axios.get(
+          `http://localhost:2003/api/admin/customer/getAllByOrderId/${id}`
+        );
+        const response9 = await axios.get("http://localhost:2003/api/information-customer/load");
         console.log(response.data);
-        console.log(response2.data);
+        console.log("CustomerOrder: ", response8.data);
         setFloor(response.data);
         setTypeRoom(response2.data);
         setServiceType(response3.data);
@@ -1123,6 +1157,8 @@ function BookRoom() {
         setCustomer(response5.data);
         setServiceUsedTotalPrice(response6.data);
         setComboUsedTotalPrice(response7.data);
+        setCustomerOrder(response8.data);
+        setInfoCustomer(response9.data);
       } catch (error) {
         console.log(error);
       }
@@ -1187,6 +1223,19 @@ function BookRoom() {
   const createOrderDetail = async () => {
     // Thực hiện xử lý khi ngày được xác nhận
     if (selectedRoomId && valueFrom && valueTo && valueTimeFrom && valueTimeTo) {
+      if (numberOfPeople < 1) {
+        toast.error("Số người lớn hơn 0!", {
+          position: toast.POSITION.BOTTOM_RIGHT,
+        });
+        return false;
+      }
+
+      if (numberOfPeople > rooms.find((r) => r.id === selectedRoomId)?.typeRoom?.capacity) {
+        toast.error("Số người không được vượt quá sức chứa!", {
+          position: toast.POSITION.BOTTOM_RIGHT,
+        });
+        return false;
+      }
       const totalAmount = numberOfDays * roomPricePerDay;
       try {
         const accessToken = localStorage.getItem("accessToken");
@@ -1218,7 +1267,10 @@ function BookRoom() {
         // Xử lý lỗi nếu có
       }
     } else {
-      alert("Vui lòng chọn phòng, ngày check-in/check-out và giờ check-in/check-out.");
+      toast.warning("Vui lòng ngày check-in/check-out và giờ check-in/check-out.", {
+        position: toast.POSITION.BOTTOM_RIGHT,
+      });
+      return false;
     }
   };
 
@@ -1296,7 +1348,7 @@ function BookRoom() {
         `http://localhost:2003/api/payment-method/payment-momo/${id}`
       );
       console.log("MomoUrl: ", response.data);
-      window.location.href = response.data.payUrl;  
+      window.location.href = response.data.payUrl;
     } catch (error) {
       console.error("Error creating payment:", error);
     }
@@ -1308,7 +1360,12 @@ function BookRoom() {
         `http://localhost:2003/api/payment-method/payment-zalo/${id}`
       );
       console.log("ZaloPayUrl: ", response.data);
-      window.location.href = response.data.orderurl; // Chuyển hướng đến trang đăng nhập
+
+      // Lưu id vào localStorage
+      localStorage.setItem("orderId", id);
+
+      // Chuyển hướng đến trang
+      window.location.href = response.data.orderurl;
     } catch (error) {
       console.error("Error creating payment:", error);
     }
@@ -2476,17 +2533,18 @@ function BookRoom() {
               <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
                 <FormControl variant="standard">
                   <InputLabel id="demo-simple-select-standard-label">Khách hàng</InputLabel>
-                  {customer.length > 0 ? (
+                  {customerOrder.length > 0 ? (
                     <Select
                       labelId="demo-simple-select-standard-label"
                       id="demo-simple-select-standard"
                       label="Khách hàng"
                       style={{ width: 200 }}
+                      value={selectedCustomerAccept} // Đảm bảo giá trị selectedCustomerAccept tồn tại trong danh sách
                       onChange={(event) => setSelectedCustomerAccept(event.target.value)}
                     >
-                      {customer.map((customer) => (
-                        <MenuItem key={customer.id} value={customer.id}>
-                          {customer.fullname}
+                      {customerOrder.map((customerOrder) => (
+                        <MenuItem key={customerOrder.id} value={customerOrder.id}>
+                          {customerOrder.fullname}
                         </MenuItem>
                       ))}
                     </Select>
