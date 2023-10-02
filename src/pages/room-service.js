@@ -7,6 +7,7 @@ import Button from "@mui/material/Button";
 import { DatePicker, TimePicker } from "@mui/x-date-pickers";
 import MagnifyingGlassIcon from "@heroicons/react/24/solid/MagnifyingGlassIcon";
 import { useRouter } from "next/router";
+import Head from "next/head";
 import {
   Box,
   TextareaAutosize,
@@ -64,6 +65,7 @@ function BookRoom() {
   const [combo, setCombo] = useState([]);
   const [customer, setCustomer] = useState([]);
   const [customerOrder, setCustomerOrder] = useState([]);
+  const [customerOrderDetail, setCustomerOrderDetail] = useState([]);
   const [floor, setFloor] = useState([]);
   const [typeRoom, setTypeRoom] = useState([]);
   const [floorChose, setFloorChose] = useState("");
@@ -620,12 +622,19 @@ function BookRoom() {
   //Trả 1 phòng
   const handleReturnOneRoom = async () => {
     if (!givenCustomerOneRoom || givenCustomerOneRoom < sumOrderDetail) {
-      // Xử lý khi tiền khách trả không hợp lệ, ví dụ: hiển thị thông báo lỗi
       toast.error("Số tiền khách trả không hợp lệ!", {
         position: toast.POSITION.BOTTOM_RIGHT,
       });
       return;
     }
+
+    if (!selectedCustomerReturn) {
+      toast.error("Chưa chọn khách hàng!", {
+        position: toast.POSITION.BOTTOM_RIGHT,
+      });
+      return;
+    }
+
     try {
       const response = await axios.post(
         `http://localhost:2003/api/admin/order/return/${selectedOrderDetails}`,
@@ -908,10 +917,10 @@ function BookRoom() {
         customerInfor
       );
       setCustomerInfo(response.data);
+      window.location.href = `/room-service?id=${id}`;
       toast.success("Thêm thành công!", {
         position: toast.POSITION.BOTTOM_RIGHT,
       });
-      window.location.href = `/room-service?id=${id}`;
       console.log(
         `Information customer added to orderDetail ${selectedOrderDetails}:`,
         response.data
@@ -1042,15 +1051,16 @@ function BookRoom() {
   };
 
   // Xóa phòng
-  const handleDeleteRoom = async (id) => {
+  const handleDeleteRoom = async (orderDetailid) => {
     try {
-      await axios.delete(`http://localhost:2003/api/order-detail/delete/${id}`);
+      await axios.put(`http://localhost:2003/api/order-detail/delete/${orderDetailid}`);
 
       // Xóa khách hàng khỏi danh sách ngay sau khi xóa
       // setOrderDetailData((prevOrderDetail) =>
       //   prevOrderDetail.filter((orderDetailData) => orderDetailData.id !== id)
       // );
-      router.push(`/room-service?id=${id}`);
+      // router.push(`/room-service?id=${id}`);
+      window.location.href = `/room-service?id=${id}`;
       // const newTotal = calculateTotalAmountPriceRoom() + calculateTotalService();
       // setTotalAmount(newTotal);
       toast.success("Xóa thành công!", {
@@ -1148,8 +1158,10 @@ function BookRoom() {
           `http://localhost:2003/api/admin/customer/getAllByOrderId/${id}`
         );
         const response9 = await axios.get("http://localhost:2003/api/information-customer/load");
+        const response10 = await axios.get(
+          `http://localhost:2003/api/admin/customer/getAllByOrderDetailId/${selectedOrderDetails}`
+        );
         console.log(response.data);
-        console.log("CustomerOrder: ", response8.data);
         setFloor(response.data);
         setTypeRoom(response2.data);
         setServiceType(response3.data);
@@ -1159,6 +1171,7 @@ function BookRoom() {
         setComboUsedTotalPrice(response7.data);
         setCustomerOrder(response8.data);
         setInfoCustomer(response9.data);
+        setCustomerOrderDetail(response10.data);
       } catch (error) {
         console.log(error);
       }
@@ -1379,6 +1392,9 @@ function BookRoom() {
         width: "90%", // Center the timeline container horizontally
       }}
     >
+      <Head>
+        <title>Đặt phòng tại quầy | Armani Hotel</title>
+      </Head>
       <ToastContainer />
       <Dialog
         open={openSeacrhRoom}
@@ -1808,17 +1824,18 @@ function BookRoom() {
           <div style={{ display: "flex" }}>
             <FormControl variant="standard">
               <InputLabel id="demo-simple-select-standard-label">Khách hàng</InputLabel>
-              {customer.length > 0 ? (
+              {customerOrderDetail.length > 0 ? (
                 <Select
                   labelId="demo-simple-select-standard-label"
                   id="demo-simple-select-standard"
                   label="Khách hàng"
                   style={{ width: 300 }}
+                  value={selectedCustomerReturn}
                   onChange={(event) => setSelectedCustomerReturn(event.target.value)}
                 >
-                  {customer.map((customer) => (
-                    <MenuItem key={customer.id} value={customer.id}>
-                      {customer.fullname}
+                  {customerOrderDetail.map((customerOrderDetail) => (
+                    <MenuItem key={customerOrderDetail.id} value={customerOrderDetail.id}>
+                      {customerOrderDetail.fullname}
                     </MenuItem>
                   ))}
                 </Select>

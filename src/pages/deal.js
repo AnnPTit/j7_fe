@@ -9,6 +9,7 @@ import { DealSearch } from "src/sections/deal/deal-search";
 import { applyPagination } from "src/utils/apply-pagination";
 import MyPagination from "src/components/Pagination";
 import "bootstrap/dist/css/bootstrap.min.css";
+import DealFilter from "src/sections/deal/deal-filter";
 
 const useDeal = (data, page, rowsPerPage) => {
   return useMemo(() => {
@@ -33,6 +34,7 @@ const Page = () => {
   const dealSelection = useSelection(dealIds);
   const [pageNumber, setPageNumber] = useState(0);
   const [textSearch, setTextSearch] = useState("");
+  const [methodChoose, setMethodChoose] = useState("");
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
 
@@ -45,6 +47,9 @@ const Page = () => {
         let Api = `http://localhost:2003/api/payment-method/loadAndSearch?current_page=${pageNumber}`; // Thay đổi URL API của bạn tại đây
         if (textSearch !== "") {
           Api = Api + `&key=${textSearch}`;
+        }
+        if (methodChoose !== "") {
+          Api = Api + `&method=${methodChoose}`;
         }
         const response = await axios.get(Api); // Thay đổi URL API của bạn tại đây
         console.log(response.data);
@@ -66,7 +71,7 @@ const Page = () => {
       }
     };
     fetchData();
-  }, [pageNumber, dataChange, textSearch]);
+  }, [pageNumber, dataChange, textSearch, methodChoose]);
 
   return (
     <>
@@ -82,14 +87,17 @@ const Page = () => {
       >
         <Container maxWidth="xl">
           <Stack spacing={3}>
-            <DealSearch textSearch={textSearch} setTextSearch={setTextSearch}/>
-            <DealTable
-              items={deal}
-              selected={dealSelection.selected}
-              setPageNumber={setPageNumber}
-              totalElements={totalElements}
-              pageNumber={pageNumber}
-            />
+            <DealSearch textSearch={textSearch} setTextSearch={setTextSearch} />
+            <DealFilter methodChoose={methodChoose} setMethodChoose={setMethodChoose}></DealFilter>
+            <div style={{ minHeight: 350, marginTop: 50 }}>
+              <DealTable
+                items={deal}
+                selected={dealSelection.selected}
+                setPageNumber={setPageNumber}
+                totalElements={totalElements}
+                pageNumber={pageNumber}
+              />
+            </div>
           </Stack>
           <MyPagination
             pageNumber={pageNumber}

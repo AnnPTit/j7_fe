@@ -18,7 +18,7 @@ const Page = () => (
   <>
     <Head>
       <title>
-        Overview |  Hotel Finder
+        Overview | Armani Hotel
       </title>
     </Head>
     <Box

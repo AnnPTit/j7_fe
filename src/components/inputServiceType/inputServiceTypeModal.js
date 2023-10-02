@@ -24,19 +24,18 @@ const handleSubmit = async (code) => {
   console.log(payload);
 
   try {
-    const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
+    const accessToken = localStorage.getItem("accessToken"); 
     if (!accessToken) {
       alert("Bạn chưa đăng nhập");
       return;
     }
-    axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
-    const response = await axios.post("http://localhost:2003/api/admin/service-type/save", payload); // Gọi API /api/customers/save với payload và access token
+    axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; 
+    const response = await axios.post("http://localhost:2003/api/admin/service-type/save", payload);
     console.log(response);
     if (response.status === 200) {
       // Xử lý khi API thành công
       console.log("API call successful");
       window.location.href = `/input/inputService/inputService?code=${code}`;
-      toast.success("Add Successfully!");
       // Thực hiện các hành động khác sau khi API thành công
     } else {
       // Xử lý khi API gặp lỗi
@@ -49,7 +48,7 @@ const handleSubmit = async (code) => {
       // Xử lý response lỗi
       if (error.response.status === 403) {
         alert("Bạn không có quyền truy cập vào trang này");
-        window.location.href = "/auth/login"; // Chuyển hướng đến trang đăng nhập
+        window.location.href = "/"; // Chuyển hướng đến trang đăng nhập
       } else if (error.response.status === 400) {
         console.log(error.response);
         // alert(error.response.data.serviceTypeCode);
