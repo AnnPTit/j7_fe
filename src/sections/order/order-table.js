@@ -86,7 +86,7 @@ export const OrderTable = (props) => {
                     <TableCell>
                       {order.account && order.account.fullname ? order.account.fullname : "NaN"}
                     </TableCell>
-                    <TableCell>{order.customer.fullname}</TableCell>
+                    <TableCell>  {order.customer && order.customer.fullname ? order.customer.fullname : "NaN"}</TableCell>
                     <TableCell style={{ color: "red" }}>{formatPrice(order.totalMoney)}</TableCell>
                     <TableCell>{order.note}</TableCell>
                     <TableCell>{created}</TableCell>

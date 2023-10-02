@@ -1,9 +1,12 @@
+import { useCallback, useMemo, useState, useEffect } from "react";
 import PropTypes from "prop-types";
+import moment from "moment";
+import axios from "axios";
 import Swal from "sweetalert2";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { Scrollbar } from "src/components/scrollbar";
 import {
+  Input,
   Box,
   Card,
   Table,
@@ -13,15 +16,12 @@ import {
   TableRow,
   SvgIcon,
 } from "@mui/material";
+import { Scrollbar } from "src/components/scrollbar";
 import TrashIcon from "@heroicons/react/24/solid/TrashIcon";
 import Bars4Icon from "@heroicons/react/24/solid/Bars4Icon";
-import PencilSquareIcon from "@heroicons/react/24/solid/PencilSquareIcon";
 
-export const Combo = (props) => {
+export const CustomerTable = (props) => {
   const { items = [], selected = [] } = props;
-  function formatCurrency(price) {
-    return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(price);
-  }
 
   const handleDelete = (id) => {
     props.onDelete(id);
@@ -35,23 +35,28 @@ export const Combo = (props) => {
             <TableHead>
               <TableRow>
                 <TableCell padding="checkbox">STT</TableCell>
-                <TableCell>Mã Combo dịch vụ</TableCell>
-                <TableCell>Tên Combo dịch vụ</TableCell>
-                <TableCell>Đơn giá</TableCell>
-                <TableCell>Dịch vụ bên trong</TableCell>
-                <TableCell>Ghi chú</TableCell>
-                <TableCell>Hành động </TableCell>
+                <TableCell>Mã khách hàng</TableCell>
+                <TableCell>Username</TableCell>
+                <TableCell>Họ tên</TableCell>
+                <TableCell>Giới tính</TableCell>
+                <TableCell>Ngày sinh</TableCell>
+                <TableCell>Số ĐT</TableCell>
+                <TableCell>Căn cước công dân</TableCell>
+                <TableCell>Địa chỉ</TableCell>
+                <TableCell>Email</TableCell>
+                <TableCell>Hành động</TableCell>
               </TableRow>
             </TableHead>
 
             <TableBody>
-              {items.map((combo, index) => {
-                const hrefUpdate = `/update/updateCombo/updateCombo?id=${combo.id}`;
-                const isSelected = selected.includes(combo.id);
+              {items.map((customer, index) => {
+                const birthday = moment(customer.birthday).format("DD/MM/YYYY");
+                const isSelected = selected.includes(customer.id);
+                const hrefUpdate = `/update/updateCustomer/updateCustomer?id=${customer.id}`;
                 const alertDelete = () => {
                   Swal.fire({
-                    title: "Bạn có chắc chắn muốn xóa ? ",
-                    text: "",
+                    title: "Are you sure?",
+                    text: "You won't be able to revert this!",
                     icon: "warning",
                     showCancelButton: true,
                     confirmButtonColor: "#3085d6",
@@ -59,41 +64,40 @@ export const Combo = (props) => {
                     confirmButtonText: "Yes, delete it!",
                   }).then((result) => {
                     if (result.isConfirmed) {
-                      Swal.fire("Xóa thành công !", "Xóa thành công !", "success");
-                      handleDelete(combo.id);
-                      toast.success("Xóa thành công !");
+                      Swal.fire("Deleted!", "Your data has been deleted.", "success");
+                      handleDelete(customer.id);
+                      toast.success("Delete Successfully!");
                     }
                   });
                 };
-
                 return (
-                  <TableRow key={combo.id} selected={isSelected}>
+                  <TableRow hover key={customer.id} selected={isSelected}>
                     <TableCell padding="checkbox">
                       <div key={index}>
                         <span>{index + props.pageNumber * 5 + 1}</span>
                       </div>
                     </TableCell>
-                    <TableCell>{combo.comboCode}</TableCell>
-                    <TableCell>{combo.comboName}</TableCell>
-                    <TableCell>{formatCurrency(combo.price)}</TableCell>
+                    <TableCell>{customer.customerCode}</TableCell>
+                    <TableCell>{customer.username}</TableCell>
+                    <TableCell>{customer.fullname}</TableCell>
+                    <TableCell>{customer.gender ? "Nam" : "Nữ"}</TableCell>
+                    <TableCell>{birthday}</TableCell>
+                    <TableCell>{customer.phoneNumber}</TableCell>
+                    <TableCell>{customer.citizenId}</TableCell>
                     <TableCell>
-                      <ul>
-                        {combo.comboServiceList.map((comboService) => (
-                          <li key={comboService.id}>
-                            <p>
-                              {" "}
-                              {comboService.service.serviceName}
-                              {/* {formatCurrency(comboService.service.price)} */}
-                            </p>
-                          </li>
-                        ))}
-                      </ul>
+                      {customer.provinces} - {customer.districts} - {customer.wards}
                     </TableCell>
-                    <TableCell>{combo.note}</TableCell>
+                    <TableCell>{customer.email}</TableCell>
                     <TableCell>
-                      <a className="btn btn-primary m-xl-2" href={hrefUpdate}>
+                      {/* <button className="btn btn-primary" onClick={() => handleEdit(account.id)}>
+                        Edit
+                      </button>
+                      <button className="btn btn-danger m-xl-2" onClick={alertDelete}>
+                        Delete
+                      </button> */}
+                      <a className="btn btn-info m-xl-2" href={hrefUpdate}>
                         <SvgIcon fontSize="small">
-                        <PencilSquareIcon />
+                          <Bars4Icon />
                         </SvgIcon>
                       </a>
                       <button className="btn btn-danger m-xl-2" onClick={alertDelete}>
@@ -114,7 +118,7 @@ export const Combo = (props) => {
   );
 };
 
-Combo.propTypes = {
+CustomerTable.propTypes = {
   count: PropTypes.number,
   items: PropTypes.array,
   onDeselectAll: PropTypes.func,

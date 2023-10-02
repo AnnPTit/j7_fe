@@ -17,6 +17,7 @@ import {
 } from "@mui/material";
 import TrashIcon from "@heroicons/react/24/solid/TrashIcon";
 import Bars4Icon from "@heroicons/react/24/solid/Bars4Icon";
+import PencilSquareIcon from "@heroicons/react/24/solid/PencilSquareIcon";
 
 export const Service = (props) => {
   const { items = [], selected = [] } = props;
@@ -78,8 +79,8 @@ export const Service = (props) => {
                 const hrefUpdate = `/update/updateService/updateService?id=${service.id}`;
                 const alertDelete = () => {
                   Swal.fire({
-                    title: "Are you sure?",
-                    text: "You won't be able to revert this!",
+                    title: "Bạn có chắc chắn muốn xóa ?",
+                    text: "",
                     icon: "warning",
                     showCancelButton: true,
                     confirmButtonColor: "#3085d6",
@@ -87,9 +88,9 @@ export const Service = (props) => {
                     confirmButtonText: "Yes, delete it!",
                   }).then((result) => {
                     if (result.isConfirmed) {
-                      Swal.fire("Deleted!", "Your data has been deleted.", "success");
+                      Swal.fire("Xóa thành công !", "Xóa thành công !", "success");
                       handleDelete(service.id);
-                      toast.success("Delete Successfully!");
+                      toast.success("Xóa thành công !");
                     }
                   });
                 };
@@ -117,9 +118,9 @@ export const Service = (props) => {
                       {/* <button className="btn btn-primary" onClick={() => handleEdit(service.id)}>
                         Edit
                       </button> */}
-                      <a className="btn btn-info m-xl-2" href={hrefUpdate}>
+                      <a className="btn btn-primary m-xl-2" href={hrefUpdate}>
                         <SvgIcon fontSize="small">
-                          <Bars4Icon />
+                        <PencilSquareIcon />
                         </SvgIcon>
                       </a>
                       <button className="btn btn-danger m-xl-2" onClick={alertDelete}>

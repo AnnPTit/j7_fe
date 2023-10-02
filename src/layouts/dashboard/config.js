@@ -230,28 +230,30 @@ export const items = [
             </Typography>
           </Link>
           <br />
-          <Link href="/customers">
-            <Typography
-              // component="a"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                color: "lightgray",
-                textDecorationColor: "#1C2536",
-              }}
-            >
-              <SvgIcon fontSize="small" style={{ marginRight: "8px" }}>
-                <MinusSmallIcon />
-              </SvgIcon>
-              Khách hàng
-            </Typography>
-          </Link>
+          <Typography>
+            <Link href="/customer">
+              <Typography
+                component="a"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  color: "lightgray",
+                  textDecorationColor: "#1C2536",
+                }}
+              >
+                <SvgIcon fontSize="small" style={{ marginRight: "8px" }}>
+                  <MinusSmallIcon />
+                </SvgIcon>
+                Khách hàng
+              </Typography>
+            </Link>
+          </Typography>
         </AccordionDetails>
       </Accordion>
     ),
   },
   {
-    title: "Unit",
+    title: "Đơn vị",
     path: "/unit",
     icon: (
       <SvgIcon fontSize="small">
@@ -260,7 +262,7 @@ export const items = [
     ),
   },
   {
-    title: "Register",
+    title: "Đăng kí",
     path: "/auth/register",
     icon: (
       <SvgIcon fontSize="small">
