@@ -6,37 +6,36 @@ import axios from "axios";
 import React from "react";
 import { useState } from "react";
 import { useRouter } from "next/router";
-import { height, style } from "@mui/system";
 
 export const OrderSearch = ({ textSearch, setTextSearch }) => {
-  const [valueTo, setValueTo] = useState(null);
-  const [valueFrom, setValueFrom] = useState(null);
+  // const [valueTo, setValueTo] = useState(null);
+  // const [valueFrom, setValueFrom] = useState(null);
   const pathname = usePathname();
   const router = useRouter();
 
-  const handleFromDateChange = (newValue) => {
-    setValueFrom(newValue);
-    if (newValue > valueTo) {
-      setValueTo(newValue); // Update valueTo if the selected date is greater than the current valueTo
-    }
-  };
+  // const handleFromDateChange = (newValue) => {
+  //   setValueFrom(newValue);
+  //   if (newValue > valueTo) {
+  //     setValueTo(newValue); // Update valueTo if the selected date is greater than the current valueTo
+  //   }
+  // };
 
-  const handleToDateChange = (newValue) => {
-    setValueTo(newValue);
-    if (newValue < valueFrom) {
-      setValueFrom(newValue); // Update valueFrom if the selected date is smaller than the current valueFrom
-    }
-  };
+  // const handleToDateChange = (newValue) => {
+  //   setValueTo(newValue);
+  //   if (newValue < valueFrom) {
+  //     setValueFrom(newValue); // Update valueFrom if the selected date is smaller than the current valueFrom
+  //   }
+  // };
 
-  const formatDate = (date) => {
-    if (!date) {
-      return ""; // Return an empty string for null date values
-    }
-    const day = date.getDate().toString().padStart(2, "0");
-    const month = (date.getMonth() + 1).toString().padStart(2, "0");
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
-  };
+  // const formatDate = (date) => {
+  //   if (!date) {
+  //     return ""; // Return an empty string for null date values
+  //   }
+  //   const day = date.getDate().toString().padStart(2, "0");
+  //   const month = (date.getMonth() + 1).toString().padStart(2, "0");
+  //   const year = date.getFullYear();
+  //   return `${day}/${month}/${year}`;
+  // };
 
   const item = {
     title: "Add",
@@ -80,7 +79,7 @@ export const OrderSearch = ({ textSearch, setTextSearch }) => {
             setTextSearch(e.target.value);
           }}
         />
-        <Grid item xs={12} ml={2} mr={2} sm={12} xl={2} lg={3}>
+        {/* <Grid item xs={12} ml={2} mr={2} sm={12} xl={2} lg={3}>
           <DatePicker
             label="Từ ngày"
             value={valueFrom}
@@ -111,14 +110,14 @@ export const OrderSearch = ({ textSearch, setTextSearch }) => {
               />
             )}
           />
-        </Grid>
+        </Grid> */}
         <Grid>
           <Button
             className="btn btn-primary"
             style={{
               height: 55,
               width: 170,
-              marginLeft: 150,
+              marginLeft: 630,
               backgroundColor: "darkblue",
               color: "white",
             }}

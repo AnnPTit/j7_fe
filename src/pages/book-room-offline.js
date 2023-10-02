@@ -83,7 +83,7 @@ const Page = () => {
   return (
     <>
       <Head>
-        <title>Đặt phòng tại quầy | Hotel Finder</title>
+        <title>Đặt phòng tại quầy | Armani Hotel</title>
       </Head>
       <Box
         component="main"
