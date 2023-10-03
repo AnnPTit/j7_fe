@@ -31,6 +31,7 @@ import { SeverityPill } from "src/components/severity-pill";
 import Link from "next/link";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import PDFDocument from "./update/pdf-document";
+import Head from "next/head";
 
 // Thêm state để theo dõi khi nút "In hóa đơn" được nhấp
 
@@ -381,6 +382,9 @@ function OrderTimeline() {
         width: "100%",
       }}
     >
+      <Head>
+        <title>Timeline | Armani Hotel</title>
+      </Head>
       <Box
         style={{
           border: "1px solid #ccc",
@@ -487,9 +491,9 @@ function OrderTimeline() {
         <div style={{ display: "flex" }}>
           <div style={{ marginLeft: 30, fontFamily: "inherit", fontSize: "17px" }}>
             <label>Loại</label>
-            <label style={{ marginLeft: 193 }}>
+            <SeverityPill style={{ marginLeft: 190 }}>
               {order.typeOfOrder == 0 ? "Online" : "Tại quầy"}
-            </label>
+            </SeverityPill>
             <br />
             <br />
             <label>Mã hóa đơn</label>

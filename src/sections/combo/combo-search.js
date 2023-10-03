@@ -5,7 +5,7 @@ export const ComboSearch = ({ textSearch, setTextSearch }) => (
     <OutlinedInput
       value={textSearch}
       fullWidth
-      placeholder="Search Combo"
+      placeholder="Tìm kiếm Combo"
       sx={{ maxWidth: 500 }}
       onChange={(e) => {
         setTextSearch(e.target.value);

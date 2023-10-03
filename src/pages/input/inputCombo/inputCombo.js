@@ -53,7 +53,7 @@ const handleSubmit = async (event, selectedServiceCodes) => {
     }
     axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
     const response = await axios.post("http://localhost:2003/api/admin/combo/save", payload); // Gọi API /api/service-type/save với payload và access token
-    toast.success("Add Successfully!", {
+    toast.success("Thêm Thành Công !", {
       position: toast.POSITION.BOTTOM_RIGHT,
     });
     console.log(response); //
@@ -82,6 +82,9 @@ const handleSubmit = async (event, selectedServiceCodes) => {
         toast.error(error.response.data.comboCode, {
           position: toast.POSITION.BOTTOM_RIGHT,
         });
+        toast.error(error.response.data.error, {
+          position: toast.POSITION.BOTTOM_RIGHT,
+        });
       } else {
         alert("Có lỗi xảy ra trong quá trình gọi API");
         return false;
@@ -98,7 +101,7 @@ function InputCombo() {
   const [checkedItems, setCheckedItems] = useState({});
   const [selectedServiceCodes, setSelectedServiceCodes] = useState([]);
   const router = useRouter(); // Sử dụng useRouter để truy cập router của Next.js
-  const { code } = router.query; // Lấy thông tin từ URL qua router.query
+  const { code } = generateRandomCode(6);
   const [showServiceType, setShowServiceType] = useState(false);
 
   const handleCloseServiceType = () => setShowServiceType(false);
@@ -108,6 +111,18 @@ function InputCombo() {
     return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(price);
   }
 
+  function generateRandomCode(length) {
+    const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    let code = "CB_";
+    for (let i = 0; i < length; i++) {
+      const randomIndex = Math.floor(Math.random() * characters.length);
+      code += characters.charAt(randomIndex);
+    }
+    return { code };
+  }
+
+  const randomCodeObject = generateRandomCode(6); // Thay đổi số 6 thành độ dài mã bạn muốn
+  console.log(randomCodeObject);
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -235,8 +250,8 @@ function InputCombo() {
         className={(cx("input-btn"), "btn btn-primary")}
         onClick={() => {
           Swal.fire({
-            title: "Are you sure?",
-            text: "You won't be able to revert this!",
+            title: "Bạn có chắc chắn muốn thêm ?",
+            text: "",
             icon: "warning",
             showCancelButton: true,
             confirmButtonColor: "#3085d6",
@@ -246,7 +261,7 @@ function InputCombo() {
             if (result.isConfirmed) {
               const isSubmitSuccess = await handleSubmit(event, selectedServiceCodes);
               if (isSubmitSuccess) {
-                Swal.fire("Add!", "Your data has been Add.", "success");
+                Swal.fire("Thêm thành công !", "Thêm thành công !", "success");
               }
             }
           });

@@ -114,8 +114,8 @@ export const TypeRoomTable = (props) => {
               {items.map((typeRoom) => {
                 const alertDelete = () => {
                   Swal.fire({
-                    title: "Are you sure?",
-                    text: "You won't be able to revert this!",
+                    title: "Bạn có chắc chắn muốn xóa ? ",
+                    text: "",
                     icon: "warning",
                     showCancelButton: true,
                     confirmButtonColor: "#3085d6",
@@ -123,9 +123,9 @@ export const TypeRoomTable = (props) => {
                     confirmButtonText: "Yes, delete it!",
                   }).then((result) => {
                     if (result.isConfirmed) {
-                      Swal.fire("Deleted!", "Your data has been deleted.", "success");
+                      Swal.fire("Xóa thành công !", "Xóa thành công !", "success");
                       handleDelete(typeRoom.id);
-                      toast.success("Delete Successfully!");
+                      toast.success("Xóa thành công !");
                     }
                   });
                 };
@@ -233,7 +233,7 @@ export const TypeRoomTable = (props) => {
 
                   const alertEdit = () => {
                     Swal.fire({
-                      title: "Are you sure?",
+                      title: "Bạn có chắc chắn muốn cập nhật ?",
                       icon: "info",
                       showCancelButton: true,
                       confirmButtonColor: "#3085d6",
@@ -241,9 +241,9 @@ export const TypeRoomTable = (props) => {
                       confirmButtonText: "Yes, edit it!",
                     }).then((result) => {
                       if (result.isConfirmed) {
-                        Swal.fire("Edited!", "Your data has been edited.", "success");
+                        Swal.fire("Cập nhật thành công !", "Cập nhật thành công !", "success");
                         handleUpdate();
-                        toast.success("Edit Successfully!");
+                        toast.success("Cập nhật thành công !");
                       }
                     });
                   };

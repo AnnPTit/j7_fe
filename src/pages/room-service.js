@@ -7,6 +7,7 @@ import Button from "@mui/material/Button";
 import { DatePicker, TimePicker } from "@mui/x-date-pickers";
 import MagnifyingGlassIcon from "@heroicons/react/24/solid/MagnifyingGlassIcon";
 import { useRouter } from "next/router";
+import Head from "next/head";
 import {
   Box,
   TextareaAutosize,
@@ -22,8 +23,6 @@ import {
   Checkbox,
   Select,
   InputLabel,
-  NativeSelect,
-  Option,
 } from "@mui/material";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
@@ -50,31 +49,39 @@ import { RoomSearch } from "src/sections/room/room-search";
 import RoomFilter from "src/sections/room/room-filter";
 import PriceRangeSlider from "src/sections/room/price-slider";
 import { SeverityPill } from "src/components/severity-pill";
-
 function BookRoom() {
   const router = useRouter(); // Sử dụng useRouter để truy cập router của Next.js
   const { id } = router.query;
+  const [order, setOrder] = useState({
+    id: "",
+    typeOfOrder: "",
+    orderCode: "",
+    status: "",
+    // customer: {},
+    // account: {},
+  });
   const [rooms, setRooms] = useState([]);
   const [service, setService] = useState([]);
   const [combo, setCombo] = useState([]);
   const [customer, setCustomer] = useState([]);
+  const [customerOrder, setCustomerOrder] = useState([]);
+  const [customerOrderDetail, setCustomerOrderDetail] = useState([]);
   const [floor, setFloor] = useState([]);
   const [typeRoom, setTypeRoom] = useState([]);
   const [floorChose, setFloorChose] = useState("");
   const [typeRoomChose, setTypeRoomChose] = useState("");
   const [serviceType, setServiceType] = useState([]);
   const [unit, setUnit] = useState([]);
-  const [orderDetail, setOrderDetail] = useState([]);
   const [selectedRoomId, setSelectedRoomId] = useState(null);
   const [selectedOrderDetails, setSelectedOrderDetails] = useState(null);
   const [selectedServiceId, setSelectedServiceId] = useState(null);
   const [selectedComboId, setSelectedComboId] = useState(null);
-  const [selectedOrderDetailId, setSelectedOrderDetailId] = useState(null);
   const [quantity, setQuantity] = useState("");
   const [note, setNote] = useState("");
   const [quantityCombo, setQuantityCombo] = useState("");
   const [noteCombo, setNoteCombo] = useState("");
   const [customerInfo, setCustomerInfo] = useState([]);
+  const [infoCustomer, setInfoCustomer] = useState([]);
   const [serviceUsed, setServiceUsed] = useState([]);
   const [comboUsed, setComboUsed] = useState([]);
   const [serviceUsedTotalPrice, setServiceUsedTotalPrice] = useState([]);
@@ -125,15 +132,6 @@ function BookRoom() {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [birthday, setBirthday] = useState(null);
   const [gender, setGender] = useState("Nam");
-
-  const [order, setOrder] = useState({
-    id: "",
-    typeOfOrder: "",
-    orderCode: "",
-    status: "",
-    // customer: {},
-    // account: {},
-  });
 
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
@@ -382,7 +380,8 @@ function BookRoom() {
   };
 
   const handleBirthDayChange = (date) => {
-    setBirthday(date); // Update the birthday state with the selected date
+    const formattedDate = format(date, "dd/MM/yyyy");
+    setBirthday(formattedDate);
   };
 
   const previewStyle = {
@@ -427,6 +426,9 @@ function BookRoom() {
 
   // Sử dụng hàm calculateTotalCostForOrderDetail để tính tổng tiền cho orderDetail có id tương ứng
   const totalCostForOrderDetail = calculateTotalCostForOrderDetail(selectedOrderDetails);
+  const [totalPriceRoom, setTotalPriceRoom] = useState(0);
+  const [totalPriceCombo, setTotalPriceCombo] = useState(0);
+  const [totalPriceService, setTotalPriceService] = useState(0);
 
   const calculateTotalAmountPriceRoom = () => {
     let total = 0;
@@ -568,6 +570,36 @@ function BookRoom() {
 
   // Xác nhận phòng
   const handleConfirmOrder = async () => {
+    if (orderDetailData.length == 0) {
+      toast.error("Chưa chọn phòng!", {
+        position: toast.POSITION.BOTTOM_RIGHT,
+      });
+      return;
+    }
+
+    if (!selectedCustomerAccept) {
+      toast.error("Chưa chọn khách hàng!", {
+        position: toast.POSITION.BOTTOM_RIGHT,
+      });
+      return;
+    }
+
+    // {orderDetailData.map((orderDetailData) => {
+    //   if (orderDetailData.informationCustomerList.length == 0) {
+    //     toast.error("Có phòng chưa có khách ở!", {
+    //       position: toast.POSITION.BOTTOM_RIGHT,
+    //     });
+    //     return;
+    //   }
+    // })}
+
+    if (infoCustomer.length == 0) {
+      toast.error("Phòng chưa có khách ở!", {
+        position: toast.POSITION.BOTTOM_RIGHT,
+      });
+      return;
+    }
+
     try {
       // Make an API call to update the order status to "Đã xác nhận" (status: 2)
       await axios.put(`http://localhost:2003/api/admin/order/update-accept/${id}`, {
@@ -590,12 +622,19 @@ function BookRoom() {
   //Trả 1 phòng
   const handleReturnOneRoom = async () => {
     if (!givenCustomerOneRoom || givenCustomerOneRoom < sumOrderDetail) {
-      // Xử lý khi tiền khách trả không hợp lệ, ví dụ: hiển thị thông báo lỗi
       toast.error("Số tiền khách trả không hợp lệ!", {
         position: toast.POSITION.BOTTOM_RIGHT,
       });
       return;
     }
+
+    if (!selectedCustomerReturn) {
+      toast.error("Chưa chọn khách hàng!", {
+        position: toast.POSITION.BOTTOM_RIGHT,
+      });
+      return;
+    }
+
     try {
       const response = await axios.post(
         `http://localhost:2003/api/admin/order/return/${selectedOrderDetails}`,
@@ -718,13 +757,14 @@ function BookRoom() {
       setOpenQuantityNoteCombo(false);
       setOpenAddCombo(false);
       setOpenAddService(false);
-      setComboUsed((prevComboUsed) => [...prevComboUsed, response.data]);
+      setComboUsed(response.data);
       // const newTotal = calculateTotal();
       // setTotalAmount(newTotal);
       console.log("Combo added to comboUsed: ", response.data);
       toast.success("Thêm thành công!", {
         position: toast.POSITION.BOTTOM_RIGHT,
       });
+      window.location.href = `/room-service?id=${id}`;
     } catch (error) {
       console.error("Error adding to combo used");
     }
@@ -773,13 +813,14 @@ function BookRoom() {
       setNote("");
       setOpenQuantityNote(false);
       setOpenAddService(false);
-      setServiceUsed((prevServiceUsed) => [...prevServiceUsed, response.data]);
+      setServiceUsed(response.data);
       const newTotal = calculateTotal();
       setTotalAmount(newTotal);
       console.log("Service added to serviceUsed: ", response.data);
       toast.success("Thêm thành công!", {
         position: toast.POSITION.BOTTOM_RIGHT,
       });
+      window.location.href = `/room-service?id=${id}`;
     } catch (error) {
       console.error("Error adding to service used");
     }
@@ -848,9 +889,10 @@ function BookRoom() {
     const selectedOrderDetail = orderDetailData.find(
       (detail) => detail.id === selectedOrderDetails
     );
-    const { room } = selectedOrderDetail;
+    console.log(selectedOrderDetail);
+    // const { room } = selectedOrderDetail;
 
-    if (customerInfo.length >= room.typeRoom.capacity) {
+    if (customerInfo.length >= selectedOrderDetail.customerQuantity) {
       toast.error("Sức chứa của phòng đã đầy, không thể thêm khách hàng mới!", {
         position: toast.POSITION.BOTTOM_RIGHT,
       });
@@ -874,7 +916,8 @@ function BookRoom() {
         `http://localhost:2003/api/information-customer/save/${selectedOrderDetails}`,
         customerInfor
       );
-      setCustomerInfo((prevCustomerInfo) => [...prevCustomerInfo, response.data]);
+      setCustomerInfo(response.data);
+      window.location.href = `/room-service?id=${id}`;
       toast.success("Thêm thành công!", {
         position: toast.POSITION.BOTTOM_RIGHT,
       });
@@ -1008,14 +1051,16 @@ function BookRoom() {
   };
 
   // Xóa phòng
-  const handleDeleteRoom = async (id) => {
+  const handleDeleteRoom = async (orderDetailid) => {
     try {
-      await axios.delete(`http://localhost:2003/api/order-detail/delete/${id}`);
+      await axios.put(`http://localhost:2003/api/order-detail/delete/${orderDetailid}`);
 
       // Xóa khách hàng khỏi danh sách ngay sau khi xóa
-      setOrderDetailData((prevOrderDetail) =>
-        prevOrderDetail.filter((orderDetailData) => orderDetailData.id !== id)
-      );
+      // setOrderDetailData((prevOrderDetail) =>
+      //   prevOrderDetail.filter((orderDetailData) => orderDetailData.id !== id)
+      // );
+      // router.push(`/room-service?id=${id}`);
+      window.location.href = `/room-service?id=${id}`;
       // const newTotal = calculateTotalAmountPriceRoom() + calculateTotalService();
       // setTotalAmount(newTotal);
       toast.success("Xóa thành công!", {
@@ -1106,11 +1151,17 @@ function BookRoom() {
         const response2 = await axios.get("http://localhost:2003/api/admin/type-room/getList");
         const response3 = await axios.get("http://localhost:2003/api/admin/service-type/getAll");
         const response4 = await axios.get("http://localhost:2003/api/admin/unit/getAll");
-        const response5 = await axios.get("http://localhost:2003/api/customers/getList");
+        const response5 = await axios.get("http://localhost:2003/api/admin/customer/getAll");
         const response6 = await axios.get("http://localhost:2003/api/service-used/load");
         const response7 = await axios.get("http://localhost:2003/api/combo-used/load");
+        const response8 = await axios.get(
+          `http://localhost:2003/api/admin/customer/getAllByOrderId/${id}`
+        );
+        const response9 = await axios.get("http://localhost:2003/api/information-customer/load");
+        const response10 = await axios.get(
+          `http://localhost:2003/api/admin/customer/getAllByOrderDetailId/${selectedOrderDetails}`
+        );
         console.log(response.data);
-        console.log(response2.data);
         setFloor(response.data);
         setTypeRoom(response2.data);
         setServiceType(response3.data);
@@ -1118,6 +1169,9 @@ function BookRoom() {
         setCustomer(response5.data);
         setServiceUsedTotalPrice(response6.data);
         setComboUsedTotalPrice(response7.data);
+        setCustomerOrder(response8.data);
+        setInfoCustomer(response9.data);
+        setCustomerOrderDetail(response10.data);
       } catch (error) {
         console.log(error);
       }
@@ -1182,6 +1236,19 @@ function BookRoom() {
   const createOrderDetail = async () => {
     // Thực hiện xử lý khi ngày được xác nhận
     if (selectedRoomId && valueFrom && valueTo && valueTimeFrom && valueTimeTo) {
+      if (numberOfPeople < 1) {
+        toast.error("Số người lớn hơn 0!", {
+          position: toast.POSITION.BOTTOM_RIGHT,
+        });
+        return false;
+      }
+
+      if (numberOfPeople > rooms.find((r) => r.id === selectedRoomId)?.typeRoom?.capacity) {
+        toast.error("Số người không được vượt quá sức chứa!", {
+          position: toast.POSITION.BOTTOM_RIGHT,
+        });
+        return false;
+      }
       const totalAmount = numberOfDays * roomPricePerDay;
       try {
         const accessToken = localStorage.getItem("accessToken");
@@ -1213,7 +1280,10 @@ function BookRoom() {
         // Xử lý lỗi nếu có
       }
     } else {
-      alert("Vui lòng chọn phòng, ngày check-in/check-out và giờ check-in/check-out.");
+      toast.warning("Vui lòng ngày check-in/check-out và giờ check-in/check-out.", {
+        position: toast.POSITION.BOTTOM_RIGHT,
+      });
+      return false;
     }
   };
 
@@ -1274,7 +1344,9 @@ function BookRoom() {
   // Tạo phương phức thanh toán quá Bank
   const createPayment = async () => {
     try {
-      const response = await axios.post(`http://localhost:2003/api/payment-method/payment/${id}`);
+      const response = await axios.post(
+        `http://localhost:2003/api/payment-method/payment-vnpay/${id}`
+      );
       const { finalUrl } = response.data;
       // Redirect the user to the payment page
       window.location.href = finalUrl;
@@ -1283,26 +1355,34 @@ function BookRoom() {
     }
   };
 
-  // const [response, setResponse] = useState({});
-  // const [momoDTO, setMomoDTO] = useState({
-  //   amount: 1000, // Replace with your desired amount
-  //   orderId: '12345', // Replace with your desired order ID
-  // });
+  const createPaymentMomo = async () => {
+    try {
+      const response = await axios.post(
+        `http://localhost:2003/api/payment-method/payment-momo/${id}`
+      );
+      console.log("MomoUrl: ", response.data);
+      window.location.href = response.data.payUrl;
+    } catch (error) {
+      console.error("Error creating payment:", error);
+    }
+  };
 
-  // const createPayment = async () => {
-  //   try {
-  //     const apiUrl = 'http://localhost:2003/api/momo/create-order'; // Replace YOUR_SERVER_PORT with your server port
-  //     const response = await axios.post(apiUrl, momoDTO, {
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //       },
-  //     });
+  const createPaymentZaloPay = async () => {
+    try {
+      const response = await axios.post(
+        `http://localhost:2003/api/payment-method/payment-zalo/${id}`
+      );
+      console.log("ZaloPayUrl: ", response.data);
 
-  //     setResponse(response.data);
-  //   } catch (error) {
-  //     console.error('Error creating payment:', error);
-  //   }
-  // };
+      // Lưu id vào localStorage
+      localStorage.setItem("orderId", id);
+
+      // Chuyển hướng đến trang
+      window.location.href = response.data.orderurl;
+    } catch (error) {
+      console.error("Error creating payment:", error);
+    }
+  };
 
   return (
     <div
@@ -1312,6 +1392,9 @@ function BookRoom() {
         width: "90%", // Center the timeline container horizontally
       }}
     >
+      <Head>
+        <title>Đặt phòng tại quầy | Armani Hotel</title>
+      </Head>
       <ToastContainer />
       <Dialog
         open={openSeacrhRoom}
@@ -1739,24 +1822,23 @@ function BookRoom() {
           <br />
           <br />
           <div style={{ display: "flex" }}>
-            <FormControl>
-              <InputLabel variant="standard" htmlFor="uncontrolled-native">
-                Khách hàng
-              </InputLabel>
-              {customer.length > 0 ? (
-                <NativeSelect
+            <FormControl variant="standard">
+              <InputLabel id="demo-simple-select-standard-label">Khách hàng</InputLabel>
+              {customerOrderDetail.length > 0 ? (
+                <Select
+                  labelId="demo-simple-select-standard-label"
+                  id="demo-simple-select-standard"
+                  label="Khách hàng"
                   style={{ width: 300 }}
-                  inputProps={{
-                    id: "uncontrolled-native",
-                  }}
+                  value={selectedCustomerReturn}
                   onChange={(event) => setSelectedCustomerReturn(event.target.value)}
                 >
-                  {customer.map((customer) => (
-                    <option key={customer.id} value={customer.id}>
-                      {customer.fullname}
-                    </option>
+                  {customerOrderDetail.map((customerOrderDetail) => (
+                    <MenuItem key={customerOrderDetail.id} value={customerOrderDetail.id}>
+                      {customerOrderDetail.fullname}
+                    </MenuItem>
                   ))}
-                </NativeSelect>
+                </Select>
               ) : (
                 <p>Loading...</p>
               )}
@@ -2466,24 +2548,23 @@ function BookRoom() {
             <hr />
             <DialogContent>
               <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
-                <FormControl>
-                  <InputLabel variant="standard" htmlFor="uncontrolled-native">
-                    Khách hàng
-                  </InputLabel>
-                  {customer.length > 0 ? (
-                    <NativeSelect
+                <FormControl variant="standard">
+                  <InputLabel id="demo-simple-select-standard-label">Khách hàng</InputLabel>
+                  {customerOrder.length > 0 ? (
+                    <Select
+                      labelId="demo-simple-select-standard-label"
+                      id="demo-simple-select-standard"
+                      label="Khách hàng"
                       style={{ width: 200 }}
-                      inputProps={{
-                        id: "uncontrolled-native",
-                      }}
+                      value={selectedCustomerAccept} // Đảm bảo giá trị selectedCustomerAccept tồn tại trong danh sách
                       onChange={(event) => setSelectedCustomerAccept(event.target.value)}
                     >
-                      {customer.map((customer) => (
-                        <option key={customer.id} value={customer.id}>
-                          {customer.fullname}
-                        </option>
+                      {customerOrder.map((customerOrder) => (
+                        <MenuItem key={customerOrder.id} value={customerOrder.id}>
+                          {customerOrder.fullname}
+                        </MenuItem>
                       ))}
-                    </NativeSelect>
+                    </Select>
                   ) : (
                     <p>Loading...</p>
                   )}
@@ -2572,10 +2653,16 @@ function BookRoom() {
             </DialogContent>
             <DialogActions>
               <button onClick={handleReturnRoom} className="btn btn-outline-primary">
-                TIỀN MẶT
+                Tiền mặt
               </button>
-              <button onClick={createPayment} className="btn btn-outline-danger">
-                CHUYỂN KHOẢN
+              <button onClick={createPaymentZaloPay} className="btn btn-outline-primary">
+                Zalo Pay
+              </button>
+              <button onClick={createPaymentMomo} className="btn btn-outline-danger">
+                Thanh toán MOMO
+              </button>
+              <button onClick={createPayment} className="btn btn-outline-dark">
+                Chuyển khoản ngân hàng
               </button>
             </DialogActions>
             <br />
