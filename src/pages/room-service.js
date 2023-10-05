@@ -601,7 +601,6 @@ function BookRoom() {
     }
 
     try {
-      // Make an API call to update the order status to "Đã xác nhận" (status: 2)
       await axios.put(`http://localhost:2003/api/admin/order/update-accept/${id}`, {
         customerId: selectedCustomerAccept,
         totalMoney: sumAmount,
