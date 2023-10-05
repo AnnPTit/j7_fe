@@ -601,7 +601,6 @@ function BookRoom() {
     }
 
     try {
-      // Make an API call to update the order status to "Đã xác nhận" (status: 2)
       await axios.put(`http://localhost:2003/api/admin/order/update-accept/${id}`, {
         customerId: selectedCustomerAccept,
         totalMoney: sumAmount,
@@ -1373,11 +1372,7 @@ function BookRoom() {
         `http://localhost:2003/api/payment-method/payment-zalo/${id}`
       );
       console.log("ZaloPayUrl: ", response.data);
-
-      // Lưu id vào localStorage
-      localStorage.setItem("orderId", id);
-
-      // Chuyển hướng đến trang
+      // Redirect to the payment page
       window.location.href = response.data.orderurl;
     } catch (error) {
       console.error("Error creating payment:", error);
@@ -2456,7 +2451,7 @@ function BookRoom() {
                 onChange={handleBirthDayChange}
                 renderInput={(params) => (
                   <TextField
-                    style={{ width: 290 }}
+                    style={{ width: 290, color: "yellow" }}
                     {...params}
                     inputProps={{
                       value: birthday || "",
@@ -2655,13 +2650,13 @@ function BookRoom() {
               <button onClick={handleReturnRoom} className="btn btn-outline-primary">
                 Tiền mặt
               </button>
-              <button onClick={createPaymentZaloPay} className="btn btn-outline-primary">
+              {/* <button onClick={createPaymentZaloPay} className="btn btn-outline-primary">
                 Zalo Pay
-              </button>
+              </button> */}
               <button onClick={createPaymentMomo} className="btn btn-outline-danger">
                 Thanh toán MOMO
               </button>
-              <button onClick={createPayment} className="btn btn-outline-dark">
+              <button style={{ marginRight: 20 }} onClick={createPayment} className="btn btn-outline-dark">
                 Chuyển khoản ngân hàng
               </button>
             </DialogActions>
