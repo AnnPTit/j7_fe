@@ -20,11 +20,9 @@ import { SeverityPill } from "src/components/severity-pill";
 import Link from "next/link";
 import { useState } from "react";
 import axios from "axios";
-import { useRouter } from "next/router";
 
 export const BookRoomTable = (props) => {
   const { items = [], selected = [] } = props;
-  const router = useRouter(); // Sử dụng useRouter để truy cập router của Next.js
   const [order, setOrder] = useState({
     id: "",
     typeOfOrder: "",

@@ -45,6 +45,7 @@ export const DealTable = (props) => {
               <TableRow>
                 <TableCell>STT</TableCell>
                 <TableCell>Mã HĐ</TableCell>
+                <TableCell>Khách hàng</TableCell>
                 <TableCell>Số tiền</TableCell>
                 <TableCell>Thời gian</TableCell>
                 <TableCell>Hình thức</TableCell>
@@ -69,6 +70,7 @@ export const DealTable = (props) => {
                       </div>
                     </TableCell>
                     <TableCell>{payment.order.orderCode}</TableCell>
+                    <TableCell>{payment.order.customer.fullname}</TableCell>
                     <TableCell style={{ color: "red" }}>
                       {formatPrice(payment.totalMoney)}
                     </TableCell>

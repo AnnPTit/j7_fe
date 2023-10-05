@@ -31,6 +31,7 @@ import { SeverityPill } from "src/components/severity-pill";
 import Link from "next/link";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import PDFDocument from "./update/pdf-document";
+import Head from "next/head";
 
 // Thêm state để theo dõi khi nút "In hóa đơn" được nhấp
 
@@ -116,7 +117,7 @@ function OrderTimeline() {
           return;
         }
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
-        const responseCustomer = await axios.get("http://localhost:2003/api/customers/getList");
+        const responseCustomer = await axios.get("http://localhost:2003/api/admin/customer/getAll");
         const responseService = await axios.get("http://localhost:2003/api/admin/service/getAll");
         const responseRoom = await axios.get("http://localhost:2003/api/admin/room/getList");
         const responseAccount = await axios.get("http://localhost:2003/api/admin/account/getAll");
@@ -381,6 +382,9 @@ function OrderTimeline() {
         width: "100%",
       }}
     >
+      <Head>
+        <title>Timeline | Armani Hotel</title>
+      </Head>
       <Box
         style={{
           border: "1px solid #ccc",

@@ -5,7 +5,7 @@ export const DealSearch = ({ textSearch, setTextSearch }) => (
     <OutlinedInput
       value={textSearch}
       fullWidth
-      placeholder="Tìm kiếm"
+      placeholder="Tìm kiếm theo hóa đơn hoặc khách hàng"
       sx={{ maxWidth: 500 }}
       onChange={(e) => {
         setTextSearch(e.target.value);

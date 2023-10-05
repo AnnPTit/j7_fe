@@ -2,7 +2,7 @@ import { MenuItem, FormControl, InputLabel, Select } from "@mui/material";
 
 function OrderFilter({ typeOfOrderChoose, statusChoose, setTypeOfOrderChoose, setStatusChoose }) {
   return (
-    <div style={{ marginTop: -110 }}>
+    <div style={{ marginTop: -10 }}>
       <FormControl variant="standard" style={{ marginLeft: 100 }} sx={{ minWidth: 180 }}>
         <InputLabel id="demo-simple-select-standard-label">Loại đơn</InputLabel>
         <Select
