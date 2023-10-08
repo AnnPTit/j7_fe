@@ -62,7 +62,7 @@ const Page = () => {
   const pathname = usePathname();
   const item = {
     title: "Add",
-    path: `input/inputCombo/inputCombo?code=CB_${randomString}`,
+    path: `input/inputCombo/inputCombo`,
     icon: (
       <SvgIcon fontSize="small">
         <PlusIcon />

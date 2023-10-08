@@ -78,7 +78,7 @@ const handleSubmit = async (event) => {
       // Xử lý response lỗi
       if (error.response.status === 403) {
         alert("Bạn không có quyền truy cập vào trang này");
-        window.location.href = "/auth/login"; // Chuyển hướng đến trang đăng nhập
+        window.location.href = "/"; // Chuyển hướng đến trang đăng nhập
       } else if (error.response.status === 400) {
         console.log(error.response);
         // alert(error.response.data.serviceTypeCode);

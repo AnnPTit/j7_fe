@@ -15,6 +15,7 @@ import {
 } from "@mui/material";
 import TrashIcon from "@heroicons/react/24/solid/TrashIcon";
 import Bars4Icon from "@heroicons/react/24/solid/Bars4Icon";
+import PencilSquareIcon from "@heroicons/react/24/solid/PencilSquareIcon";
 
 export const Combo = (props) => {
   const { items = [], selected = [] } = props;
@@ -49,8 +50,8 @@ export const Combo = (props) => {
                 const isSelected = selected.includes(combo.id);
                 const alertDelete = () => {
                   Swal.fire({
-                    title: "Are you sure?",
-                    text: "You won't be able to revert this!",
+                    title: "Bạn có chắc chắn muốn xóa ? ",
+                    text: "",
                     icon: "warning",
                     showCancelButton: true,
                     confirmButtonColor: "#3085d6",
@@ -58,9 +59,9 @@ export const Combo = (props) => {
                     confirmButtonText: "Yes, delete it!",
                   }).then((result) => {
                     if (result.isConfirmed) {
-                      Swal.fire("Deleted!", "Your data has been deleted.", "success");
+                      Swal.fire("Xóa thành công !", "Xóa thành công !", "success");
                       handleDelete(combo.id);
-                      toast.success("Delete Successfully!");
+                      toast.success("Xóa thành công !");
                     }
                   });
                 };
@@ -90,9 +91,9 @@ export const Combo = (props) => {
                     </TableCell>
                     <TableCell>{combo.note}</TableCell>
                     <TableCell>
-                      <a className="btn btn-info m-xl-2" href={hrefUpdate}>
+                      <a className="btn btn-primary m-xl-2" href={hrefUpdate}>
                         <SvgIcon fontSize="small">
-                          <Bars4Icon />
+                        <PencilSquareIcon />
                         </SvgIcon>
                       </a>
                       <button className="btn btn-danger m-xl-2" onClick={alertDelete}>
