@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import moment from "moment";
 import axios from "axios";
+import PencilSquareIcon from "@heroicons/react/24/solid/PencilSquareIcon";
 import Swal from "sweetalert2";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -89,15 +90,9 @@ export const CustomerTable = (props) => {
                     </TableCell>
                     <TableCell>{customer.email}</TableCell>
                     <TableCell>
-                      {/* <button className="btn btn-primary" onClick={() => handleEdit(account.id)}>
-                        Edit
-                      </button>
-                      <button className="btn btn-danger m-xl-2" onClick={alertDelete}>
-                        Delete
-                      </button> */}
-                      <a className="btn btn-info m-xl-2" href={hrefUpdate}>
+                      <a className="btn btn-primary m-xl-2" href={hrefUpdate}>
                         <SvgIcon fontSize="small">
-                          <Bars4Icon />
+                          <PencilSquareIcon />
                         </SvgIcon>
                       </a>
                       <button className="btn btn-danger m-xl-2" onClick={alertDelete}>
