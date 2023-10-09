@@ -1,11 +1,11 @@
-import { useCallback, useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect } from "react";
 import axios from "axios";
 import Head from "next/head";
-import { Box, Button, Container, Link, Stack, SvgIcon, Typography } from "@mui/material";
+import { Box, Container, Stack } from "@mui/material";
 import { useSelection } from "src/hooks/use-selection";
 import { Layout as DashboardLayout } from "src/layouts/dashboard/layout";
-import { BookRoomTable } from "src/sections/bookRoomOffline/book-room-table";
-import { BookRoomSearch } from "src/sections/bookRoomOffline/book-room-search";
+import { BookRoomTable } from "src/sections/bookRoomOnline/book-room-table";
+import { BookRoomSearch } from "src/sections/bookRoomOnline/book-room-search";
 import { applyPagination } from "src/utils/apply-pagination";
 import MyPagination from "src/components/Pagination";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -54,7 +54,7 @@ const Page = () => {
         console.log(accessToken);
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
 
-        let Api = `http://localhost:2003/api/admin/order/loadBookRoomOffline?current_page=${pageNumber}`; // Thay đổi URL API của bạn tại đây
+        let Api = `http://localhost:2003/api/admin/order/loadBookRoomOnline?current_page=${pageNumber}`; // Thay đổi URL API của bạn tại đây
         if (textSearch !== "") {
           Api = Api + `&key=${textSearch}`;
         }
@@ -83,7 +83,7 @@ const Page = () => {
   return (
     <>
       <Head>
-        <title>Đặt phòng tại quầy | Armani Hotel</title>
+        <title>Phòng đặt Online | Armani Hotel</title>
       </Head>
       <Box
         component="main"

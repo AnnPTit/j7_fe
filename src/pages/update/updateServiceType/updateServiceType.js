@@ -33,7 +33,7 @@ const handleSubmit = async (event, id, serviceTypeUpdate) => {
       `http://localhost:2003/api/admin/service-type/update/${id}`,
       payload
     ); // Gọi API /api/service-type/save với payload và access token
-    toast.success("Update Successfully!", {
+    toast.success("Cập nhật thành công !", {
       position: toast.POSITION.BOTTOM_RIGHT,
     });
     console.log(response); //
@@ -176,8 +176,8 @@ function UpdateServiceType() {
         className={(cx("input-btn"), "btn btn-primary")}
         onClick={() => {
           Swal.fire({
-            title: "Are you sure?",
-            text: "You won't be able to revert this!",
+            title: "Bạn có chắc muốn cập nhật ?",
+            text: "",
             icon: "warning",
             showCancelButton: true,
             confirmButtonColor: "#3085d6",
@@ -187,7 +187,7 @@ function UpdateServiceType() {
             if (result.isConfirmed) {
               const isSubmitSuccess = await handleSubmit(event, id, serviceTypeUpdate);
               if (isSubmitSuccess) {
-                Swal.fire("Update!", "Your data has been Update.", "success");
+                Swal.fire("Cập nhật thành công !", "Cập nhật thành công !", "success");
               }
             }
           });

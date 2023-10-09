@@ -18,7 +18,7 @@ const PriceRangeSlider = ({ priceRange, setPriceRange }) => {
   return (
     <div>
       <Typography id="range-slider" gutterBottom>
-        Price Range
+        Khoảng giá 
       </Typography>
       <Slider
         value={priceRange}

@@ -128,7 +128,7 @@ const Page = () => {
           // Xử lý response lỗi
           if (error.response.status === 403) {
             alert("Bạn không có quyền truy cập vào trang này");
-            window.location.href = "/auth/login"; // Thay đổi "/dang-nhap" bằng đường dẫn đến trang đăng nhập của bạn
+            window.location.href = "/"; // Thay đổi "/dang-nhap" bằng đường dẫn đến trang đăng nhập của bạn
           } else {
             alert("Có lỗi xảy ra trong quá trình gọi API");
           }
@@ -144,7 +144,7 @@ const Page = () => {
   return (
     <>
       <Head>
-        <title>Phòng | Hotel Finder</title>
+        <title>Phòng | Armani Hotel</title>
       </Head>
       <Box
         component="main"

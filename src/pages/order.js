@@ -1,7 +1,8 @@
 import { useMemo, useState, useEffect } from "react";
 import axios from "axios";
 import Head from "next/head";
-import { Box, Button, Container, Link, Stack, SvgIcon, Typography } from "@mui/material";
+import { Box, TextField, Container, Grid, Stack } from "@mui/material";
+import { DatePicker } from "@mui/x-date-pickers";
 import { useSelection } from "src/hooks/use-selection";
 import { Layout as DashboardLayout } from "src/layouts/dashboard/layout";
 import { OrderTable } from "src/sections/order/order-table";
@@ -9,6 +10,7 @@ import { OrderSearch } from "src/sections/order/order-search";
 import { applyPagination } from "src/utils/apply-pagination";
 import MyPagination from "src/components/Pagination";
 import "bootstrap/dist/css/bootstrap.min.css";
+import OrderFilter from "src/sections/order/order-filter";
 
 const useOrder = (data, page, rowsPerPage) => {
   return useMemo(() => {
@@ -33,8 +35,36 @@ const Page = () => {
   const orderSelection = useSelection(orderIds);
   const [pageNumber, setPageNumber] = useState(0);
   const [textSearch, setTextSearch] = useState("");
+  const [typeOfOrderChoose, setTypeOfOrderChoose] = useState("");
+  const [statusChoose, setStatusChoose] = useState("");
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
+  const [valueTo, setValueTo] = useState(null);
+  const [valueFrom, setValueFrom] = useState(null);
+
+  const handleFromDateChange = (newValue) => {
+    setValueFrom(newValue);
+    if (newValue > valueTo) {
+      setValueTo(newValue); // Update valueTo if the selected date is greater than the current valueTo
+    }
+  };
+
+  const handleToDateChange = (newValue) => {
+    setValueTo(newValue);
+    if (newValue < valueFrom) {
+      setValueFrom(newValue); // Update valueFrom if the selected date is smaller than the current valueFrom
+    }
+  };
+
+  const formatDate = (date) => {
+    if (!date) {
+      return ""; // Return an empty string for null date values
+    }
+    const day = date.getDate().toString().padStart(2, "0");
+    const month = (date.getMonth() + 1).toString().padStart(2, "0");
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -45,6 +75,26 @@ const Page = () => {
         let Api = `http://localhost:2003/api/admin/order/loadAndSearch?current_page=${pageNumber}`; // Thay đổi URL API của bạn tại đây
         if (textSearch !== "") {
           Api = Api + `&key=${textSearch}`;
+        }
+        if (typeOfOrderChoose !== "") {
+          Api = Api + `&typeOfOrder=${typeOfOrderChoose}`;
+        }
+        if (statusChoose !== "") {
+          Api = Api + `&status=${statusChoose}`;
+        }
+        if (valueFrom) {
+          const valueFromDate = new Date(valueFrom);
+          valueFromDate.setDate(valueFromDate.getDate() + 1);
+          const formattedValueFrom = valueFromDate.toISOString().slice(0, 10); // Lấy phần yyyy-MM-dd
+          Api = Api + `&startDate=${formattedValueFrom}`;
+          // console.log("Value from: ", formattedValueFrom);
+        }
+        if (valueTo) {
+          const valueToDate = new Date(valueTo);
+          valueToDate.setDate(valueToDate.getDate() + 1);
+          const formattedValueTo = valueToDate.toISOString().slice(0, 10); // Lấy phần yyyy-MM-dd
+          Api = Api + `&endDate=${formattedValueTo}`;
+          // console.log("Value to: ", formattedValueTo);
         }
         const response = await axios.get(Api); // Thay đổi URL API của bạn tại đây
         console.log(response.data);
@@ -66,12 +116,12 @@ const Page = () => {
       }
     };
     fetchData();
-  }, [pageNumber, dataChange, textSearch]);
+  }, [pageNumber, dataChange, textSearch, typeOfOrderChoose, statusChoose, valueFrom, valueTo]);
 
   return (
     <>
       <Head>
-        <title>Quản lý hóa đơn | Hotel Finder</title>
+        <title>Quản lý hóa đơn | Armani Hotel</title>
       </Head>
       <Box
         component="main"
@@ -81,9 +131,54 @@ const Page = () => {
         }}
       >
         <Container maxWidth="xl">
-          <Stack spacing={3}>
+          <Stack>
             <OrderSearch textSearch={textSearch} setTextSearch={setTextSearch} />
-            <div style={{ minHeight: 350 }}>
+            <div style={{ display: "flex", marginLeft: 530, marginTop: -128 }}>
+              <Grid item xs={12} ml={2} mr={2} sm={12} xl={2} lg={3}>
+                <DatePicker
+                  label="Từ ngày"
+                  value={valueFrom}
+                  onChange={handleFromDateChange}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      inputProps={{
+                        value: formatDate(valueFrom), // Format the value here
+                        readOnly: true, // Prevent manual input
+                      }}
+                    />
+                  )}
+                />
+              </Grid>
+              <Grid item xs={12} sm={12} xl={2} lg={3}>
+                <DatePicker
+                  label="Đến ngày"
+                  value={valueTo}
+                  onChange={handleToDateChange}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      inputProps={{
+                        value: formatDate(valueTo), // Format the value here
+                        readOnly: true, // Prevent manual input
+                      }}
+                    />
+                  )}
+                />
+              </Grid>
+            </div>
+            <p
+              style={{
+                marginLeft: 20,
+              }}
+            ></p>
+            <OrderFilter
+              typeOfOrderChoose={typeOfOrderChoose}
+              statusChoose={statusChoose}
+              setTypeOfOrderChoose={setTypeOfOrderChoose}
+              setStatusChoose={setStatusChoose}
+            />
+            <div style={{ minHeight: 350, marginTop: 50 }}>
               {" "}
               <OrderTable
                 items={order}
