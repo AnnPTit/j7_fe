@@ -26,37 +26,78 @@ const cx = classNames.bind(style);
 
 function InputAccount() {
   // call api địa chỉ
+  const [provinces, setProvinces] = useState([]);
+  const [districts, setDistricts] = useState([]);
+  const [wards, setWards] = useState([]);
 
-  // const [provinces, setProvinces] = useState([]);
-  // const [districts, setDistricts] = useState([]);
-  // const [wards, setWards] = useState([]);
-  // const [selectedProvince, setSelectedProvince] = useState('');
-  // const [selectedDistrict, setSelectedDistrict] = useState('');
+  const [selectedProvince, setSelectedProvince] = useState("");
+  const [selectedDistrict, setSelectedDistrict] = useState("");
+  const [selectedWards, setSelectedWards] = useState("");
 
-  // useEffect(() => {
-  //   const fetchProvinces = async () => {
-  //     const response = await axios.get('https://raw.githubusercontent.com/kenzouno1/DiaGioiHanhChinhVN/master/data.json');
-  //     setProvinces(response.data);
-  //   }
-  //   fetchProvinces();
-  // }, []);
+  const [idProvince, setIdProvince] = useState(0);
+  const [idDistrict, setIdDistrict] = useState(0);
 
-  // const handleProvinceChange = (e) => {
-  //   setSelectedProvince(e.target.value);
-  //   const province = provinces.find(province => province.Name === e.target.value);
-  //   if (province) {
-  //     setDistricts(province.Districts);
-  //     setWards([]);
-  //   }
-  // };
+  const [selectedProvinceName, setSelectedProvinceName] = useState("");
+  const [selectedDistrictName, setSelectedDistrictName] = useState("");
 
-  // const handleDistrictChange = (e) => {
-  //   setSelectedDistrict(e.target.value);
-  //   const district = districts.find(district => district.Name === e.target.value);
-  //   if (district) {
-  //     setWards(district.Wards);
-  //   }
-  // };
+  useEffect(() => {
+    const fetchProvinces = async () => {
+      const response = await axios.get("https://vapi.vnappmob.com/api/province/");
+      setProvinces(response.data.results);
+    };
+    fetchProvinces();
+  }, []);
+
+  useEffect(() => {
+    if (idProvince) {
+      const fetchDistricts = async () => {
+        const response = await axios.get(`https://vapi.vnappmob.com/api/province/district/${idProvince}`);
+        setDistricts(response.data.results);
+      };
+      fetchDistricts();
+    }
+  }, [idProvince]);
+
+  useEffect(() => {
+    if (idDistrict) {
+      const fetchWards = async () => {
+        const response = await axios.get(`https://vapi.vnappmob.com/api/province/ward/${idDistrict}`);
+        setWards(response.data.results);
+      };
+      fetchWards();
+    }
+  }, [idDistrict]);
+
+  const handleProvinceChange = (e) => {
+    setSelectedProvince(e.target.value);
+    const province = provinces.find((p) => p.province_id === e.target.value);
+    setIdProvince(province?.province_id || 0);
+    const name = province ? province.province_name : ''; 
+    setSelectedProvinceName(name); 
+    if (province) {
+      setDistricts([]);
+      setWards([]);
+    }
+    console.log(province);
+  };
+
+  const handleDistrictChange = (e) => {
+    setSelectedDistrict(e.target.value);
+    const district = districts.find((d) => d.district_id === e.target.value);
+    setIdDistrict(district?.district_id || 0);
+    const name = district ? district.district_name : ''; 
+    setSelectedDistrictName(name); 
+    if (district) {
+      setWards([]);
+    }
+    console.log(district);
+  };
+
+  const handleWardsChange = (e) => {
+    setSelectedWards(e.target.value);
+    console.log(e.target.value);
+  };
+
 
   // QR Code
   const [delay, setDelay] = useState(100);
@@ -66,7 +107,7 @@ function InputAccount() {
   const [citizenId, setCitizenId] = useState("");
   const [fullname, setFullname] = useState("");
   const [birthday, setBirthday] = useState(null);
-  const [gender, setGender] = useState("Nam");
+  const [gender, setGender] = useState("true");
 
   // const provinces = provincesInput?.value;
   // const districts = districtsInput?.value;
@@ -83,9 +124,9 @@ function InputAccount() {
     const emailInput = document.querySelector('input[name="email"]');
     const phoneInput = document.querySelector('input[name="phoneNumber"]');
     const citizenIdInput = document.querySelector('input[name="citizenId"]');
-    const provincesInput = document.querySelector('select[name="provinces"]');
-    const districtsInput = document.querySelector('select[name="districts"]');
-    const wardsInput = document.querySelector('select[name="wards"]');
+    // const provincesInput = document.querySelector('select[name="provinces"]');
+    // const districtsInput = document.querySelector('select[name="districts"]');
+    // const wardsInput = document.querySelector('select[name="wards"]');
 
     const accountCode = accountCodeInput?.value;
     const password = passwordInput?.value;
@@ -95,9 +136,9 @@ function InputAccount() {
     const phoneNumber = phoneInput?.value;
     const birthdayAccount = birthday;
     const citizenId = citizenIdInput?.value;
-    const provinces = provincesInput?.value;
-    const districts = districtsInput?.value;
-    const wards = wardsInput?.value;
+    // const provinces = provincesInput?.value;
+    // const districts = districtsInput?.value;
+    // const wards = wardsInput?.value;
 
     // Tạo payload dữ liệu để gửi đến API
     const payload = {
@@ -109,10 +150,9 @@ function InputAccount() {
       phoneNumber,
       birthday: birthdayAccount,
       citizenId,
-      provinces,
-      districts,
+      provinces: selectedProvinceName,
+      districts: selectedDistrictName,
       wards,
-      // position: positionTypeObj,
     };
     console.log("payload ", payload);
 
@@ -223,6 +263,7 @@ function InputAccount() {
       }
     }
   };
+  console.log(gender);
   const handleScan = (data) => {
     if (data && data.text) {
       const scannedText = data.text;
@@ -233,29 +274,39 @@ function InputAccount() {
         const fullnameValue = dataParts[2];
         const birthdateValue = dataParts[3];
         const genderValue = dataParts[4];
+        const provinceValue = dataParts[5];
+        const districtValue = dataParts[6];
+        const wardValue = dataParts[7];
         const formattedBirthdate = `${birthdateValue.substr(0, 2)}/${birthdateValue.substr(
           2,
           2
         )}/${birthdateValue.substr(4, 4)}`;
 
+        const genderIsMale = genderValue === "Nam";
         setCitizenId(citizenIdValue);
         setFullname(fullnameValue);
-        setGender(genderValue);
+        setGender(genderIsMale);
         setBirthday(formattedBirthdate);
+
       } else if (dataParts.length === 7) {
         const citizenIdValue = dataParts[0];
         const fullnameValue = dataParts[2];
         const birthdateValue = dataParts[3];
         const genderValue = dataParts[4];
+        const provinceValue = dataParts[5];
+        const districtValue = dataParts[6];
+        const wardValue = dataParts[7];
         const formattedBirthdate = `${birthdateValue.substr(0, 2)}/${birthdateValue.substr(
           2,
           2
         )}/${birthdateValue.substr(4, 4)}`;
 
+        const genderIsMale = genderValue === "Nam";
         setCitizenId(citizenIdValue);
         setFullname(fullnameValue);
-        setGender(genderValue);
+        setGender(genderIsMale);
         setBirthday(formattedBirthdate);
+        
       } else {
         console.log("Lỗi khi quét QR CCCD:", dataParts.length);
       }
@@ -358,8 +409,8 @@ function InputAccount() {
             value={gender || ""}
             onChange={(e) => setGender(e.target.value)}
           >
-            <FormControlLabel value="Nam" control={<Radio />} label="Nam" />
-            <FormControlLabel value="Nữ" control={<Radio />} label="Nữ" />
+            <FormControlLabel value="true" control={<Radio />} label="Nam" />
+            <FormControlLabel value="false" control={<Radio />} label="Nữ" />
           </RadioGroup>
         </FormControl>
       </div>
@@ -414,30 +465,49 @@ function InputAccount() {
         <label htmlFor="floatingPassword">Căn cước công dân</label>
       </div>
 
-      {/* <br></br>
       <p>Tỉnh/Thành Phố</p>
-      <select className="form-select" name="provinces" value={selectedProvince} onChange={handleProvinceChange}>
+      <select
+        className="form-select"
+        name="provinces"
+        value={selectedProvince}
+        onChange={handleProvinceChange}
+      >
         <option value="">Chọn tỉnh thành</option>
-        {provinces.map(province => <option key={province.Id} value={province.Name}>{province.Name}</option>)}
+        {provinces.map((province) => (
+          <option key={province.province_id} value={province.province_id}>
+            {province.province_name}
+          </option>
+        ))}
       </select>
 
-      <br></br>
+      <br />
+
       <p>Quận/Huyện</p>
-      <select className="form-select" name="districts" value={selectedDistrict} onChange={handleDistrictChange}>
+      <select
+        className="form-select"
+        name="districts"
+        value={selectedDistrict}
+        onChange={handleDistrictChange}
+      >
         <option value="">Chọn quận huyện</option>
-        {districts.map(district => <option key={district.Id} value={district.Name}>{district.Name}</option>)}
+        {districts.map((district) => (
+          <option key={district.district_id} value={district.district_id}>
+            {district.district_name}
+          </option>
+        ))}
       </select>
+      <br />
 
-      <br></br>
       <p>Phường/Xã</p>
-      <select className="form-select" name="wards">
+      <select className="form-select" name="wards" value={selectedWards} onChange={handleWardsChange}>
         <option value="">Chọn phường xã</option>
-        {wards.map(ward => <option key={ward.Id} value={ward.Name}>{ward.Name}</option>)}
-      </select> */}
+        {wards.map((ward) => (
+          <option key={ward.ward_id} value={ward.wards_id}>
+            {ward.ward_name}
+          </option>
+        ))}
+      </select>
       <br></br>
-      {/* <Select>
-      <option value="">Chọn phường xã</option>
-      </Select> */}
 
       <button
         className={(cx("input-btn"), "btn btn-primary")}
