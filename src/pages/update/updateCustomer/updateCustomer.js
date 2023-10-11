@@ -1,6 +1,6 @@
 import classNames from "classnames/bind";
 import "react-toastify/dist/ReactToastify.css";
-import style from "./updateAccount.module.scss";
+import style from "./updateCustomer.module.scss";
 import { Layout as DashboardLayout } from "src/layouts/dashboard/layout";
 import axios from "axios";
 import { useEffect, useState } from "react";
@@ -10,7 +10,7 @@ import Swal from "sweetalert2";
 import { useRouter } from "next/router";
 
 const cx = classNames.bind(style);
-const handleSubmit = async (event, id, accountUpdate) => {
+const handleSubmit = async (event, id, customerUpdate) => {
   event.preventDefault(); // Ngăn chặn sự kiện submit mặc định
   const provincesInput = document.querySelector('select[name="provinces"]');
   const districtsInput = document.querySelector('select[name="districts"]');
@@ -22,18 +22,18 @@ const handleSubmit = async (event, id, accountUpdate) => {
 
   // Tạo payload dữ liệu để gửi đến API
   const payload = {
-    ...accountUpdate,
+    ...customerUpdate,
     id: id,
-    accountCode: accountUpdate.accountCode,
-    gender: accountUpdate.gender,
-    fullname: accountUpdate.fullname,
-    email: accountUpdate.email,
-    phoneNumber: accountUpdate.phoneNumber,
-    birthday: accountUpdate.birthday,
-    citizenId: accountUpdate.citizenId,
-    provinces: accountUpdate.provinces,
-    districts: accountUpdate.districts,
-    wards: accountUpdate.wards,
+    customerCode: customerUpdate.customerCode,
+    gender: customerUpdate.gender,
+    fullname: customerUpdate.fullname,
+    email: customerUpdate.email,
+    phoneNumber: customerUpdate.phoneNumber,
+    birthday: customerUpdate.birthday,
+    citizenId: customerUpdate.citizenId,
+    provinces: customerUpdate.provinces,
+    districts: customerUpdate.districts,
+    wards: customerUpdate.wards,
   };
   console.log("payload ", payload);
 
@@ -47,19 +47,19 @@ const handleSubmit = async (event, id, accountUpdate) => {
 
     axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
     const response = await axios.put(
-      `http://localhost:2003/api/admin/account/update/${id}`,
+      `http://localhost:2003/api/admin/customer/update/${id}`,
       payload
     ); // Gọi API /api/service-type/save với payload và access token
-    toast.success("update Successfully!", {
-      position: toast.POSITION.BOTTOM_RIGHT,
-    });
+    // toast.success("update Successfully!", {
+    //   position: toast.POSITION.BOTTOM_RIGHT,
+    // });
     console.log(response); //
 
     if (response.status === 200) {
       // Xử lý khi API thành công
       console.log("API call successful");
 
-      window.location.href = "/account";
+      window.location.href = "/customer";
       return true;
       // Thực hiện các hành động khác sau khi API thành công
     } else {
@@ -78,15 +78,22 @@ const handleSubmit = async (event, id, accountUpdate) => {
       } else if (error.response.status === 400) {
         console.log(error.response.data);
 
-        const isAccountCodeError = error.response.data.accountCode === undefined;
+        const isCustomerCodeError = error.response.data.customerCode === undefined;
         const isFullnameError = error.response.data.fullname === undefined;
         const isEmailError = error.response.data.email === undefined;
         const isPhoneNumberError = error.response.data.phoneNumber === undefined;
         const isCitizenIdError = error.response.data.citizenId === undefined;
         const isBirthdayError = error.response.data.birthday === undefined;
 
-        if (!isAccountCodeError && !isFullnameError && !isEmailError && !isPhoneNumberError && !isCitizenIdError && !isBirthdayError) {
-          toast.error(error.response.data.accountCode, {
+        if (
+          !isCustomerCodeError &&
+          !isFullnameError &&
+          !isEmailError &&
+          !isPhoneNumberError &&
+          !isCitizenIdError &&
+          !isBirthdayError
+        ) {
+          toast.error(error.response.data.customerCode, {
             position: toast.POSITION.BOTTOM_RIGHT,
           });
           toast.error(error.response.data.fullname, {
@@ -108,8 +115,8 @@ const handleSubmit = async (event, id, accountUpdate) => {
         } else {
           // Nếu có ít nhất một trường bị thiếu, xóa thông báo lỗi cho trường đó nếu có
           // và hiển thị thông báo lỗi cho các trường còn lại
-          if (!isAccountCodeError) {
-            toast.error(error.response.data.accountCode, {
+          if (!isCustomerCodeError) {
+            toast.error(error.response.data.customerCode, {
               position: toast.POSITION.BOTTOM_RIGHT,
             });
           }
@@ -151,14 +158,14 @@ const handleSubmit = async (event, id, accountUpdate) => {
   }
 };
 
-function UpdateAccount() {
+function UpdateCustomer() {
   // const [serviceType, setServiceType] = useState([]);
   // const [unit, setUnit] = useState([]);
   const router = useRouter(); // Sử dụng useRouter để truy cập router của Next.js
   const { id } = router.query; // Lấy thông tin từ URL qua router.query
-  const [accountUpdate, setAccountUpdate] = useState({
+  const [customerUpdate, setCustomerUpdate] = useState({
     id: "",
-    accountCode: "",
+    customerCode: "",
     fullname: "",
     gender: "",
     birthday: "",
@@ -200,11 +207,11 @@ function UpdateAccount() {
           return;
         }
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
-        const response = await axios.get(`http://localhost:2003/api/admin/account/detail/${id}`);
-        console.log("Account", response.data);
+        const response = await axios.get(`http://localhost:2003/api/admin/customer/detail/${id}`);
+        console.log("Customer", response.data);
 
         if (response.data) {
-          setAccountUpdate(response.data);
+          setCustomerUpdate(response.data);
         }
       } catch (error) {
         console.log(error);
@@ -217,24 +224,24 @@ function UpdateAccount() {
 
   return (
     <div className={cx("wrapper")}>
-      <h1>Cập nhật tài khoản</h1>
+      <h1>Cập Nhật Thông Tin Khách Hàng </h1>
       <div className="form-floating mb-3">
         <input
           className="form-control"
           type="text"
           placeholder="Default input"
           aria-label="default input example"
-          name="accountCode"
-          value={accountUpdate.accountCode}
+          name="customerCode"
+          value={customerUpdate.customerCode}
           onChange={(e) => {
-            setAccountUpdate((prev) => ({
+            setCustomerUpdate((prev) => ({
               ...prev,
-              accountCode: e.target.value,
+              customerCode: e.target.value,
             }));
           }}
         />
 
-        <label htmlFor="floatingInput">Mã nhân viên</label>
+        <label htmlFor="floatingInput">Mã Khách Hàng</label>
       </div>
       <div className="form-floating">
         <input
@@ -243,9 +250,9 @@ function UpdateAccount() {
           id="floatingPassword"
           placeholder="Password"
           name="fullname"
-          value={accountUpdate.fullname}
+          value={customerUpdate.fullname}
           onChange={(e) => {
-            setAccountUpdate((prev) => ({
+            setCustomerUpdate((prev) => ({
               ...prev,
               fullname: e.target.value,
             }));
@@ -256,7 +263,9 @@ function UpdateAccount() {
       <br></br>
       <div className="form-floating mb-3">
         <div className="mb-3 row">
-          <label htmlFor="staticEmail" className="col-sm-1 col-form-label">Giới tính</label>
+          <label htmlFor="staticEmail" className="col-sm-1 col-form-label">
+            Giới tính
+          </label>
           <div className="col-sm-10">
             <div className="form-check form-check-inline">
               <input
@@ -264,15 +273,17 @@ function UpdateAccount() {
                 type="radio"
                 name="gender"
                 value="true"
-                checked={accountUpdate.gender === true}
+                checked={customerUpdate.gender === true}
                 onChange={(e) => {
-                  setAccountUpdate((prev) => ({
+                  setCustomerUpdate((prev) => ({
                     ...prev,
-                    gender: e.target.value === 'true',
+                    gender: e.target.value === "true",
                   }));
                 }}
               />
-              <label className="form-check-label" htmlFor="inlineRadio1">Nam</label>
+              <label className="form-check-label" htmlFor="inlineRadio1">
+                Nam
+              </label>
             </div>
             <div className="form-check form-check-inline">
               <input
@@ -280,15 +291,17 @@ function UpdateAccount() {
                 type="radio"
                 name="gender"
                 value="false"
-                checked={accountUpdate.gender === false}
+                checked={customerUpdate.gender === false}
                 onChange={(e) => {
-                  setAccountUpdate((prev) => ({
+                  setCustomerUpdate((prev) => ({
                     ...prev,
-                    gender: e.target.value === 'true',
+                    gender: e.target.value === "true",
                   }));
                 }}
               />
-              <label className="form-check-label" htmlFor="inlineRadio2">Nữ</label>
+              <label className="form-check-label" htmlFor="inlineRadio2">
+                Nữ
+              </label>
             </div>
           </div>
         </div>
@@ -301,9 +314,9 @@ function UpdateAccount() {
           id="floatingBirthday"
           placeholder="Ngày sinh"
           name="birthday"
-          value={accountUpdate.birthday}
+          value={customerUpdate.birthday}
           onChange={(e) => {
-            setAccountUpdate((prev) => ({
+            setCustomerUpdate((prev) => ({
               ...prev,
               birthday: e.target.value,
             }));
@@ -320,9 +333,9 @@ function UpdateAccount() {
           id="floatingPassword"
           placeholder="Password"
           name="email"
-          value={accountUpdate.email}
+          value={customerUpdate.email}
           onChange={(e) => {
-            setAccountUpdate((prev) => ({
+            setCustomerUpdate((prev) => ({
               ...prev,
               email: e.target.value,
             }));
@@ -337,9 +350,9 @@ function UpdateAccount() {
           id="floatingPassword"
           placeholder="Password"
           name="phoneNumber"
-          value={accountUpdate.phoneNumber}
+          value={customerUpdate.phoneNumber}
           onChange={(e) => {
-            setAccountUpdate((prev) => ({
+            setCustomerUpdate((prev) => ({
               ...prev,
               phoneNumber: e.target.value,
             }));
@@ -355,9 +368,9 @@ function UpdateAccount() {
           id="floatingPassword"
           placeholder="Password"
           name="citizenId"
-          value={accountUpdate.citizenId}
+          value={customerUpdate.citizenId}
           onChange={(e) => {
-            setAccountUpdate((prev) => ({
+            setCustomerUpdate((prev) => ({
               ...prev,
               citizenId: e.target.value,
             }));
@@ -374,9 +387,9 @@ function UpdateAccount() {
           id="floatingPassword"
           placeholder="Password"
           name="provinces"
-          value={accountUpdate.provinces}
+          value={customerUpdate.provinces}
           onChange={(e) => {
-            setAccountUpdate((prev) => ({
+            setCustomerUpdate((prev) => ({
               ...prev,
               provinces: e.target.value,
             }));
@@ -393,9 +406,9 @@ function UpdateAccount() {
           id="floatingPassword"
           placeholder="Password"
           name="districts"
-          value={accountUpdate.districts}
+          value={customerUpdate.districts}
           onChange={(e) => {
-            setAccountUpdate((prev) => ({
+            setCustomerUpdate((prev) => ({
               ...prev,
               districts: e.target.value,
             }));
@@ -412,9 +425,9 @@ function UpdateAccount() {
           id="floatingPassword"
           placeholder="Password"
           name="wards"
-          value={accountUpdate.wards}
+          value={customerUpdate.wards}
           onChange={(e) => {
-            setAccountUpdate((prev) => ({
+            setCustomerUpdate((prev) => ({
               ...prev,
               wards: e.target.value,
             }));
@@ -437,7 +450,7 @@ function UpdateAccount() {
             confirmButtonText: "Yes, Update it!",
           }).then(async (result) => {
             if (result.isConfirmed) {
-              const isSubmitSuccess = await handleSubmit(event, id, accountUpdate);
+              const isSubmitSuccess = await handleSubmit(event, id, customerUpdate);
               if (isSubmitSuccess) {
                 Swal.fire("Update!", "Your data has been Update.", "success");
                 toast.success("Update Successfully!");
@@ -452,6 +465,6 @@ function UpdateAccount() {
     </div>
   );
 }
-UpdateAccount.getLayout = (page) => <DashboardLayout>{page}</DashboardLayout>;
+UpdateCustomer.getLayout = (page) => <DashboardLayout>{page}</DashboardLayout>;
 
-export default UpdateAccount;
+export default UpdateCustomer;
