@@ -50,9 +50,9 @@ const handleSubmit = async (event, id, customerUpdate) => {
       `http://localhost:2003/api/admin/customer/update/${id}`,
       payload
     ); // Gọi API /api/service-type/save với payload và access token
-    toast.success("update Successfully!", {
-      position: toast.POSITION.BOTTOM_RIGHT,
-    });
+    // toast.success("update Successfully!", {
+    //   position: toast.POSITION.BOTTOM_RIGHT,
+    // });
     console.log(response); //
 
     if (response.status === 200) {
