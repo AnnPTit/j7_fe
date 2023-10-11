@@ -111,7 +111,7 @@ export const OrderSearch = ({ textSearch, setTextSearch }) => {
             )}
           />
         </Grid> */}
-        <Grid>
+        {/* <Grid>
           <Button
             className="btn btn-primary"
             style={{
@@ -128,7 +128,7 @@ export const OrderSearch = ({ textSearch, setTextSearch }) => {
             </SvgIcon>{" "}
             Tạo Hóa Đơn
           </Button>
-        </Grid>
+        </Grid> */}
       </Grid>
     </Card>
   );
