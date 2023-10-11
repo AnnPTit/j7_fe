@@ -117,7 +117,7 @@ function OrderTimeline() {
           return;
         }
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
-        const responseCustomer = await axios.get("http://localhost:2003/api/customers/getList");
+        const responseCustomer = await axios.get("http://localhost:2003/api/admin/customer/getAll");
         const responseService = await axios.get("http://localhost:2003/api/admin/service/getAll");
         const responseRoom = await axios.get("http://localhost:2003/api/admin/room/getList");
         const responseAccount = await axios.get("http://localhost:2003/api/admin/account/getAll");
