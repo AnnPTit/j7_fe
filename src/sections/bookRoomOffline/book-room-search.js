@@ -66,7 +66,7 @@ export const BookRoomSearch = ({ textSearch, setTextSearch }) => {
             <SvgIcon fontSize="small">
               <PlusIcon />
             </SvgIcon>{" "}
-            Tạo Hóa Đơn
+            Đặt phòng
           </Button>
         </Grid>
       </Grid>

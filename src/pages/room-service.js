@@ -734,10 +734,11 @@ function BookRoom() {
     // Step 2: Create Service and OrderDetail objects
     const combo = comboResponse.data; // Assuming the API returns the service object
     const orderDetail = orderDetailResponse.data; // Assuming the API returns the orderDetail object
+    console.log(combo);
 
     const comboUsedDTO = {
-      combo: combo,
-      orderDetail: orderDetail,
+      combo: combo.id,
+      orderDetail: orderDetail.id,
       quantity: parseInt(quantityCombo), // Convert to number if needed
       note: noteCombo,
     };
@@ -790,8 +791,8 @@ function BookRoom() {
     const orderDetail = orderDetailResponse.data; // Assuming the API returns the orderDetail object
 
     const serviceUsedDTO = {
-      service: service,
-      orderDetail: orderDetail,
+      serviceId: service.id,
+      orderDetailId: orderDetail.id,
       quantity: parseInt(quantity), // Convert to number if needed
       note: note,
     };
@@ -1366,18 +1367,19 @@ function BookRoom() {
     }
   };
 
-  const createPaymentZaloPay = async () => {
-    try {
-      const response = await axios.post(
-        `http://localhost:2003/api/payment-method/payment-zalo/${id}`
-      );
-      console.log("ZaloPayUrl: ", response.data);
-      // Redirect to the payment page
-      window.location.href = response.data.orderurl;
-    } catch (error) {
-      console.error("Error creating payment:", error);
-    }
-  };
+  // const createPaymentZaloPay = async () => {
+  //   try {
+  //     const response = await axios.post(
+  //       `http://localhost:2003/api/payment-method/payment-zalo/${id}`
+  //     );
+  //     console.log("ZaloPayUrl: ", response.data);
+  //     window.sessionStorage.setItem("orderId", id);
+  //     // Redirect to the payment page
+  //     window.location.href = response.data.orderurl;
+  //   } catch (error) {
+  //     console.error("Error creating payment:", error);
+  //   }
+  // };
 
   return (
     <div
@@ -2656,7 +2658,11 @@ function BookRoom() {
               <button onClick={createPaymentMomo} className="btn btn-outline-danger">
                 Thanh toán MOMO
               </button>
-              <button style={{ marginRight: 20 }} onClick={createPayment} className="btn btn-outline-dark">
+              <button
+                style={{ marginRight: 20 }}
+                onClick={createPayment}
+                className="btn btn-outline-dark"
+              >
                 Chuyển khoản ngân hàng
               </button>
             </DialogActions>

@@ -10,6 +10,7 @@ import BuildingLibraryIcon from "@heroicons/react/24/solid/BuildingLibraryIcon";
 import MinusSmallIcon from "@heroicons/react/24/solid/MinusSmallIcon";
 import QueueListIcon from "@heroicons/react/24/solid/QueueListIcon";
 import ClipboardIcon from "@heroicons/react/24/solid/ClipboardIcon";
+import Square3Stack3DIcon from "@heroicons/react/24/solid/Square3Stack3DIcon";
 import { SvgIcon } from "@mui/material";
 import React, { useState } from "react";
 import Accordion from "@mui/material/Accordion";
@@ -26,6 +27,15 @@ export const items = [
     icon: (
       <SvgIcon fontSize="small">
         <ChartBarIcon />
+      </SvgIcon>
+    ),
+  },
+  {
+    title: "Sơ đồ phòng",
+    path: "/room-plan",
+    icon: (
+      <SvgIcon fontSize="small">
+        <Square3Stack3DIcon />
       </SvgIcon>
     ),
   },
