@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { ToastContainer, toast } from "react-toastify";
 import Swal from "sweetalert2";
+import "react-toastify/dist/ReactToastify.css";
 
 const cx = classNames.bind(style);
 
@@ -253,7 +254,7 @@ function InputCustomer() {
 
   return (
     <div className={cx("wrapper")}>
-      <h1>Thêm Khách Hàng</h1>
+      <ToastContainer />
       <div className="form-floating mb-3">
         <input
           className="form-control"
@@ -432,7 +433,6 @@ function InputCustomer() {
       >
         Thêm mới
       </button>
-      <ToastContainer />
     </div>
   );
 }
