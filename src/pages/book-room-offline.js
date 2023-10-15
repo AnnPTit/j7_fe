@@ -59,7 +59,7 @@ const Page = () => {
           Api = Api + `&key=${textSearch}`;
         }
         const response = await axios.get(Api); // Thay đổi URL API của bạn tại đây
-        console.log(response.data);
+        // console.log(response.data);
         setTotalPages(response.data.totalPages);
         setTotalElements(response.data.totalElements);
         setData(response.data.content);

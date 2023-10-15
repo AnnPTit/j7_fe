@@ -638,7 +638,9 @@ function OrderTimeline() {
                       return (
                         <li key={serviceIndex}>
                           {serviceUsed.service.serviceName} x{serviceUsed.quantity} -{" "}
-                          {formatPrice(serviceUsed.service.price * serviceUsed.quantity)}
+                          <span style={{ color: "red" }}>
+                            {formatPrice(serviceUsed.service.price * serviceUsed.quantity)}
+                          </span>
                           <br />
                           <br />
                         </li>
@@ -651,7 +653,9 @@ function OrderTimeline() {
                       return (
                         <li key={comboIndex}>
                           {comboUsed.combo.comboName} x{comboUsed.quantity} -{" "}
-                          {formatPrice(comboUsed.combo.price * comboUsed.quantity)}
+                          <span style={{ color: "red" }}>
+                            {formatPrice(comboUsed.combo.price * comboUsed.quantity)}
+                          </span>
                           <br />
                           <br />
                         </li>

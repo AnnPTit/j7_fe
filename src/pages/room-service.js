@@ -49,6 +49,8 @@ import { RoomSearch } from "src/sections/room/room-search";
 import RoomFilter from "src/sections/room/room-filter";
 import PriceRangeSlider from "src/sections/room/price-slider";
 import { SeverityPill } from "src/components/severity-pill";
+import QrCodeScannerIcon from "@mui/icons-material/QrCodeScanner";
+import { CustomerSearch } from "src/sections/bookRoomOffline/customer-search";
 function BookRoom() {
   const router = useRouter(); // Sử dụng useRouter để truy cập router của Next.js
   const { id } = router.query;
@@ -107,6 +109,7 @@ function BookRoom() {
   const [activeTab, setActiveTab] = useState("1");
   const [selectedCustomerAccept, setSelectedCustomerAccept] = useState("");
   const [selectedCustomerReturn, setSelectedCustomerReturn] = useState("");
+  const [searchCustomer, setSearchCustomer] = useState("");
 
   // Dialogs
   const [openSeacrhRoom, setOpenSeacrhRoom] = React.useState(false);
@@ -120,6 +123,7 @@ function BookRoom() {
   const [openReturnRoom, setOpenReturnRoom] = React.useState(false);
   const [openCancelRoom, setOpenCancelRoom] = React.useState(false);
   const [openReturnOneRoom, setOpenReturnOneRoom] = React.useState(false);
+  const [openQr, setOpenQr] = React.useState(false);
 
   // QR Code
   const [delay, setDelay] = useState(100);
@@ -132,6 +136,9 @@ function BookRoom() {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [birthday, setBirthday] = useState(null);
   const [gender, setGender] = useState("Nam");
+  const [email, setEmail] = useState("");
+  const [nationality, setNationality] = useState("");
+  const [address, setAddress] = useState("");
 
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
@@ -237,6 +244,15 @@ function BookRoom() {
 
   const handleCloseChooseCustomer = () => {
     setOpenChooseCustomer(false);
+    setSearchCustomer("");
+  };
+
+  const handleOpenQr = () => {
+    setOpenQr(true);
+  };
+
+  const handleCloseQr = () => {
+    setOpenQr(false);
   };
 
   const handleOpenAcceptOrder = () => {
@@ -333,6 +349,7 @@ function BookRoom() {
   const handleScan = (data) => {
     if (data && data.text) {
       const scannedText = data.text;
+      console.log(scannedText);
       const dataParts = scannedText.split("|");
 
       if (dataParts.length === 6) {
@@ -340,6 +357,7 @@ function BookRoom() {
         const nameValue = dataParts[2];
         const birthdateValue = dataParts[3];
         const genderValue = dataParts[4];
+        const addressValue = dataParts[5];
         const formattedBirthdate = `${birthdateValue.substr(0, 2)}/${birthdateValue.substr(
           2,
           2
@@ -349,11 +367,13 @@ function BookRoom() {
         setCustomerName(nameValue);
         setGender(genderValue);
         setBirthday(formattedBirthdate);
+        setAddress(addressValue);
       } else if (dataParts.length === 7) {
         const cccdValue = dataParts[0];
         const nameValue = dataParts[2];
         const birthdateValue = dataParts[3];
         const genderValue = dataParts[4];
+        const addressValue = dataParts[5];
         const formattedBirthdate = `${birthdateValue.substr(0, 2)}/${birthdateValue.substr(
           2,
           2
@@ -363,6 +383,7 @@ function BookRoom() {
         setCustomerName(nameValue);
         setGender(genderValue);
         setBirthday(formattedBirthdate);
+        setAddress(addressValue);
       } else {
         console.log("Lỗi khi quét QR CCCD:", dataParts.length);
       }
@@ -376,6 +397,9 @@ function BookRoom() {
     setPhoneNumber(customer.phoneNumber);
     setBirthday(format(new Date(customer.birthday), "dd/MM/yyyy"));
     setGender(customer.gender == 1 ? "Nam" : "Nữ");
+    setEmail(customer.email);
+    setAddress(customer.address);
+    setNationality(customer.nationality);
     setOpenChooseCustomer(false);
   };
 
@@ -385,8 +409,8 @@ function BookRoom() {
   };
 
   const previewStyle = {
-    height: 240,
-    width: 320,
+    height: 300,
+    width: 400,
     transform: cameraEnabled ? "scaleX(-1)" : "none",
   };
 
@@ -748,6 +772,11 @@ function BookRoom() {
         position: toast.POSITION.BOTTOM_RIGHT,
       });
       return;
+    } else if (quantityCombo < 1) {
+      toast.error("Số lượng phải lớn hơn 0.", {
+        position: toast.POSITION.BOTTOM_RIGHT,
+      });
+      return;
     }
 
     try {
@@ -761,10 +790,10 @@ function BookRoom() {
       // const newTotal = calculateTotal();
       // setTotalAmount(newTotal);
       console.log("Combo added to comboUsed: ", response.data);
+      window.location.href = `/room-service?id=${id}`;
       toast.success("Thêm thành công!", {
         position: toast.POSITION.BOTTOM_RIGHT,
       });
-      window.location.href = `/room-service?id=${id}`;
     } catch (error) {
       console.error("Error adding to combo used");
     }
@@ -802,6 +831,11 @@ function BookRoom() {
         position: toast.POSITION.BOTTOM_RIGHT,
       });
       return;
+    } else if (quantity < 1) {
+      toast.error("Số lượng phải lớn hơn 0.", {
+        position: toast.POSITION.BOTTOM_RIGHT,
+      });
+      return;
     }
 
     try {
@@ -817,10 +851,10 @@ function BookRoom() {
       const newTotal = calculateTotal();
       setTotalAmount(newTotal);
       console.log("Service added to serviceUsed: ", response.data);
+      window.location.href = `/room-service?id=${id}`;
       toast.success("Thêm thành công!", {
         position: toast.POSITION.BOTTOM_RIGHT,
       });
-      window.location.href = `/room-service?id=${id}`;
     } catch (error) {
       console.error("Error adding to service used");
     }
@@ -835,7 +869,15 @@ function BookRoom() {
       return;
     }
 
-    if (!cccd || !customerName || !birthday || !phoneNumber) {
+    if (
+      !cccd.trim() ||
+      !customerName.trim() ||
+      !birthday.trim() ||
+      !phoneNumber.trim() ||
+      !email.trim() ||
+      !nationality.trim() ||
+      !address.trim()
+    ) {
       toast.error("Vui lòng điền đầy đủ thông tin khách hàng!", {
         position: toast.POSITION.BOTTOM_RIGHT,
       });
@@ -876,7 +918,7 @@ function BookRoom() {
       if (orderDetail && orderDetail.informationCustomerList) {
         return orderDetail.informationCustomerList.some((customer) => customer.citizenId === cccd);
       }
-      return false; // Trường hợp nếu orderDetail hoặc customerInfo không tồn tại
+      return false;
     });
 
     if (isCustomerAdded) {
@@ -909,6 +951,9 @@ function BookRoom() {
       gender: genderBoolean,
       birthday: formattedBirthday,
       phoneNumber: phoneNumber,
+      email: email,
+      nationality: nationality,
+      address: address,
     };
 
     try {
@@ -941,6 +986,8 @@ function BookRoom() {
     setGender("Nam");
     setBirthday("");
     setPhoneNumber("");
+    setEmail("");
+    setAddress("");
   };
 
   // Load combo sử dụng khi tích vào từng phòng
@@ -1151,7 +1198,13 @@ function BookRoom() {
         const response2 = await axios.get("http://localhost:2003/api/admin/type-room/getList");
         const response3 = await axios.get("http://localhost:2003/api/admin/service-type/getAll");
         const response4 = await axios.get("http://localhost:2003/api/admin/unit/getAll");
-        const response5 = await axios.get("http://localhost:2003/api/admin/customer/getAll");
+        let Api = `http://localhost:2003/api/admin/customer/getAll`;
+        let hasQueryParams = false;
+        if (searchCustomer !== "") {
+          Api += `?key=${searchCustomer}`;
+          hasQueryParams = true;
+        }
+        const response5 = await axios.get(Api);
         const response6 = await axios.get("http://localhost:2003/api/service-used/load");
         const response7 = await axios.get("http://localhost:2003/api/combo-used/load");
         const response8 = await axios.get(
@@ -1161,7 +1214,6 @@ function BookRoom() {
         const response10 = await axios.get(
           `http://localhost:2003/api/admin/customer/getAllByOrderDetailId/${selectedOrderDetails}`
         );
-        console.log(response.data);
         setFloor(response.data);
         setTypeRoom(response2.data);
         setServiceType(response3.data);
@@ -1178,7 +1230,7 @@ function BookRoom() {
     }
     // Gọi hàm fetchData ngay lập tức
     fetchData();
-  }, []);
+  }, [searchCustomer]);
 
   // Load hóa đơn chi tiết theo id hóa đơn
   useEffect(() => {
@@ -1341,14 +1393,12 @@ function BookRoom() {
     fetchData();
   }, [textSearch, floorChose, typeRoomChose, priceRange]);
 
-  // Tạo phương phức thanh toán quá Bank
   const createPayment = async () => {
     try {
       const response = await axios.post(
         `http://localhost:2003/api/payment-method/payment-vnpay/${id}`
       );
       const { finalUrl } = response.data;
-      // Redirect the user to the payment page
       window.location.href = finalUrl;
     } catch (error) {
       console.error("Error creating payment:", error);
@@ -1623,7 +1673,7 @@ function BookRoom() {
         </DialogActions>
       </Dialog>
       <div style={{ marginBottom: 20, height: 50, display: "flex", justifyContent: "flex-end" }}>
-        {order.status === 1 || order.status === 2 ? (
+        {order.status === 1 ? (
           <button onClick={handleOpenSearchRoom} className="btn btn-primary">
             TÌM PHÒNG
           </button>
@@ -1680,10 +1730,10 @@ function BookRoom() {
                     <TableCell>{orderDetail.room.typeRoom.typeRoomName}</TableCell>
                     <TableCell>{orderDetail.room.typeRoom.capacity}</TableCell>
                     <TableCell>
-                      {format(new Date(orderDetail.checkIn), "dd/MM/yyyy - HH:mm:ss")}
+                      {format(new Date(orderDetail.checkIn), "dd/MM/yyyy - HH:mm")}
                     </TableCell>
                     <TableCell>
-                      {format(new Date(orderDetail.checkOut), "dd/MM/yyyy - HH:mm:ss")}
+                      {format(new Date(orderDetail.checkOut), "dd/MM/yyyy - HH:mm")}
                     </TableCell>
                     <TableCell>{formatPrice(orderDetail.roomPrice)}</TableCell>
                     <TableCell>
@@ -2143,9 +2193,7 @@ function BookRoom() {
                     <TableCell>Phòng</TableCell>
                     <TableCell>Số lượng</TableCell>
                     <TableCell>Thành tiền</TableCell>
-                    <TableCell>
-                      {order.status === 1 || order.status === 2 ? <>Thao tác</> : null}
-                    </TableCell>
+                    <TableCell>{order.status === 1 ? <>Thao tác</> : null}</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -2155,9 +2203,11 @@ function BookRoom() {
                         <TableCell>{serviceUsed.service.serviceName}</TableCell>
                         <TableCell>{serviceUsed.orderDetail.room.roomName}</TableCell>
                         <TableCell>{serviceUsed.quantity}</TableCell>
-                        <TableCell>{serviceUsed.quantity * serviceUsed.service.price}</TableCell>
                         <TableCell>
-                          {order.status === 1 || order.status === 2 ? (
+                          {formatPrice(serviceUsed.quantity * serviceUsed.service.price)}
+                        </TableCell>
+                        <TableCell>
+                          {order.status === 1 ? (
                             <>
                               <button
                                 onClick={() => handleDeleteServiceUsed(serviceUsed.id)}
@@ -2204,9 +2254,7 @@ function BookRoom() {
                     <TableCell>Phòng</TableCell>
                     <TableCell>Số lượng</TableCell>
                     <TableCell>Thành tiền</TableCell>
-                    <TableCell>
-                      {order.status === 1 || order.status === 2 ? <>Thao tác</> : null}
-                    </TableCell>
+                    <TableCell>{order.status === 1 ? <>Thao tác</> : null}</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -2216,9 +2264,11 @@ function BookRoom() {
                         <TableCell>{comboUsed.combo.comboName}</TableCell>
                         <TableCell>{comboUsed.orderDetail.room.roomName}</TableCell>
                         <TableCell>{comboUsed.quantity}</TableCell>
-                        <TableCell>{comboUsed.quantity * comboUsed.combo.price}</TableCell>
                         <TableCell>
-                          {order.status === 1 || order.status === 2 ? (
+                          {formatPrice(comboUsed.quantity * comboUsed.combo.price)}
+                        </TableCell>
+                        <TableCell>
+                          {order.status === 1 ? (
                             <>
                               <button
                                 onClick={() => handleDeleteComboUsed(comboUsed.id)}
@@ -2282,9 +2332,8 @@ function BookRoom() {
                   <TableCell>Giới tính</TableCell>
                   <TableCell>Ngày sinh</TableCell>
                   <TableCell>Số điện thoại</TableCell>
-                  <TableCell>
-                    {order.status === 1 || order.status === 2 ? <>Thao tác</> : null}
-                  </TableCell>
+                  <TableCell>Email</TableCell>
+                  <TableCell>{order.status === 1 ? <>Thao tác</> : null}</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -2296,8 +2345,9 @@ function BookRoom() {
                       <TableCell>{customer.gender == 1 ? "Nam" : "Nữ"}</TableCell>
                       <TableCell>{format(new Date(customer.birthday), "dd/MM/yyyy")}</TableCell>
                       <TableCell>{customer.phoneNumber}</TableCell>
+                      <TableCell>{customer.email}</TableCell>
                       <TableCell>
-                        {order.status === 1 || order.status === 2 ? (
+                        {order.status === 1 ? (
                           <>
                             <button
                               onClick={() => handleDelete(customer.id)}
@@ -2337,13 +2387,20 @@ function BookRoom() {
             border: "1px solid #ccc",
             padding: "20px",
             boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
-            width: 650,
+            width: 1150,
             marginLeft: 150,
             marginTop: 30,
           }}
         >
-          <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <h3>THÔNG TIN KHÁCH HÀNG</h3>
+          <h3>NHẬP THÔNG TIN KHÁCH HÀNG</h3>
+          <div style={{ marginTop: -50, display: "flex", justifyContent: "flex-end", height: 50 }}>
+            <button
+              onClick={handleOpenQr}
+              className="btn btn-outline-primary"
+              style={{ width: 100, marginRight: 20 }}
+            >
+              <QrCodeScannerIcon />
+            </button>
             <button
               onClick={handleOpenChooseCustomer}
               style={{ width: 100 }}
@@ -2357,30 +2414,21 @@ function BookRoom() {
               fullWidth
               PaperProps={{
                 style: {
-                  maxWidth: "60%",
+                  maxWidth: "70%",
                   maxHeight: "90%",
                 },
               }}
             >
               <DialogTitle>Chọn khách hàng</DialogTitle>
               <DialogContent>
-                <OutlinedInput
-                  fullWidth
-                  defaultValue=""
-                  placeholder="Tìm kiếm khách hàng"
-                  startAdornment={
-                    <InputAdornment position="start">
-                      <SvgIcon color="action" fontSize="small">
-                        <MagnifyingGlassIcon />
-                      </SvgIcon>
-                    </InputAdornment>
-                  }
-                  sx={{ maxWidth: 500 }}
+                <CustomerSearch
+                  searchCustomer={searchCustomer}
+                  setSearchCustomer={setSearchCustomer}
                 />
                 <br />
                 <br />
                 <Scrollbar>
-                  <Box sx={{ minWidth: 800 }}>
+                  <Box sx={{ minWidth: 1000 }}>
                     <Table>
                       <TableHead>
                         <TableRow>
@@ -2389,6 +2437,8 @@ function BookRoom() {
                           <TableCell>Giới tính</TableCell>
                           <TableCell>Ngày sinh</TableCell>
                           <TableCell>Số điện thoại</TableCell>
+                          <TableCell>Email</TableCell>
+                          <TableCell>Quốc tịch</TableCell>
                           <TableCell>Thao tác</TableCell>
                         </TableRow>
                       </TableHead>
@@ -2402,6 +2452,8 @@ function BookRoom() {
                               {format(new Date(customer.birthday), "dd/MM/yyyy")}
                             </TableCell>
                             <TableCell>{customer.phoneNumber}</TableCell>
+                            <TableCell>{customer.email}</TableCell>
+                            <TableCell>{customer.nationality}</TableCell>
                             <TableCell>
                               <button
                                 className="btn btn-outline-primary"
@@ -2423,24 +2475,31 @@ function BookRoom() {
           <div>
             <div>
               <TextField
-                style={{ width: 290, marginRight: 20 }}
+                style={{ width: 350, marginRight: 20 }}
                 label="CCCD"
                 variant="outlined"
                 value={cccd || ""}
                 onChange={(e) => setCccd(e.target.value)}
               />
               <TextField
-                style={{ width: 290 }}
+                style={{ width: 350, marginRight: 20 }}
                 label="Tên khách hàng"
                 variant="outlined"
                 value={customerName || ""}
                 onChange={(e) => setCustomerName(e.target.value)}
               />
+              <TextField
+                style={{ width: 350 }}
+                label="Email"
+                variant="outlined"
+                value={email || ""}
+                onChange={(e) => setEmail(e.target.value)}
+              />
             </div>
             <br />
             <div>
               <TextField
-                style={{ width: 290, marginRight: 20 }}
+                style={{ width: 350, marginRight: 20 }}
                 label="Số điện thoại"
                 variant="outlined"
                 value={phoneNumber || ""}
@@ -2448,12 +2507,13 @@ function BookRoom() {
               />
               <DatePicker
                 maxDate={subYears(new Date(), 18)}
+                openTo="year"
                 label="Ngày sinh"
                 value={birthday || ""}
                 onChange={handleBirthDayChange}
                 renderInput={(params) => (
                   <TextField
-                    style={{ width: 290, color: "yellow" }}
+                    style={{ width: 350, marginRight: 20 }}
                     {...params}
                     inputProps={{
                       value: birthday || "",
@@ -2462,30 +2522,43 @@ function BookRoom() {
                   />
                 )}
               />
+              <TextField
+                style={{ width: 350 }}
+                label="Quốc tịch"
+                variant="outlined"
+                value={nationality || ""}
+                onChange={(e) => setNationality(e.target.value)}
+              />
             </div>
             <br />
-            <br />
-            <FormControl style={{ width: 600, display: "flex", justifyContent: "center" }}>
-              <FormLabel
-                style={{ display: "flex", justifyContent: "center" }}
-                id="demo-row-radio-buttons-group-label"
-              >
-                Giới tính
-              </FormLabel>
-              <RadioGroup
-                style={{ display: "flex", justifyContent: "center" }}
-                row
-                aria-labelledby="demo-row-radio-buttons-group-label"
-                name="row-radio-buttons-group"
-                value={gender || ""}
-                onChange={(e) => setGender(e.target.value)}
-              >
-                <FormControlLabel value="Nam" control={<Radio />} label="Nam" />
-                <FormControlLabel value="Nữ" control={<Radio />} label="Nữ" />
-              </RadioGroup>
-            </FormControl>
-            <div style={{ display: "flex", justifyContent: "flex-end" }}>
-              {order.status === 1 || order.status === 2 ? (
+            <div style={{ display: "flex" }}>
+              <TextField
+                style={{ width: 500 }}
+                label="Địa chỉ"
+                variant="outlined"
+                value={address || ""}
+                onChange={(e) => setAddress(e.target.value)}
+              />
+              <FormControl style={{ width: 500, display: "flex", justifyContent: "center" }}>
+                <FormLabel
+                  style={{ display: "flex", justifyContent: "center" }}
+                  id="demo-row-radio-buttons-group-label"
+                >
+                  Giới tính
+                </FormLabel>
+                <RadioGroup
+                  style={{ display: "flex", justifyContent: "center" }}
+                  row
+                  aria-labelledby="demo-row-radio-buttons-group-label"
+                  name="row-radio-buttons-group"
+                  value={gender || ""}
+                  onChange={(e) => setGender(e.target.value)}
+                >
+                  <FormControlLabel value="Nam" control={<Radio />} label="Nam" />
+                  <FormControlLabel value="Nữ" control={<Radio />} label="Nữ" />
+                </RadioGroup>
+              </FormControl>
+              {order.status === 1 ? (
                 <button
                   style={{ width: 200, height: 50 }}
                   className="btn btn-outline-success"
@@ -2495,38 +2568,32 @@ function BookRoom() {
                 </button>
               ) : null}
             </div>
+            <div style={{ display: "flex", justifyContent: "flex-end" }}></div>
           </div>
         </Box>
-        <Box
-          style={{
-            height: 400,
-            border: "1px solid #ccc",
-            padding: "20px",
-            boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
-            width: 400,
-            marginLeft: 80,
-            marginTop: 30,
-          }}
-        >
-          {cameraEnabled ? (
-            <div style={{ display: "flex", justifyContent: "center" }}>
-              <QrReader
-                delay={delay}
-                style={previewStyle}
-                onError={handleError}
-                onScan={handleScan}
-              />
+        <Dialog open={openQr} onClose={handleCloseQr} maxWidth="md">
+          <DialogTitle>Quét thông tin khách hàng</DialogTitle>
+          <DialogContent>
+            {cameraEnabled ? (
+              <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+                <QrReader
+                  delay={delay}
+                  style={previewStyle}
+                  onError={handleError}
+                  onScan={handleScan}
+                />
+              </div>
+            ) : (
+              <div style={{ display: "flex", justifyContent: "center" }}>Camera is disabled.</div>
+            )}
+            <p>{result}</p>
+            <div style={{ width: 400, display: "flex", justifyContent: "center" }}>
+              <button className="btn btn-outline-primary" onClick={toggleCamera}>
+                {cameraEnabled ? "Disable Camera" : "Enable Camera"}
+              </button>
             </div>
-          ) : (
-            <div style={{ display: "flex", justifyContent: "center" }}>Camera is disabled.</div>
-          )}
-          <p>{result}</p>
-          <div style={{ display: "flex", justifyContent: "center" }}>
-            <button className="btn btn-outline-primary" onClick={toggleCamera}>
-              {cameraEnabled ? "Disable Camera" : "Enable Camera"}
-            </button>
-          </div>
-        </Box>
+          </DialogContent>
+        </Dialog>
         <div
           style={{
             marginTop: 20,
