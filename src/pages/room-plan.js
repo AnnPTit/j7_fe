@@ -83,17 +83,6 @@ function RoomPlan() {
                             </SeverityPill>
                             <br />
                             <br />
-                            {room.status === 2 ? (
-                              <>
-                                {room.orderDetailList.map((orderDetail, index) =>
-                                  orderDetail.status === 2 ? (
-                                    <React.Fragment key={index}>
-                                      {orderDetail.order.customer.fullname}
-                                    </React.Fragment>
-                                  ) : null
-                                )}
-                              </>
-                            ) : null}
                           </Typography>
                           <Typography variant="h6" component="div">
                             {room.roomName}
@@ -132,7 +121,10 @@ function RoomPlan() {
                                         new Date(orderDetail.checkInDatetime),
                                         "dd/MM/yyyy HH:mm"
                                       )}
-                                      <Typography style={{ color: "red", marginTop: 10 }}>
+                                      <Typography
+                                        variant="h6"
+                                        style={{ color: "red", marginTop: 10 }}
+                                      >
                                         {formatPrice(orderDetail.roomPrice)}
                                       </Typography>
                                     </Typography>
@@ -153,6 +145,9 @@ function RoomPlan() {
                                       new Date(orderDetail.checkOutDatetime),
                                       "dd/MM/yyyy HH:mm"
                                     )}
+                                    <Typography variant="h6" style={{ marginTop: 10 }}>
+                                      {orderDetail.order.customer.fullname}
+                                    </Typography>
                                   </Typography>
                                 ) : null
                               )}
