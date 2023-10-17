@@ -356,6 +356,7 @@ function BookRoom() {
     setValueTo(null);
     setValueTimeTo(null);
     setNumberOfDays(0);
+    setNumberOfPeople();
     setOpenDateDialog(false);
   };
   // Kết thúc các hàm xử lí đóng, mở dialog
@@ -656,6 +657,14 @@ function BookRoom() {
     }
 
     try {
+      const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
+      // Kiểm tra xem accessToken có tồn tại không
+      if (!accessToken) {
+        alert("Bạn chưa đăng nhập");
+        return;
+      }
+      axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+
       await axios.put(`http://localhost:2003/api/admin/order/update-accept/${id}`, {
         customerId: selectedCustomerAccept,
         totalMoney: sumAmount,
@@ -722,6 +731,14 @@ function BookRoom() {
       return;
     }
     try {
+      const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
+      // Kiểm tra xem accessToken có tồn tại không
+      if (!accessToken) {
+        alert("Bạn chưa đăng nhập");
+        return;
+      }
+      axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+
       await axios.put(`http://localhost:2003/api/admin/order/update-return/${id}`, {
         totalMoney: sumAmount,
         vat: vatAmount,
@@ -743,6 +760,13 @@ function BookRoom() {
   // Hủy hóa đơn
   const handleCancelOrder = async () => {
     try {
+      const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
+      // Kiểm tra xem accessToken có tồn tại không
+      if (!accessToken) {
+        alert("Bạn chưa đăng nhập");
+        return;
+      }
+      axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
       // Make an API call to update the order status to "Đã xác nhận" (status: 2)
       await axios.put(`http://localhost:2003/api/admin/order/delete/${id}`, {
         note: noteOrder,
@@ -759,6 +783,13 @@ function BookRoom() {
   };
 
   const handleSave = async () => {
+    const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
+    // Kiểm tra xem accessToken có tồn tại không
+    if (!accessToken) {
+      alert("Bạn chưa đăng nhập");
+      return;
+    }
+    axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
     // const updatedTotalMoney = calculateTotal(); // Lấy giá trị tạm tính
     const response = await axios.put(`http://localhost:2003/api/admin/order/update/${id}`, {
       totalMoney: sumAmount,
@@ -786,10 +817,8 @@ function BookRoom() {
       `http://localhost:2003/api/order-detail/detail/${selectedOrderDetails}`
     );
 
-    // Step 2: Create Service and OrderDetail objects
-    const combo = comboResponse.data; // Assuming the API returns the service object
-    const orderDetail = orderDetailResponse.data; // Assuming the API returns the orderDetail object
-    console.log(combo);
+    const combo = comboResponse.data;
+    const orderDetail = orderDetailResponse.data;
 
     const comboUsedDTO = {
       combo: combo.id,
@@ -811,6 +840,14 @@ function BookRoom() {
     }
 
     try {
+      const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
+      // Kiểm tra xem accessToken có tồn tại không
+      if (!accessToken) {
+        alert("Bạn chưa đăng nhập");
+        return;
+      }
+      axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+
       const response = await axios.post("http://localhost:2003/api/combo-used/save", comboUsedDTO);
       setQuantityCombo("");
       setNoteCombo("");
@@ -874,6 +911,14 @@ function BookRoom() {
     }
 
     try {
+      const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
+      // Kiểm tra xem accessToken có tồn tại không
+      if (!accessToken) {
+        alert("Bạn chưa đăng nhập");
+        return;
+      }
+      axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+
       const response = await axios.post(
         "http://localhost:2003/api/service-used/save",
         serviceUsedDTO
@@ -953,7 +998,6 @@ function BookRoom() {
       return;
     }
 
-    console.log("List: ", orderDetailData);
     const isCustomerAdded = orderDetailData.some((orderDetail) => {
       // Kiểm tra xem orderDetail và customerInfo có tồn tại
       if (orderDetail && orderDetail.informationCustomerList) {
@@ -972,8 +1016,6 @@ function BookRoom() {
     const selectedOrderDetail = orderDetailData.find(
       (detail) => detail.id === selectedOrderDetails
     );
-    console.log(selectedOrderDetail);
-    // const { room } = selectedOrderDetail;
 
     if (customerInfo.length >= selectedOrderDetail.customerQuantity) {
       toast.error("Sức chứa của phòng đã đầy, không thể thêm khách hàng mới!", {
@@ -998,6 +1040,14 @@ function BookRoom() {
     };
 
     try {
+      const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
+      // Kiểm tra xem accessToken có tồn tại không
+      if (!accessToken) {
+        alert("Bạn chưa đăng nhập");
+        return;
+      }
+      axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+
       const response = await axios.post(
         `http://localhost:2003/api/information-customer/save/${selectedOrderDetails}`,
         customerInfor
@@ -1101,6 +1151,14 @@ function BookRoom() {
 
   const handleDelete = async (customerInfoId) => {
     try {
+      const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
+      // Kiểm tra xem accessToken có tồn tại không
+      if (!accessToken) {
+        alert("Bạn chưa đăng nhập");
+        return;
+      }
+      axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+
       await axios.delete(`http://localhost:2003/api/information-customer/delete/${customerInfoId}`);
 
       const response = await axios.get(
@@ -1122,6 +1180,14 @@ function BookRoom() {
   // Xóa combo sử dụng
   const handleDeleteComboUsed = async (id) => {
     try {
+      const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
+      // Kiểm tra xem accessToken có tồn tại không
+      if (!accessToken) {
+        alert("Bạn chưa đăng nhập");
+        return;
+      }
+
+      axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
       await axios.delete(`http://localhost:2003/api/combo-used/delete/${id}`);
       setComboUsed((prevCombos) => prevCombos.filter((comboUsed) => comboUsed.id !== id));
       const responseComboPrice = await axios.get("http://localhost:2003/api/combo-used/load");
@@ -1141,6 +1207,14 @@ function BookRoom() {
   // Xóa dịch vụ sử dụng
   const handleDeleteServiceUsed = async (id) => {
     try {
+      const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
+      // Kiểm tra xem accessToken có tồn tại không
+      if (!accessToken) {
+        alert("Bạn chưa đăng nhập");
+        return;
+      }
+      axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+
       await axios.delete(`http://localhost:2003/api/service-used/delete/${id}`);
 
       // Xóa khách hàng khỏi danh sách ngay sau khi xóa
@@ -1164,20 +1238,43 @@ function BookRoom() {
   // Xóa phòng
   const handleDeleteRoom = async (orderDetailid) => {
     try {
+      const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
+      // Kiểm tra xem accessToken có tồn tại không
+      if (!accessToken) {
+        alert("Bạn chưa đăng nhập");
+        return;
+      }
+      axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+
       await axios.put(`http://localhost:2003/api/order-detail/delete/${orderDetailid}`);
 
-      // Xóa khách hàng khỏi danh sách ngay sau khi xóa
-      // setOrderDetailData((prevOrderDetail) =>
-      //   prevOrderDetail.filter((orderDetailData) => orderDetailData.id !== id)
-      // );
-      // router.push(`/room-service?id=${id}`);
-      window.location.href = `/room-service?id=${id}`;
-      // const newTotal = calculateTotalAmountPriceRoom() + calculateTotalService();
-      // setTotalAmount(newTotal);
-      toast.success("Xóa thành công!", {
+      setOrderDetailData((prevOrderDetail) =>
+        prevOrderDetail.filter((orderDetailData) => orderDetailData.id !== id)
+      );
+      router.push(`/room-service?id=${id}`);
+      const response = await axios.get(
+        `http://localhost:2003/api/order-detail/loadOrderDetailByOrderId/${id}`
+      );
+      setOrderDetailData(response.data);
+      const responseRoom = await axios.get(
+        "http://localhost:2003/api/admin/room/loadAndSearchBookRoom"
+      );
+      setRooms(responseRoom.data);
+      setServiceUsedTotalPrice(response.data);
+      const responseServiceUsed = await axios.get(
+        `http://localhost:2003/api/service-used/load/${selectedOrderDetails}`
+      );
+      const responseComboPrice = await axios.get("http://localhost:2003/api/combo-used/load");
+      setComboUsedTotalPrice(responseComboPrice.data);
+      const responseCustomer = await axios.get(
+        `http://localhost:2003/api/admin/customer/getAllByOrderId/${id}`
+      );
+      setCustomerOrder(responseCustomer.data);
+      toast.success("Hủy phòng thành công!", {
         position: toast.POSITION.BOTTOM_CENTER,
       });
       setAnchorEl(null);
+      setSelectedOrderDetails(null);
     } catch (error) {
       console.log(error);
     }
@@ -1194,7 +1291,9 @@ function BookRoom() {
           return;
         }
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
-        const response = await axios.get("http://localhost:2003/api/admin/room/getAllByStatus");
+        const response = await axios.get(
+          "http://localhost:2003/api/admin/room/loadAndSearchBookRoom"
+        );
         setRooms(response.data); // Cập nhật danh sách phòng từ response
       } catch (error) {
         console.log(error);
@@ -1367,11 +1466,14 @@ function BookRoom() {
       }
       const totalAmount = numberOfDays * roomPricePerDay;
       try {
-        const accessToken = localStorage.getItem("accessToken");
+        const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
+        // Kiểm tra xem accessToken có tồn tại không
         if (!accessToken) {
           alert("Bạn chưa đăng nhập");
           return;
         }
+        axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+
         const response = await axios.post("http://localhost:2003/api/order-detail/save", {
           order: { id: id },
           room: rooms.find((r) => r.id === selectedRoomId),
@@ -1382,8 +1484,16 @@ function BookRoom() {
           roomPrice: totalAmount,
           customerQuantity: numberOfPeople,
         });
-
-        window.location.href = `/room-service?id=${id}`;
+        setOrderDetailData([...orderDetailData, response.data]);
+        const responseOrderDetail = await axios.get(
+          `http://localhost:2003/api/order-detail/loadOrderDetailByOrderId/${id}`
+        );
+        setOrderDetailData(responseOrderDetail.data);
+        const responseRoom = await axios.get(
+          "http://localhost:2003/api/admin/room/loadAndSearchBookRoom"
+        );
+        setRooms(responseRoom.data);
+        router.push(`/room-service?id=${id}`);
         toast.success("Thêm phòng thành công!", {
           position: toast.POSITION.BOTTOM_CENTER,
         });
@@ -1408,8 +1518,12 @@ function BookRoom() {
     const fetchData = async () => {
       try {
         const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
-        // console.log(accessToken);
-        axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
+        // Kiểm tra xem accessToken có tồn tại không
+        if (!accessToken) {
+          alert("Bạn chưa đăng nhập");
+          return;
+        }
+        axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
 
         let Api = `http://localhost:2003/api/admin/room/loadAndSearchBookRoom`;
         // Add search text parameter only if there's a search text entered
@@ -1835,11 +1949,11 @@ function BookRoom() {
                       />
                     </TableCell>
                     <TableCell>
-                      {orderDetail.roomImages.length > 0 && ( // Kiểm tra xem có hình ảnh nào trong mảng không
+                      {orderDetail && orderDetail.roomImages && orderDetail.roomImages[0] && (
                         <img
                           style={{ objectFit: "cover", width: "100%" }}
-                          src={orderDetail.roomImages[0]} // Hiển thị chỉ hình ảnh đầu tiên
-                          alt={`Room ${index + 1} Image 1`} // Ví dụ: Room 1 Image 1
+                          src={orderDetail.roomImages[0]}
+                          alt={`Room ${index + 1} Image 1`}
                         />
                       )}
                     </TableCell>
@@ -1848,11 +1962,16 @@ function BookRoom() {
                     <TableCell>{orderDetail.room.typeRoom.typeRoomName}</TableCell>
                     <TableCell>{orderDetail.room.typeRoom.capacity}</TableCell>
                     <TableCell>
-                      {format(new Date(orderDetail.checkIn), "dd/MM/yyyy - HH:mm")}
+                      {orderDetail &&
+                        orderDetail.checkIn &&
+                        format(new Date(orderDetail.checkIn), "dd/MM/yyyy - HH:mm")}
                     </TableCell>
                     <TableCell>
-                      {format(new Date(orderDetail.checkOut), "dd/MM/yyyy - HH:mm")}
+                      {orderDetail &&
+                        orderDetail.checkOut &&
+                        format(new Date(orderDetail.checkOut), "dd/MM/yyyy - HH:mm")}
                     </TableCell>
+
                     <TableCell>{formatPrice(orderDetail.roomPrice)}</TableCell>
                     <TableCell>
                       {order.status === 1 ? (
