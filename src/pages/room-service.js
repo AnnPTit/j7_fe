@@ -300,13 +300,23 @@ function BookRoom() {
     setOpenReturnRoom(false);
   };
 
-  const handleOpenReturnOneRoom = (orderDetailId) => {
+  const handleOpenReturnOneRoom = async () => {
     if (!selectedOrderDetails) {
       toast.error("Vui lòng chọn phòng trước khi trả phòng!", {
         position: toast.POSITION.BOTTOM_CENTER,
       });
       return;
+    } else if (selectedOrderDetails) {
+      try {
+        const customerOrderDetail = await axios.get(
+          `http://localhost:2003/api/admin/customer/getAllByOrderDetailId/${selectedOrderDetails}`
+        );
+        setCustomerOrderDetail(customerOrderDetail.data);
+      } catch (error) {
+        console.error("Error creating payment:", error);
+      }
     }
+
     setOpenReturnOneRoom(true);
     setAnchorEl(null);
   };
@@ -708,6 +718,7 @@ function BookRoom() {
           moneyGivenByCustomer: givenCustomerOneRoom,
           excessMoney: moneyReturnCustomerOneRoom,
           note: noteReturnOneRoom,
+          idReturn: id,
         }
       );
       const orderId = response.data.id;
@@ -1053,6 +1064,10 @@ function BookRoom() {
         customerInfor
       );
       setCustomerInfo([...customerInfo, response.data]);
+      const responseOrderDetail = await axios.get(
+        `http://localhost:2003/api/order-detail/loadOrderDetailByOrderId/${id}`
+      );
+      setOrderDetailData(responseOrderDetail.data);
       const responseInfo = await axios.get(
         `http://localhost:2003/api/information-customer/load/${selectedOrderDetails}`
       );
@@ -1161,10 +1176,16 @@ function BookRoom() {
 
       await axios.delete(`http://localhost:2003/api/information-customer/delete/${customerInfoId}`);
 
+      const responseOrderDetail = await axios.get(
+        `http://localhost:2003/api/order-detail/loadOrderDetailByOrderId/${id}`
+      );
+      setOrderDetailData(responseOrderDetail.data);
       const response = await axios.get(
         `http://localhost:2003/api/information-customer/load/${selectedOrderDetails}`
       );
       setCustomerInfo(response.data);
+      const responseInfo = await axios.get("http://localhost:2003/api/information-customer/load");
+      setInfoCustomer(responseInfo.data);
       const responseCustomer = await axios.get(
         `http://localhost:2003/api/admin/customer/getAllByOrderId/${id}`
       );
@@ -1225,8 +1246,6 @@ function BookRoom() {
         `http://localhost:2003/api/service-used/load/${selectedOrderDetails}`
       );
       setServiceUsed(responseServiceUsed.data);
-      // const newTotal = calculateTotalAmountPriceRoom() + calculateTotalService();
-      // setTotalAmount(newTotal);
       toast.success("Xóa thành công!", {
         position: toast.POSITION.BOTTOM_CENTER,
       });
@@ -1260,10 +1279,8 @@ function BookRoom() {
         "http://localhost:2003/api/admin/room/loadAndSearchBookRoom"
       );
       setRooms(responseRoom.data);
-      setServiceUsedTotalPrice(response.data);
-      const responseServiceUsed = await axios.get(
-        `http://localhost:2003/api/service-used/load/${selectedOrderDetails}`
-      );
+      const responseServiceUsed = await axios.get("http://localhost:2003/api/service-used/load");
+      setServiceUsedTotalPrice(responseServiceUsed.data);
       const responseComboPrice = await axios.get("http://localhost:2003/api/combo-used/load");
       setComboUsedTotalPrice(responseComboPrice.data);
       const responseCustomer = await axios.get(
@@ -1606,7 +1623,6 @@ function BookRoom() {
       const response = await axios.post(
         `http://localhost:2003/api/payment-method/payment-momo/${id}`
       );
-      console.log("MomoUrl: ", response.data);
       window.location.href = response.data.payUrl;
     } catch (error) {
       console.error("Error creating payment:", error);
@@ -1618,7 +1634,6 @@ function BookRoom() {
   //     const response = await axios.post(
   //       `http://localhost:2003/api/payment-method/payment-zalo/${id}`
   //     );
-  //     console.log("ZaloPayUrl: ", response.data);
   //     window.sessionStorage.setItem("orderId", id);
   //     // Redirect to the payment page
   //     window.location.href = response.data.orderurl;
@@ -1722,6 +1737,7 @@ function BookRoom() {
                     <TableCell>Phòng</TableCell>
                     <TableCell>Loại phòng</TableCell>
                     <TableCell>Tầng</TableCell>
+                    <TableCell>Sức chứa</TableCell>
                     <TableCell>Giá theo ngày</TableCell>
                     <TableCell>Trạng thái</TableCell>
                     <TableCell>Thao tác</TableCell>
@@ -1748,6 +1764,7 @@ function BookRoom() {
                         <TableCell>{room.roomName}</TableCell>
                         <TableCell>{room.typeRoom.typeRoomName}</TableCell>
                         <TableCell>{room.floor.floorName}</TableCell>
+                        <TableCell>{room.typeRoom.capacity}</TableCell>
                         <TableCell>{formatPrice(room.typeRoom.pricePerDay)}</TableCell>
                         <TableCell>
                           <SeverityPill variant="contained" color={statusData.color}>
@@ -2557,7 +2574,7 @@ function BookRoom() {
           marginTop: 30,
         }}
       >
-        <h3 style={{ display: "flex", justifyContent: "center" }}>DANH SÁCH KHÁCH HÀNG</h3>
+        <h3 style={{ display: "flex", justifyContent: "center" }}>THÔNG TIN KHÁCH HÀNG</h3>
         <hr />
         <Scrollbar>
           <Box sx={{ minWidth: 800 }}>
