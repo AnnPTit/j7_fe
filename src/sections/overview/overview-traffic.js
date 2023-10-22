@@ -93,7 +93,7 @@ export const OverviewTraffic = (props) => {
 
   return (
     <Card sx={sx}>
-      <CardHeader title="Traffic Source" />
+      <CardHeader title="Loại hóa đơn" />
       <CardContent>
         <Chart height={300} options={chartOptions} series={chartSeries} type="donut" width="100%" />
         <Stack
@@ -105,6 +105,7 @@ export const OverviewTraffic = (props) => {
         >
           {chartSeries.map((item, index) => {
             const label = labels[index];
+            const color = chartOptions.colors[index % chartOptions.colors.length];
 
             return (
               <Box
@@ -116,11 +117,8 @@ export const OverviewTraffic = (props) => {
                 }}
               >
                 {iconMap[label]}
-                <Typography sx={{ my: 1 }} variant="h6">
+                <Typography sx={{ my: 1 }} variant="h6" style={{ color }}>
                   {label}
-                </Typography>
-                <Typography color="text.secondary" variant="subtitle2">
-                  {item}%
                 </Typography>
               </Box>
             );
