@@ -1102,6 +1102,7 @@ function BookRoom() {
     setBirthday("");
     setPhoneNumber("");
     setEmail("");
+    setNationality("");
     setAddress("");
   };
 
@@ -1923,7 +1924,7 @@ function BookRoom() {
       </Dialog>
       <div style={{ marginBottom: 20, height: 50, display: "flex", justifyContent: "flex-end" }}>
         {order.status === 1 ? (
-          <button onClick={handleOpenSearchRoom} className="btn btn-primary">
+          <button onClick={handleOpenSearchRoom} className="btn btn-outline-primary">
             TÌM PHÒNG
           </button>
         ) : null}
@@ -2296,7 +2297,7 @@ function BookRoom() {
           </DialogContent>
         </Dialog>
         {order.status === 1 || order.status === 2 ? (
-          <button onClick={handleOpenAddService} className="btn btn-primary">
+          <button onClick={handleOpenAddService} className="btn btn-outline-primary">
             THÊM DỊCH VỤ
           </button>
         ) : null}
@@ -2863,7 +2864,7 @@ function BookRoom() {
           </h6>
           {renderButtonsBasedOnStatus()}
           <Dialog open={openAcceptOrder} onClose={handleCloseAcceptOrder} maxWidth="md">
-            <DialogTitle>Xác nhận khách hàng nhận phòng</DialogTitle>
+            <DialogTitle>Xác nhận khách hàng đại diện nhận phòng</DialogTitle>
             <hr />
             <DialogContent>
               <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
