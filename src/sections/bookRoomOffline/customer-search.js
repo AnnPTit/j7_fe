@@ -1,14 +1,14 @@
 import { Card, OutlinedInput } from "@mui/material";
 
-export const RoomSearch = ({ textSearch, setTextSearch }) => (
+export const CustomerSearch = ({ searchCustomer, setSearchCustomer }) => (
   <Card sx={{ p: 2 }}>
     <OutlinedInput
-      value={textSearch}
+      value={searchCustomer}
       fullWidth
-      placeholder="Tìm kiếm phòng theo mã, tên"
+      placeholder="Tìm kiếm khách hàng"
       sx={{ maxWidth: 500 }}
       onChange={(e) => {
-        setTextSearch(e.target.value);
+        setSearchCustomer(e.target.value);
       }}
     />
   </Card>

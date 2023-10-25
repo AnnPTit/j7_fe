@@ -23,6 +23,7 @@ import {
   Checkbox,
   Select,
   InputLabel,
+  Grid,
 } from "@mui/material";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
@@ -49,6 +50,8 @@ import { RoomSearch } from "src/sections/room/room-search";
 import RoomFilter from "src/sections/room/room-filter";
 import PriceRangeSlider from "src/sections/room/price-slider";
 import { SeverityPill } from "src/components/severity-pill";
+import QrCodeScannerIcon from "@mui/icons-material/QrCodeScanner";
+import { CustomerSearch } from "src/sections/bookRoomOffline/customer-search";
 function BookRoom() {
   const router = useRouter(); // Sử dụng useRouter để truy cập router của Next.js
   const { id } = router.query;
@@ -107,6 +110,7 @@ function BookRoom() {
   const [activeTab, setActiveTab] = useState("1");
   const [selectedCustomerAccept, setSelectedCustomerAccept] = useState("");
   const [selectedCustomerReturn, setSelectedCustomerReturn] = useState("");
+  const [searchCustomer, setSearchCustomer] = useState("");
 
   // Dialogs
   const [openSeacrhRoom, setOpenSeacrhRoom] = React.useState(false);
@@ -120,6 +124,25 @@ function BookRoom() {
   const [openReturnRoom, setOpenReturnRoom] = React.useState(false);
   const [openCancelRoom, setOpenCancelRoom] = React.useState(false);
   const [openReturnOneRoom, setOpenReturnOneRoom] = React.useState(false);
+  const [openQr, setOpenQr] = React.useState(false);
+
+  // Xử lí lọc khoảng ngày
+  const [valueDateTo, setValueDateTo] = useState(null);
+  const [valueDateFrom, setValueDateFrom] = useState(null);
+
+  const handleDateFromChange = (newValue) => {
+    setValueDateFrom(newValue);
+    if (newValue > valueDateTo) {
+      setValueDateTo(newValue);
+    }
+  };
+
+  const handleDateToChange = (newValue) => {
+    setValueDateTo(newValue);
+    if (newValue < valueDateFrom) {
+      setValueDateFrom(newValue);
+    }
+  };
 
   // QR Code
   const [delay, setDelay] = useState(100);
@@ -132,7 +155,11 @@ function BookRoom() {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [birthday, setBirthday] = useState(null);
   const [gender, setGender] = useState("Nam");
+  const [email, setEmail] = useState("");
+  const [nationality, setNationality] = useState("");
+  const [address, setAddress] = useState("");
 
+  // Tùy chọn ở phòng
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
   const handleClick = (event) => {
@@ -147,6 +174,7 @@ function BookRoom() {
     setActiveTab(newValue.toString());
   };
 
+  // Xử lí ngày đặt phòng
   const [dataForm, setDataForm] = React.useState({
     dateFrom: new Date(),
     dateTo: new Date(),
@@ -184,10 +212,6 @@ function BookRoom() {
     return `${day}/${month}/${year}`;
   };
 
-  const formatPrice = (price) => {
-    return price.toLocaleString("vi-VN") + " VND";
-  };
-
   const handleDateTimeFromChange = (newTime) => {
     setValueTimeFrom(newTime);
     if (newTime > valueTimeTo) {
@@ -198,7 +222,14 @@ function BookRoom() {
   const handleDateTimeToChange = (newTime) => {
     setValueTimeTo(newTime);
   };
+  // Kết thúc xử lí ngày đặt phòng
 
+  // Format giá tiền
+  const formatPrice = (price) => {
+    return price.toLocaleString("vi-VN") + " VND";
+  };
+
+  // Xử lí các hàm đóng, mở dialog
   const handleOpenSearchRoom = () => {
     setOpenSeacrhRoom(true);
   };
@@ -209,6 +240,8 @@ function BookRoom() {
     setFloorChose("");
     setTypeRoomChose("");
     setPriceRange([0, 3000000]);
+    setValueDateFrom(null);
+    setValueDateTo(null);
   };
 
   const handleOpenAddService = () => {
@@ -237,6 +270,15 @@ function BookRoom() {
 
   const handleCloseChooseCustomer = () => {
     setOpenChooseCustomer(false);
+    setSearchCustomer("");
+  };
+
+  const handleOpenQr = () => {
+    setOpenQr(true);
+  };
+
+  const handleCloseQr = () => {
+    setOpenQr(false);
   };
 
   const handleOpenAcceptOrder = () => {
@@ -258,13 +300,23 @@ function BookRoom() {
     setOpenReturnRoom(false);
   };
 
-  const handleOpenReturnOneRoom = (orderDetailId) => {
+  const handleOpenReturnOneRoom = async () => {
     if (!selectedOrderDetails) {
       toast.error("Vui lòng chọn phòng trước khi trả phòng!", {
-        position: toast.POSITION.BOTTOM_RIGHT,
+        position: toast.POSITION.BOTTOM_CENTER,
       });
       return;
+    } else if (selectedOrderDetails) {
+      try {
+        const customerOrderDetail = await axios.get(
+          `http://localhost:2003/api/admin/customer/getAllByOrderDetailId/${selectedOrderDetails}`
+        );
+        setCustomerOrderDetail(customerOrderDetail.data);
+      } catch (error) {
+        console.error("Error creating payment:", error);
+      }
     }
+
     setOpenReturnOneRoom(true);
     setAnchorEl(null);
   };
@@ -314,9 +366,12 @@ function BookRoom() {
     setValueTo(null);
     setValueTimeTo(null);
     setNumberOfDays(0);
+    setNumberOfPeople();
     setOpenDateDialog(false);
   };
+  // Kết thúc các hàm xử lí đóng, mở dialog
 
+  // Xử lí quét QR thêm thông tin khách hàng
   const handleError = (err) => {
     console.error(err);
   };
@@ -333,6 +388,7 @@ function BookRoom() {
   const handleScan = (data) => {
     if (data && data.text) {
       const scannedText = data.text;
+      console.log(scannedText);
       const dataParts = scannedText.split("|");
 
       if (dataParts.length === 6) {
@@ -340,6 +396,7 @@ function BookRoom() {
         const nameValue = dataParts[2];
         const birthdateValue = dataParts[3];
         const genderValue = dataParts[4];
+        const addressValue = dataParts[5];
         const formattedBirthdate = `${birthdateValue.substr(0, 2)}/${birthdateValue.substr(
           2,
           2
@@ -349,11 +406,13 @@ function BookRoom() {
         setCustomerName(nameValue);
         setGender(genderValue);
         setBirthday(formattedBirthdate);
+        setAddress(addressValue);
       } else if (dataParts.length === 7) {
         const cccdValue = dataParts[0];
         const nameValue = dataParts[2];
         const birthdateValue = dataParts[3];
         const genderValue = dataParts[4];
+        const addressValue = dataParts[5];
         const formattedBirthdate = `${birthdateValue.substr(0, 2)}/${birthdateValue.substr(
           2,
           2
@@ -363,6 +422,7 @@ function BookRoom() {
         setCustomerName(nameValue);
         setGender(genderValue);
         setBirthday(formattedBirthdate);
+        setAddress(addressValue);
       } else {
         console.log("Lỗi khi quét QR CCCD:", dataParts.length);
       }
@@ -376,6 +436,9 @@ function BookRoom() {
     setPhoneNumber(customer.phoneNumber);
     setBirthday(format(new Date(customer.birthday), "dd/MM/yyyy"));
     setGender(customer.gender == 1 ? "Nam" : "Nữ");
+    setEmail(customer.email);
+    setAddress(customer.address);
+    setNationality(customer.nationality);
     setOpenChooseCustomer(false);
   };
 
@@ -385,11 +448,13 @@ function BookRoom() {
   };
 
   const previewStyle = {
-    height: 240,
-    width: 320,
+    height: 300,
+    width: 400,
     transform: cameraEnabled ? "scaleX(-1)" : "none",
   };
+  // Kết thúc xử lí quét QR thêm thông tin khách hàng
 
+  // Xử lí chỉ tích chọn 1 phòng
   const handleCheckboxChange = (orderDetailId) => {
     if (selectedOrderDetails === orderDetailId) {
       setSelectedOrderDetails(null); // Bỏ chọn nếu đang chọn lại cùng phòng
@@ -398,6 +463,7 @@ function BookRoom() {
     }
   };
 
+  // Các hàm xử lí tổng tiền
   const calculateTotalCostForOrderDetail = (orderDetailId) => {
     let totalComboCost = 0;
     let totalServiceCost = 0;
@@ -489,6 +555,7 @@ function BookRoom() {
     const newTotal = calculateTotal();
     setTotalAmount(newTotal);
   }, [calculateTotalAmountPriceRoom(), calculateTotalService(), calculateTotalCombo()]);
+  // Kết thúc xử lí tổng tiền
 
   const renderButtonsBasedOnStatus = () => {
     switch (order.status) {
@@ -547,9 +614,8 @@ function BookRoom() {
         );
       case 3:
         return <React.Fragment></React.Fragment>;
-      // Add more cases for other statuses if needed
       default:
-        return null; // Return null to hide all buttons if the status doesn't match any case
+        return null;
     }
   };
 
@@ -572,14 +638,14 @@ function BookRoom() {
   const handleConfirmOrder = async () => {
     if (orderDetailData.length == 0) {
       toast.error("Chưa chọn phòng!", {
-        position: toast.POSITION.BOTTOM_RIGHT,
+        position: toast.POSITION.BOTTOM_CENTER,
       });
       return;
     }
 
     if (!selectedCustomerAccept) {
       toast.error("Chưa chọn khách hàng!", {
-        position: toast.POSITION.BOTTOM_RIGHT,
+        position: toast.POSITION.BOTTOM_CENTER,
       });
       return;
     }
@@ -587,7 +653,7 @@ function BookRoom() {
     // {orderDetailData.map((orderDetailData) => {
     //   if (orderDetailData.informationCustomerList.length == 0) {
     //     toast.error("Có phòng chưa có khách ở!", {
-    //       position: toast.POSITION.BOTTOM_RIGHT,
+    //       position: toast.POSITION.BOTTOM_CENTER,
     //     });
     //     return;
     //   }
@@ -595,12 +661,20 @@ function BookRoom() {
 
     if (infoCustomer.length == 0) {
       toast.error("Phòng chưa có khách ở!", {
-        position: toast.POSITION.BOTTOM_RIGHT,
+        position: toast.POSITION.BOTTOM_CENTER,
       });
       return;
     }
 
     try {
+      const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
+      // Kiểm tra xem accessToken có tồn tại không
+      if (!accessToken) {
+        alert("Bạn chưa đăng nhập");
+        return;
+      }
+      axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+
       await axios.put(`http://localhost:2003/api/admin/order/update-accept/${id}`, {
         customerId: selectedCustomerAccept,
         totalMoney: sumAmount,
@@ -610,7 +684,7 @@ function BookRoom() {
       setOrder({ ...order, status: 2 });
       handleCloseAcceptOrder();
       toast.success("Nhận phòng thành công!", {
-        position: toast.POSITION.BOTTOM_RIGHT,
+        position: toast.POSITION.BOTTOM_CENTER,
       });
       router.push(`/orders?id=${id}`);
     } catch (error) {
@@ -622,14 +696,14 @@ function BookRoom() {
   const handleReturnOneRoom = async () => {
     if (!givenCustomerOneRoom || givenCustomerOneRoom < sumOrderDetail) {
       toast.error("Số tiền khách trả không hợp lệ!", {
-        position: toast.POSITION.BOTTOM_RIGHT,
+        position: toast.POSITION.BOTTOM_CENTER,
       });
       return;
     }
 
     if (!selectedCustomerReturn) {
       toast.error("Chưa chọn khách hàng!", {
-        position: toast.POSITION.BOTTOM_RIGHT,
+        position: toast.POSITION.BOTTOM_CENTER,
       });
       return;
     }
@@ -644,12 +718,13 @@ function BookRoom() {
           moneyGivenByCustomer: givenCustomerOneRoom,
           excessMoney: moneyReturnCustomerOneRoom,
           note: noteReturnOneRoom,
+          idReturn: id,
         }
       );
       const orderId = response.data.id;
       handleCloseReturnOneRoom();
       toast.success("Trả phòng thành công!", {
-        position: toast.POSITION.BOTTOM_RIGHT,
+        position: toast.POSITION.BOTTOM_CENTER,
       });
       router.push(`/orders?id=${orderId}`);
     } catch (error) {
@@ -662,11 +737,19 @@ function BookRoom() {
     if (!givenCustomer || givenCustomer < sumAmount) {
       // Xử lý khi tiền khách trả không hợp lệ, ví dụ: hiển thị thông báo lỗi
       toast.error("Số tiền khách trả không hợp lệ!", {
-        position: toast.POSITION.BOTTOM_RIGHT,
+        position: toast.POSITION.BOTTOM_CENTER,
       });
       return;
     }
     try {
+      const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
+      // Kiểm tra xem accessToken có tồn tại không
+      if (!accessToken) {
+        alert("Bạn chưa đăng nhập");
+        return;
+      }
+      axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+
       await axios.put(`http://localhost:2003/api/admin/order/update-return/${id}`, {
         totalMoney: sumAmount,
         vat: vatAmount,
@@ -677,7 +760,7 @@ function BookRoom() {
       setOrder({ ...order, status: 3 });
       handleCloseReturnRoom();
       toast.success("Trả phòng thành công!", {
-        position: toast.POSITION.BOTTOM_RIGHT,
+        position: toast.POSITION.BOTTOM_CENTER,
       });
       router.push(`/orders?id=${id}`);
     } catch (error) {
@@ -688,6 +771,13 @@ function BookRoom() {
   // Hủy hóa đơn
   const handleCancelOrder = async () => {
     try {
+      const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
+      // Kiểm tra xem accessToken có tồn tại không
+      if (!accessToken) {
+        alert("Bạn chưa đăng nhập");
+        return;
+      }
+      axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
       // Make an API call to update the order status to "Đã xác nhận" (status: 2)
       await axios.put(`http://localhost:2003/api/admin/order/delete/${id}`, {
         note: noteOrder,
@@ -695,7 +785,7 @@ function BookRoom() {
       setOrder({ ...order, status: 0 });
       handleCloseAcceptOrder();
       toast.success("Hủy thành công!", {
-        position: toast.POSITION.BOTTOM_RIGHT,
+        position: toast.POSITION.BOTTOM_CENTER,
       });
       router.push(`/orders?id=${id}`);
     } catch (error) {
@@ -704,12 +794,19 @@ function BookRoom() {
   };
 
   const handleSave = async () => {
+    const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
+    // Kiểm tra xem accessToken có tồn tại không
+    if (!accessToken) {
+      alert("Bạn chưa đăng nhập");
+      return;
+    }
+    axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
     // const updatedTotalMoney = calculateTotal(); // Lấy giá trị tạm tính
     const response = await axios.put(`http://localhost:2003/api/admin/order/update/${id}`, {
       totalMoney: sumAmount,
     });
     toast.success("Lưu thành công!", {
-      position: toast.POSITION.BOTTOM_RIGHT,
+      position: toast.POSITION.BOTTOM_CENTER,
     });
     router.push(`/room-service?id=${id}`);
     console.log(response.data);
@@ -719,7 +816,7 @@ function BookRoom() {
   const handleConfirmCombo = async () => {
     if (!selectedOrderDetails) {
       toast.error("Vui lòng chọn phòng trước khi thêm combo!", {
-        position: toast.POSITION.BOTTOM_RIGHT,
+        position: toast.POSITION.BOTTOM_CENTER,
       });
       return;
     }
@@ -731,25 +828,37 @@ function BookRoom() {
       `http://localhost:2003/api/order-detail/detail/${selectedOrderDetails}`
     );
 
-    // Step 2: Create Service and OrderDetail objects
-    const combo = comboResponse.data; // Assuming the API returns the service object
-    const orderDetail = orderDetailResponse.data; // Assuming the API returns the orderDetail object
+    const combo = comboResponse.data;
+    const orderDetail = orderDetailResponse.data;
 
     const comboUsedDTO = {
-      combo: combo,
-      orderDetail: orderDetail,
+      combo: combo.id,
+      orderDetail: orderDetail.id,
       quantity: parseInt(quantityCombo), // Convert to number if needed
       note: noteCombo,
     };
 
     if (!quantityCombo) {
       toast.error("Vui lòng không để trống số lượng!", {
-        position: toast.POSITION.BOTTOM_RIGHT,
+        position: toast.POSITION.BOTTOM_CENTER,
+      });
+      return;
+    } else if (quantityCombo < 1) {
+      toast.error("Số lượng phải lớn hơn 0.", {
+        position: toast.POSITION.BOTTOM_CENTER,
       });
       return;
     }
 
     try {
+      const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
+      // Kiểm tra xem accessToken có tồn tại không
+      if (!accessToken) {
+        alert("Bạn chưa đăng nhập");
+        return;
+      }
+      axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+
       const response = await axios.post("http://localhost:2003/api/combo-used/save", comboUsedDTO);
       setQuantityCombo("");
       setNoteCombo("");
@@ -757,13 +866,17 @@ function BookRoom() {
       setOpenAddCombo(false);
       setOpenAddService(false);
       setComboUsed(response.data);
-      // const newTotal = calculateTotal();
-      // setTotalAmount(newTotal);
       console.log("Combo added to comboUsed: ", response.data);
+      setComboUsed([...comboUsed, response.data]);
+      const responseComboPrice = await axios.get("http://localhost:2003/api/combo-used/load");
+      setComboUsedTotalPrice(responseComboPrice.data);
+      const responseComboUsed = await axios.get(
+        `http://localhost:2003/api/combo-used/load/${selectedOrderDetails}`
+      );
+      setComboUsed(responseComboUsed.data);
       toast.success("Thêm thành công!", {
-        position: toast.POSITION.BOTTOM_RIGHT,
+        position: toast.POSITION.BOTTOM_CENTER,
       });
-      window.location.href = `/room-service?id=${id}`;
     } catch (error) {
       console.error("Error adding to combo used");
     }
@@ -773,7 +886,7 @@ function BookRoom() {
   const handleConfirm = async () => {
     if (!selectedOrderDetails) {
       toast.error("Vui lòng chọn phòng trước khi thêm dịch vụ!", {
-        position: toast.POSITION.BOTTOM_RIGHT,
+        position: toast.POSITION.BOTTOM_CENTER,
       });
       return;
     }
@@ -790,20 +903,33 @@ function BookRoom() {
     const orderDetail = orderDetailResponse.data; // Assuming the API returns the orderDetail object
 
     const serviceUsedDTO = {
-      service: service,
-      orderDetail: orderDetail,
+      serviceId: service.id,
+      orderDetailId: orderDetail.id,
       quantity: parseInt(quantity), // Convert to number if needed
       note: note,
     };
 
     if (!quantity) {
       toast.error("Vui lòng không để trống số lượng!", {
-        position: toast.POSITION.BOTTOM_RIGHT,
+        position: toast.POSITION.BOTTOM_CENTER,
+      });
+      return;
+    } else if (quantity < 1) {
+      toast.error("Số lượng phải lớn hơn 0.", {
+        position: toast.POSITION.BOTTOM_CENTER,
       });
       return;
     }
 
     try {
+      const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
+      // Kiểm tra xem accessToken có tồn tại không
+      if (!accessToken) {
+        alert("Bạn chưa đăng nhập");
+        return;
+      }
+      axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+
       const response = await axios.post(
         "http://localhost:2003/api/service-used/save",
         serviceUsedDTO
@@ -812,14 +938,20 @@ function BookRoom() {
       setNote("");
       setOpenQuantityNote(false);
       setOpenAddService(false);
-      setServiceUsed(response.data);
+      setServiceUsed([...serviceUsed, response.data]);
+      const responseServicePrice = await axios.get("http://localhost:2003/api/service-used/load");
+      setServiceUsedTotalPrice(responseServicePrice.data);
+      const responseServiceUsed = await axios.get(
+        `http://localhost:2003/api/service-used/load/${selectedOrderDetails}`
+      );
+      setServiceUsed(responseServiceUsed.data);
       const newTotal = calculateTotal();
       setTotalAmount(newTotal);
       console.log("Service added to serviceUsed: ", response.data);
+      // window.location.href = `/room-service?id=${id}`;
       toast.success("Thêm thành công!", {
-        position: toast.POSITION.BOTTOM_RIGHT,
+        position: toast.POSITION.BOTTOM_CENTER,
       });
-      window.location.href = `/room-service?id=${id}`;
     } catch (error) {
       console.error("Error adding to service used");
     }
@@ -829,34 +961,42 @@ function BookRoom() {
   const handleAddCustomerToRooms = async () => {
     if (!selectedOrderDetails) {
       toast.error("Vui lòng chọn phòng trước khi thêm thông tin khách hàng!", {
-        position: toast.POSITION.BOTTOM_RIGHT,
+        position: toast.POSITION.BOTTOM_CENTER,
       });
       return;
     }
 
-    if (!cccd || !customerName || !birthday || !phoneNumber) {
+    if (
+      !cccd.trim() ||
+      !customerName.trim() ||
+      !birthday.trim() ||
+      !phoneNumber.trim() ||
+      !email.trim() ||
+      !nationality.trim() ||
+      !address.trim()
+    ) {
       toast.error("Vui lòng điền đầy đủ thông tin khách hàng!", {
-        position: toast.POSITION.BOTTOM_RIGHT,
+        position: toast.POSITION.BOTTOM_CENTER,
       });
       return;
     } else if (!/^\d+$/.test(cccd)) {
       toast.error("CCCD chỉ được chứa ký tự số!", {
-        position: toast.POSITION.BOTTOM_RIGHT,
+        position: toast.POSITION.BOTTOM_CENTER,
       });
       return;
     } else if (!/^[0]\d{11}$/.test(cccd)) {
       toast.error("CCCD phải bắt đầu bằng số 0 và có đúng 12 số!", {
-        position: toast.POSITION.BOTTOM_RIGHT,
+        position: toast.POSITION.BOTTOM_CENTER,
       });
       return;
     } else if (!/^\d+$/.test(phoneNumber)) {
       toast.error("Số điện thoại chỉ được chứa ký tự số!", {
-        position: toast.POSITION.BOTTOM_RIGHT,
+        position: toast.POSITION.BOTTOM_CENTER,
       });
       return;
     } else if (!/^[0]\d{9}$/.test(phoneNumber)) {
       toast.error("Số điện thoại phải bắt đầu bằng số 0 và có đúng 10 số!", {
-        position: toast.POSITION.BOTTOM_RIGHT,
+        position: toast.POSITION.BOTTOM_CENTER,
       });
       return;
     }
@@ -864,23 +1004,22 @@ function BookRoom() {
     const isCustomer = customerInfo.some((customer) => customer.citizenId === cccd);
     if (isCustomer) {
       toast.error("Khách hàng đã tồn tại trong danh sách của phòng này!", {
-        position: toast.POSITION.BOTTOM_RIGHT,
+        position: toast.POSITION.BOTTOM_CENTER,
       });
       return;
     }
 
-    console.log("List: ", orderDetailData);
     const isCustomerAdded = orderDetailData.some((orderDetail) => {
       // Kiểm tra xem orderDetail và customerInfo có tồn tại
       if (orderDetail && orderDetail.informationCustomerList) {
         return orderDetail.informationCustomerList.some((customer) => customer.citizenId === cccd);
       }
-      return false; // Trường hợp nếu orderDetail hoặc customerInfo không tồn tại
+      return false;
     });
 
     if (isCustomerAdded) {
       toast.error("Khách hàng đã có mặt trong 1 phòng khác!", {
-        position: toast.POSITION.BOTTOM_RIGHT,
+        position: toast.POSITION.BOTTOM_CENTER,
       });
       return;
     }
@@ -888,12 +1027,10 @@ function BookRoom() {
     const selectedOrderDetail = orderDetailData.find(
       (detail) => detail.id === selectedOrderDetails
     );
-    console.log(selectedOrderDetail);
-    // const { room } = selectedOrderDetail;
 
     if (customerInfo.length >= selectedOrderDetail.customerQuantity) {
       toast.error("Sức chứa của phòng đã đầy, không thể thêm khách hàng mới!", {
-        position: toast.POSITION.BOTTOM_RIGHT,
+        position: toast.POSITION.BOTTOM_CENTER,
       });
       return;
     }
@@ -908,17 +1045,41 @@ function BookRoom() {
       gender: genderBoolean,
       birthday: formattedBirthday,
       phoneNumber: phoneNumber,
+      email: email,
+      nationality: nationality,
+      address: address,
     };
 
     try {
+      const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
+      // Kiểm tra xem accessToken có tồn tại không
+      if (!accessToken) {
+        alert("Bạn chưa đăng nhập");
+        return;
+      }
+      axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+
       const response = await axios.post(
         `http://localhost:2003/api/information-customer/save/${selectedOrderDetails}`,
         customerInfor
       );
-      setCustomerInfo(response.data);
-      window.location.href = `/room-service?id=${id}`;
+      setCustomerInfo([...customerInfo, response.data]);
+      const responseOrderDetail = await axios.get(
+        `http://localhost:2003/api/order-detail/loadOrderDetailByOrderId/${id}`
+      );
+      setOrderDetailData(responseOrderDetail.data);
+      const responseInfo = await axios.get(
+        `http://localhost:2003/api/information-customer/load/${selectedOrderDetails}`
+      );
+      setCustomerInfo(responseInfo.data);
+      const responseCustomerOrder = await axios.get(
+        `http://localhost:2003/api/admin/customer/getAllByOrderId/${id}`
+      );
+      setCustomerOrder(responseCustomerOrder.data);
+      const responseCustomer = await axios.get("http://localhost:2003/api/admin/customer/getAll");
+      setCustomer(responseCustomer.data);
       toast.success("Thêm thành công!", {
-        position: toast.POSITION.BOTTOM_RIGHT,
+        position: toast.POSITION.BOTTOM_CENTER,
       });
       console.log(
         `Information customer added to orderDetail ${selectedOrderDetails}:`,
@@ -940,6 +1101,9 @@ function BookRoom() {
     setGender("Nam");
     setBirthday("");
     setPhoneNumber("");
+    setEmail("");
+    setNationality("");
+    setAddress("");
   };
 
   // Load combo sử dụng khi tích vào từng phòng
@@ -1001,15 +1165,34 @@ function BookRoom() {
     }
   }, [selectedOrderDetails]);
 
-  // Xóa thông tin khách hàng
-  const handleDelete = async (id) => {
+  const handleDelete = async (customerInfoId) => {
     try {
-      await axios.delete(`http://localhost:2003/api/information-customer/delete/${id}`);
+      const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
+      // Kiểm tra xem accessToken có tồn tại không
+      if (!accessToken) {
+        alert("Bạn chưa đăng nhập");
+        return;
+      }
+      axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
 
-      // Xóa khách hàng khỏi danh sách ngay sau khi xóa
-      setCustomerInfo((prevCustomers) => prevCustomers.filter((customer) => customer.id !== id));
+      await axios.delete(`http://localhost:2003/api/information-customer/delete/${customerInfoId}`);
+
+      const responseOrderDetail = await axios.get(
+        `http://localhost:2003/api/order-detail/loadOrderDetailByOrderId/${id}`
+      );
+      setOrderDetailData(responseOrderDetail.data);
+      const response = await axios.get(
+        `http://localhost:2003/api/information-customer/load/${selectedOrderDetails}`
+      );
+      setCustomerInfo(response.data);
+      const responseInfo = await axios.get("http://localhost:2003/api/information-customer/load");
+      setInfoCustomer(responseInfo.data);
+      const responseCustomer = await axios.get(
+        `http://localhost:2003/api/admin/customer/getAllByOrderId/${id}`
+      );
+      setCustomerOrder(responseCustomer.data);
       toast.success("Xóa thành công!", {
-        position: toast.POSITION.BOTTOM_RIGHT,
+        position: toast.POSITION.BOTTOM_CENTER,
       });
     } catch (error) {
       console.log(error);
@@ -1019,13 +1202,24 @@ function BookRoom() {
   // Xóa combo sử dụng
   const handleDeleteComboUsed = async (id) => {
     try {
+      const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
+      // Kiểm tra xem accessToken có tồn tại không
+      if (!accessToken) {
+        alert("Bạn chưa đăng nhập");
+        return;
+      }
+
+      axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
       await axios.delete(`http://localhost:2003/api/combo-used/delete/${id}`);
-      // Xóa khách hàng khỏi danh sách ngay sau khi xóa
       setComboUsed((prevCombos) => prevCombos.filter((comboUsed) => comboUsed.id !== id));
-      // const newTotal = calculateTotalAmountPriceRoom() + calculateTotalService();
-      // setTotalAmount(newTotal);
+      const responseComboPrice = await axios.get("http://localhost:2003/api/combo-used/load");
+      setComboUsedTotalPrice(responseComboPrice.data);
+      const responseComboUsed = await axios.get(
+        `http://localhost:2003/api/combo-used/load/${selectedOrderDetails}`
+      );
+      setComboUsed(responseComboUsed.data);
       toast.success("Xóa thành công!", {
-        position: toast.POSITION.BOTTOM_RIGHT,
+        position: toast.POSITION.BOTTOM_CENTER,
       });
     } catch (error) {
       console.log(error);
@@ -1035,14 +1229,26 @@ function BookRoom() {
   // Xóa dịch vụ sử dụng
   const handleDeleteServiceUsed = async (id) => {
     try {
+      const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
+      // Kiểm tra xem accessToken có tồn tại không
+      if (!accessToken) {
+        alert("Bạn chưa đăng nhập");
+        return;
+      }
+      axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+
       await axios.delete(`http://localhost:2003/api/service-used/delete/${id}`);
 
       // Xóa khách hàng khỏi danh sách ngay sau khi xóa
       setServiceUsed((prevServices) => prevServices.filter((serviceUsed) => serviceUsed.id !== id));
-      // const newTotal = calculateTotalAmountPriceRoom() + calculateTotalService();
-      // setTotalAmount(newTotal);
+      const response = await axios.get("http://localhost:2003/api/service-used/load");
+      setServiceUsedTotalPrice(response.data);
+      const responseServiceUsed = await axios.get(
+        `http://localhost:2003/api/service-used/load/${selectedOrderDetails}`
+      );
+      setServiceUsed(responseServiceUsed.data);
       toast.success("Xóa thành công!", {
-        position: toast.POSITION.BOTTOM_RIGHT,
+        position: toast.POSITION.BOTTOM_CENTER,
       });
     } catch (error) {
       console.log(error);
@@ -1052,20 +1258,41 @@ function BookRoom() {
   // Xóa phòng
   const handleDeleteRoom = async (orderDetailid) => {
     try {
+      const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
+      // Kiểm tra xem accessToken có tồn tại không
+      if (!accessToken) {
+        alert("Bạn chưa đăng nhập");
+        return;
+      }
+      axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+
       await axios.put(`http://localhost:2003/api/order-detail/delete/${orderDetailid}`);
 
-      // Xóa khách hàng khỏi danh sách ngay sau khi xóa
-      // setOrderDetailData((prevOrderDetail) =>
-      //   prevOrderDetail.filter((orderDetailData) => orderDetailData.id !== id)
-      // );
-      // router.push(`/room-service?id=${id}`);
-      window.location.href = `/room-service?id=${id}`;
-      // const newTotal = calculateTotalAmountPriceRoom() + calculateTotalService();
-      // setTotalAmount(newTotal);
-      toast.success("Xóa thành công!", {
-        position: toast.POSITION.BOTTOM_RIGHT,
+      setOrderDetailData((prevOrderDetail) =>
+        prevOrderDetail.filter((orderDetailData) => orderDetailData.id !== id)
+      );
+      router.push(`/room-service?id=${id}`);
+      const response = await axios.get(
+        `http://localhost:2003/api/order-detail/loadOrderDetailByOrderId/${id}`
+      );
+      setOrderDetailData(response.data);
+      const responseRoom = await axios.get(
+        "http://localhost:2003/api/admin/room/loadAndSearchBookRoom"
+      );
+      setRooms(responseRoom.data);
+      const responseServiceUsed = await axios.get("http://localhost:2003/api/service-used/load");
+      setServiceUsedTotalPrice(responseServiceUsed.data);
+      const responseComboPrice = await axios.get("http://localhost:2003/api/combo-used/load");
+      setComboUsedTotalPrice(responseComboPrice.data);
+      const responseCustomer = await axios.get(
+        `http://localhost:2003/api/admin/customer/getAllByOrderId/${id}`
+      );
+      setCustomerOrder(responseCustomer.data);
+      toast.success("Hủy phòng thành công!", {
+        position: toast.POSITION.BOTTOM_CENTER,
       });
       setAnchorEl(null);
+      setSelectedOrderDetails(null);
     } catch (error) {
       console.log(error);
     }
@@ -1082,7 +1309,9 @@ function BookRoom() {
           return;
         }
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
-        const response = await axios.get("http://localhost:2003/api/admin/room/getAllByStatus");
+        const response = await axios.get(
+          "http://localhost:2003/api/admin/room/loadAndSearchBookRoom"
+        );
         setRooms(response.data); // Cập nhật danh sách phòng từ response
       } catch (error) {
         console.log(error);
@@ -1137,7 +1366,7 @@ function BookRoom() {
   // Load
   useEffect(() => {
     // Định nghĩa hàm fetchData bên trong useEffect
-    async function fetchData() {
+    const fetchData = async () => {
       try {
         const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
         // Kiểm tra xem accessToken có tồn tại không
@@ -1150,7 +1379,13 @@ function BookRoom() {
         const response2 = await axios.get("http://localhost:2003/api/admin/type-room/getList");
         const response3 = await axios.get("http://localhost:2003/api/admin/service-type/getAll");
         const response4 = await axios.get("http://localhost:2003/api/admin/unit/getAll");
-        const response5 = await axios.get("http://localhost:2003/api/admin/customer/getAll");
+        let Api = `http://localhost:2003/api/admin/customer/getAll`;
+        let hasQueryParams = false;
+        if (searchCustomer !== "") {
+          Api += `?key=${searchCustomer}`;
+          hasQueryParams = true;
+        }
+        const response5 = await axios.get(Api);
         const response6 = await axios.get("http://localhost:2003/api/service-used/load");
         const response7 = await axios.get("http://localhost:2003/api/combo-used/load");
         const response8 = await axios.get(
@@ -1160,7 +1395,6 @@ function BookRoom() {
         const response10 = await axios.get(
           `http://localhost:2003/api/admin/customer/getAllByOrderDetailId/${selectedOrderDetails}`
         );
-        console.log(response.data);
         setFloor(response.data);
         setTypeRoom(response2.data);
         setServiceType(response3.data);
@@ -1174,10 +1408,10 @@ function BookRoom() {
       } catch (error) {
         console.log(error);
       }
-    }
+    };
     // Gọi hàm fetchData ngay lập tức
     fetchData();
-  }, []);
+  }, [searchCustomer]);
 
   // Load hóa đơn chi tiết theo id hóa đơn
   useEffect(() => {
@@ -1237,24 +1471,27 @@ function BookRoom() {
     if (selectedRoomId && valueFrom && valueTo && valueTimeFrom && valueTimeTo) {
       if (numberOfPeople < 1) {
         toast.error("Số người lớn hơn 0!", {
-          position: toast.POSITION.BOTTOM_RIGHT,
+          position: toast.POSITION.BOTTOM_CENTER,
         });
         return false;
       }
 
       if (numberOfPeople > rooms.find((r) => r.id === selectedRoomId)?.typeRoom?.capacity) {
         toast.error("Số người không được vượt quá sức chứa!", {
-          position: toast.POSITION.BOTTOM_RIGHT,
+          position: toast.POSITION.BOTTOM_CENTER,
         });
         return false;
       }
       const totalAmount = numberOfDays * roomPricePerDay;
       try {
-        const accessToken = localStorage.getItem("accessToken");
+        const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
+        // Kiểm tra xem accessToken có tồn tại không
         if (!accessToken) {
           alert("Bạn chưa đăng nhập");
           return;
         }
+        axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+
         const response = await axios.post("http://localhost:2003/api/order-detail/save", {
           order: { id: id },
           room: rooms.find((r) => r.id === selectedRoomId),
@@ -1265,10 +1502,18 @@ function BookRoom() {
           roomPrice: totalAmount,
           customerQuantity: numberOfPeople,
         });
-
-        window.location.href = `/room-service?id=${id}`;
+        setOrderDetailData([...orderDetailData, response.data]);
+        const responseOrderDetail = await axios.get(
+          `http://localhost:2003/api/order-detail/loadOrderDetailByOrderId/${id}`
+        );
+        setOrderDetailData(responseOrderDetail.data);
+        const responseRoom = await axios.get(
+          "http://localhost:2003/api/admin/room/loadAndSearchBookRoom"
+        );
+        setRooms(responseRoom.data);
+        router.push(`/room-service?id=${id}`);
         toast.success("Thêm phòng thành công!", {
-          position: toast.POSITION.BOTTOM_RIGHT,
+          position: toast.POSITION.BOTTOM_CENTER,
         });
         console.log("Phòng đã được thêm vào hóa đơn chi tiết:", response.data);
         // Đóng dialog chọn ngày
@@ -1280,7 +1525,7 @@ function BookRoom() {
       }
     } else {
       toast.warning("Vui lòng ngày check-in/check-out và giờ check-in/check-out.", {
-        position: toast.POSITION.BOTTOM_RIGHT,
+        position: toast.POSITION.BOTTOM_CENTER,
       });
       return false;
     }
@@ -1291,8 +1536,12 @@ function BookRoom() {
     const fetchData = async () => {
       try {
         const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
-        // console.log(accessToken);
-        axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
+        // Kiểm tra xem accessToken có tồn tại không
+        if (!accessToken) {
+          alert("Bạn chưa đăng nhập");
+          return;
+        }
+        axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
 
         let Api = `http://localhost:2003/api/admin/room/loadAndSearchBookRoom`;
         // Add search text parameter only if there's a search text entered
@@ -1317,9 +1566,27 @@ function BookRoom() {
             : `?start=${priceRange[0]}&end=${priceRange[1]}`;
           hasQueryParams = true;
         }
-        // console.warn(Api);
+        if (valueDateFrom) {
+          const valueFromDate = new Date(valueDateFrom);
+          valueFromDate.setDate(valueFromDate.getDate() + 1);
+          const formattedValueFrom = valueFromDate.toISOString().slice(0, 10);
+          // Api += hasQueryParams
+          //   ? `&dayStart=${formattedValueFrom}`
+          //   : `?dayStart=${formattedValueFrom}`;
+          // hasQueryParams = true;
+          Api = Api + `&dayStart=${formattedValueFrom}`;
+        }
+        if (valueDateTo) {
+          const valueToDate = new Date(valueDateTo);
+          valueToDate.setDate(valueToDate.getDate() + 1);
+          const formattedValueTo = valueToDate.toISOString().slice(0, 10);
+          // Api += hasQueryParams ? `&dayEnd=${formattedValueTo}` : `?dayEnd=${formattedValueTo}`;
+          // hasQueryParams = true;
+          Api = Api + `&dayEnd=${formattedValueTo}`;
+        }
+        console.warn(Api);
         setIsLoading(true);
-        const response = await axios.get(Api); // Thay đổi URL API của bạn tại đây
+        const response = await axios.get(Api);
         setRooms(response.data);
         setIsLoading(false);
       } catch (error) {
@@ -1327,7 +1594,7 @@ function BookRoom() {
           // Xử lý response lỗi
           if (error.response.status === 403) {
             alert("Bạn không có quyền truy cập vào trang này");
-            window.location.href = "/auth/login"; // Thay đổi "/dang-nhap" bằng đường dẫn đến trang đăng nhập của bạn
+            window.location.href = "/auth/login";
           } else {
             alert("Có lỗi xảy ra trong quá trình gọi API");
           }
@@ -1338,16 +1605,14 @@ function BookRoom() {
     };
 
     fetchData();
-  }, [textSearch, floorChose, typeRoomChose, priceRange]);
+  }, [textSearch, floorChose, typeRoomChose, priceRange, valueDateFrom, valueDateTo]);
 
-  // Tạo phương phức thanh toán quá Bank
   const createPayment = async () => {
     try {
       const response = await axios.post(
         `http://localhost:2003/api/payment-method/payment-vnpay/${id}`
       );
       const { finalUrl } = response.data;
-      // Redirect the user to the payment page
       window.location.href = finalUrl;
     } catch (error) {
       console.error("Error creating payment:", error);
@@ -1359,25 +1624,24 @@ function BookRoom() {
       const response = await axios.post(
         `http://localhost:2003/api/payment-method/payment-momo/${id}`
       );
-      console.log("MomoUrl: ", response.data);
       window.location.href = response.data.payUrl;
     } catch (error) {
       console.error("Error creating payment:", error);
     }
   };
 
-  const createPaymentZaloPay = async () => {
-    try {
-      const response = await axios.post(
-        `http://localhost:2003/api/payment-method/payment-zalo/${id}`
-      );
-      console.log("ZaloPayUrl: ", response.data);
-      // Redirect to the payment page
-      window.location.href = response.data.orderurl;
-    } catch (error) {
-      console.error("Error creating payment:", error);
-    }
-  };
+  // const createPaymentZaloPay = async () => {
+  //   try {
+  //     const response = await axios.post(
+  //       `http://localhost:2003/api/payment-method/payment-zalo/${id}`
+  //     );
+  //     window.sessionStorage.setItem("orderId", id);
+  //     // Redirect to the payment page
+  //     window.location.href = response.data.orderurl;
+  //   } catch (error) {
+  //     console.error("Error creating payment:", error);
+  //   }
+  // };
 
   return (
     <div
@@ -1405,7 +1669,43 @@ function BookRoom() {
         <DialogTitle>Tìm kiếm phòng</DialogTitle>
         <DialogContent>
           <RoomSearch textSearch={textSearch} setTextSearch={setTextSearch} />
-          <div style={{ display: "flex", marginTop: 10, alignItems: "center" }}>
+          <div style={{ display: "flex", marginLeft: 600, marginTop: -70 }}>
+            <Grid item xs={12} ml={2} mr={2} sm={12} xl={2} lg={3}>
+              <DatePicker
+                disablePast
+                label="Từ ngày"
+                value={valueDateFrom}
+                onChange={handleDateFromChange}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    inputProps={{
+                      value: formatDate(valueDateFrom),
+                      readOnly: true,
+                    }}
+                  />
+                )}
+              />
+            </Grid>
+            <Grid item xs={12} sm={12} xl={2} lg={3}>
+              <DatePicker
+                disablePast
+                label="Đến ngày"
+                value={valueDateTo}
+                onChange={handleDateToChange}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    inputProps={{
+                      value: formatDate(valueDateTo),
+                      readOnly: true,
+                    }}
+                  />
+                )}
+              />
+            </Grid>
+          </div>
+          <div style={{ display: "flex", marginTop: 25, alignItems: "center" }}>
             <div>
               <RoomFilter
                 floor={floor}
@@ -1438,6 +1738,7 @@ function BookRoom() {
                     <TableCell>Phòng</TableCell>
                     <TableCell>Loại phòng</TableCell>
                     <TableCell>Tầng</TableCell>
+                    <TableCell>Sức chứa</TableCell>
                     <TableCell>Giá theo ngày</TableCell>
                     <TableCell>Trạng thái</TableCell>
                     <TableCell>Thao tác</TableCell>
@@ -1464,6 +1765,7 @@ function BookRoom() {
                         <TableCell>{room.roomName}</TableCell>
                         <TableCell>{room.typeRoom.typeRoomName}</TableCell>
                         <TableCell>{room.floor.floorName}</TableCell>
+                        <TableCell>{room.typeRoom.capacity}</TableCell>
                         <TableCell>{formatPrice(room.typeRoom.pricePerDay)}</TableCell>
                         <TableCell>
                           <SeverityPill variant="contained" color={statusData.color}>
@@ -1621,8 +1923,8 @@ function BookRoom() {
         </DialogActions>
       </Dialog>
       <div style={{ marginBottom: 20, height: 50, display: "flex", justifyContent: "flex-end" }}>
-        {order.status === 1 || order.status === 2 ? (
-          <button onClick={handleOpenSearchRoom} className="btn btn-primary">
+        {order.status === 1 ? (
+          <button onClick={handleOpenSearchRoom} className="btn btn-outline-primary">
             TÌM PHÒNG
           </button>
         ) : null}
@@ -1665,11 +1967,11 @@ function BookRoom() {
                       />
                     </TableCell>
                     <TableCell>
-                      {orderDetail.roomImages.length > 0 && ( // Kiểm tra xem có hình ảnh nào trong mảng không
+                      {orderDetail && orderDetail.roomImages && orderDetail.roomImages[0] && (
                         <img
                           style={{ objectFit: "cover", width: "100%" }}
-                          src={orderDetail.roomImages[0]} // Hiển thị chỉ hình ảnh đầu tiên
-                          alt={`Room ${index + 1} Image 1`} // Ví dụ: Room 1 Image 1
+                          src={orderDetail.roomImages[0]}
+                          alt={`Room ${index + 1} Image 1`}
                         />
                       )}
                     </TableCell>
@@ -1678,11 +1980,16 @@ function BookRoom() {
                     <TableCell>{orderDetail.room.typeRoom.typeRoomName}</TableCell>
                     <TableCell>{orderDetail.room.typeRoom.capacity}</TableCell>
                     <TableCell>
-                      {format(new Date(orderDetail.checkIn), "dd/MM/yyyy - HH:mm:ss")}
+                      {orderDetail &&
+                        orderDetail.checkIn &&
+                        format(new Date(orderDetail.checkIn), "dd/MM/yyyy - HH:mm")}
                     </TableCell>
                     <TableCell>
-                      {format(new Date(orderDetail.checkOut), "dd/MM/yyyy - HH:mm:ss")}
+                      {orderDetail &&
+                        orderDetail.checkOut &&
+                        format(new Date(orderDetail.checkOut), "dd/MM/yyyy - HH:mm")}
                     </TableCell>
+
                     <TableCell>{formatPrice(orderDetail.roomPrice)}</TableCell>
                     <TableCell>
                       {order.status === 1 ? (
@@ -1990,7 +2297,7 @@ function BookRoom() {
           </DialogContent>
         </Dialog>
         {order.status === 1 || order.status === 2 ? (
-          <button onClick={handleOpenAddService} className="btn btn-primary">
+          <button onClick={handleOpenAddService} className="btn btn-outline-primary">
             THÊM DỊCH VỤ
           </button>
         ) : null}
@@ -2141,21 +2448,21 @@ function BookRoom() {
                     <TableCell>Phòng</TableCell>
                     <TableCell>Số lượng</TableCell>
                     <TableCell>Thành tiền</TableCell>
-                    <TableCell>
-                      {order.status === 1 || order.status === 2 ? <>Thao tác</> : null}
-                    </TableCell>
+                    <TableCell>{order.status === 1 ? <>Thao tác</> : null}</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {serviceUsed.length > 0 ? (
-                    serviceUsed.map((serviceUsed) => (
-                      <TableRow key={serviceUsed.id}>
+                    serviceUsed.map((serviceUsed, index) => (
+                      <TableRow key={index}>
                         <TableCell>{serviceUsed.service.serviceName}</TableCell>
                         <TableCell>{serviceUsed.orderDetail.room.roomName}</TableCell>
                         <TableCell>{serviceUsed.quantity}</TableCell>
-                        <TableCell>{serviceUsed.quantity * serviceUsed.service.price}</TableCell>
                         <TableCell>
-                          {order.status === 1 || order.status === 2 ? (
+                          {formatPrice(serviceUsed.quantity * serviceUsed.service.price)}
+                        </TableCell>
+                        <TableCell>
+                          {order.status === 1 ? (
                             <>
                               <button
                                 onClick={() => handleDeleteServiceUsed(serviceUsed.id)}
@@ -2202,21 +2509,21 @@ function BookRoom() {
                     <TableCell>Phòng</TableCell>
                     <TableCell>Số lượng</TableCell>
                     <TableCell>Thành tiền</TableCell>
-                    <TableCell>
-                      {order.status === 1 || order.status === 2 ? <>Thao tác</> : null}
-                    </TableCell>
+                    <TableCell>{order.status === 1 ? <>Thao tác</> : null}</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {comboUsed.length > 0 ? (
-                    comboUsed.map((comboUsed) => (
-                      <TableRow key={comboUsed.id}>
+                    comboUsed.map((comboUsed, index) => (
+                      <TableRow key={index}>
                         <TableCell>{comboUsed.combo.comboName}</TableCell>
                         <TableCell>{comboUsed.orderDetail.room.roomName}</TableCell>
                         <TableCell>{comboUsed.quantity}</TableCell>
-                        <TableCell>{comboUsed.quantity * comboUsed.combo.price}</TableCell>
                         <TableCell>
-                          {order.status === 1 || order.status === 2 ? (
+                          {formatPrice(comboUsed.quantity * comboUsed.combo.price)}
+                        </TableCell>
+                        <TableCell>
+                          {order.status === 1 ? (
                             <>
                               <button
                                 onClick={() => handleDeleteComboUsed(comboUsed.id)}
@@ -2268,7 +2575,7 @@ function BookRoom() {
           marginTop: 30,
         }}
       >
-        <h3 style={{ display: "flex", justifyContent: "center" }}>DANH SÁCH KHÁCH HÀNG</h3>
+        <h3 style={{ display: "flex", justifyContent: "center" }}>THÔNG TIN KHÁCH HÀNG</h3>
         <hr />
         <Scrollbar>
           <Box sx={{ minWidth: 800 }}>
@@ -2280,9 +2587,8 @@ function BookRoom() {
                   <TableCell>Giới tính</TableCell>
                   <TableCell>Ngày sinh</TableCell>
                   <TableCell>Số điện thoại</TableCell>
-                  <TableCell>
-                    {order.status === 1 || order.status === 2 ? <>Thao tác</> : null}
-                  </TableCell>
+                  <TableCell>Email</TableCell>
+                  <TableCell>{order.status === 1 ? <>Thao tác</> : null}</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -2294,8 +2600,9 @@ function BookRoom() {
                       <TableCell>{customer.gender == 1 ? "Nam" : "Nữ"}</TableCell>
                       <TableCell>{format(new Date(customer.birthday), "dd/MM/yyyy")}</TableCell>
                       <TableCell>{customer.phoneNumber}</TableCell>
+                      <TableCell>{customer.email}</TableCell>
                       <TableCell>
-                        {order.status === 1 || order.status === 2 ? (
+                        {order.status === 1 ? (
                           <>
                             <button
                               onClick={() => handleDelete(customer.id)}
@@ -2335,13 +2642,20 @@ function BookRoom() {
             border: "1px solid #ccc",
             padding: "20px",
             boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
-            width: 650,
+            width: 1150,
             marginLeft: 150,
             marginTop: 30,
           }}
         >
-          <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <h3>THÔNG TIN KHÁCH HÀNG</h3>
+          <h3>NHẬP THÔNG TIN KHÁCH HÀNG</h3>
+          <div style={{ marginTop: -50, display: "flex", justifyContent: "flex-end", height: 50 }}>
+            <button
+              onClick={handleOpenQr}
+              className="btn btn-outline-primary"
+              style={{ width: 100, marginRight: 20 }}
+            >
+              <QrCodeScannerIcon />
+            </button>
             <button
               onClick={handleOpenChooseCustomer}
               style={{ width: 100 }}
@@ -2355,30 +2669,21 @@ function BookRoom() {
               fullWidth
               PaperProps={{
                 style: {
-                  maxWidth: "60%",
+                  maxWidth: "70%",
                   maxHeight: "90%",
                 },
               }}
             >
               <DialogTitle>Chọn khách hàng</DialogTitle>
               <DialogContent>
-                <OutlinedInput
-                  fullWidth
-                  defaultValue=""
-                  placeholder="Tìm kiếm khách hàng"
-                  startAdornment={
-                    <InputAdornment position="start">
-                      <SvgIcon color="action" fontSize="small">
-                        <MagnifyingGlassIcon />
-                      </SvgIcon>
-                    </InputAdornment>
-                  }
-                  sx={{ maxWidth: 500 }}
+                <CustomerSearch
+                  searchCustomer={searchCustomer}
+                  setSearchCustomer={setSearchCustomer}
                 />
                 <br />
                 <br />
                 <Scrollbar>
-                  <Box sx={{ minWidth: 800 }}>
+                  <Box sx={{ minWidth: 1000 }}>
                     <Table>
                       <TableHead>
                         <TableRow>
@@ -2387,6 +2692,8 @@ function BookRoom() {
                           <TableCell>Giới tính</TableCell>
                           <TableCell>Ngày sinh</TableCell>
                           <TableCell>Số điện thoại</TableCell>
+                          <TableCell>Email</TableCell>
+                          <TableCell>Quốc tịch</TableCell>
                           <TableCell>Thao tác</TableCell>
                         </TableRow>
                       </TableHead>
@@ -2400,6 +2707,8 @@ function BookRoom() {
                               {format(new Date(customer.birthday), "dd/MM/yyyy")}
                             </TableCell>
                             <TableCell>{customer.phoneNumber}</TableCell>
+                            <TableCell>{customer.email}</TableCell>
+                            <TableCell>{customer.nationality}</TableCell>
                             <TableCell>
                               <button
                                 className="btn btn-outline-primary"
@@ -2421,69 +2730,91 @@ function BookRoom() {
           <div>
             <div>
               <TextField
-                style={{ width: 290, marginRight: 20 }}
+                style={{ width: 350, marginRight: 20 }}
                 label="CCCD"
                 variant="outlined"
                 value={cccd || ""}
                 onChange={(e) => setCccd(e.target.value)}
               />
               <TextField
-                style={{ width: 290 }}
+                style={{ width: 350, marginRight: 20 }}
                 label="Tên khách hàng"
                 variant="outlined"
                 value={customerName || ""}
                 onChange={(e) => setCustomerName(e.target.value)}
               />
+              <TextField
+                style={{ width: 350 }}
+                label="Email"
+                variant="outlined"
+                value={email || ""}
+                onChange={(e) => setEmail(e.target.value)}
+              />
             </div>
             <br />
             <div>
               <TextField
-                style={{ width: 290, marginRight: 20 }}
+                style={{ width: 350, marginRight: 20 }}
                 label="Số điện thoại"
                 variant="outlined"
                 value={phoneNumber || ""}
                 onChange={(e) => setPhoneNumber(e.target.value)}
               />
               <DatePicker
+                disableFuture
                 maxDate={subYears(new Date(), 18)}
+                openTo="year"
                 label="Ngày sinh"
                 value={birthday || ""}
                 onChange={handleBirthDayChange}
                 renderInput={(params) => (
                   <TextField
-                    style={{ width: 290, color: "yellow" }}
+                    style={{ width: 350, marginRight: 20 }}
                     {...params}
                     inputProps={{
                       value: birthday || "",
-                      readOnly: true, // Prevent manual input
+                      readOnly: true,
                     }}
                   />
                 )}
               />
+              <TextField
+                style={{ width: 350 }}
+                label="Quốc tịch"
+                variant="outlined"
+                value={nationality || ""}
+                onChange={(e) => setNationality(e.target.value)}
+              />
             </div>
             <br />
-            <br />
-            <FormControl style={{ width: 600, display: "flex", justifyContent: "center" }}>
-              <FormLabel
-                style={{ display: "flex", justifyContent: "center" }}
-                id="demo-row-radio-buttons-group-label"
-              >
-                Giới tính
-              </FormLabel>
-              <RadioGroup
-                style={{ display: "flex", justifyContent: "center" }}
-                row
-                aria-labelledby="demo-row-radio-buttons-group-label"
-                name="row-radio-buttons-group"
-                value={gender || ""}
-                onChange={(e) => setGender(e.target.value)}
-              >
-                <FormControlLabel value="Nam" control={<Radio />} label="Nam" />
-                <FormControlLabel value="Nữ" control={<Radio />} label="Nữ" />
-              </RadioGroup>
-            </FormControl>
-            <div style={{ display: "flex", justifyContent: "flex-end" }}>
-              {order.status === 1 || order.status === 2 ? (
+            <div style={{ display: "flex" }}>
+              <TextField
+                style={{ width: 500 }}
+                label="Địa chỉ"
+                variant="outlined"
+                value={address || ""}
+                onChange={(e) => setAddress(e.target.value)}
+              />
+              <FormControl style={{ width: 500, display: "flex", justifyContent: "center" }}>
+                <FormLabel
+                  style={{ display: "flex", justifyContent: "center" }}
+                  id="demo-row-radio-buttons-group-label"
+                >
+                  Giới tính
+                </FormLabel>
+                <RadioGroup
+                  style={{ display: "flex", justifyContent: "center" }}
+                  row
+                  aria-labelledby="demo-row-radio-buttons-group-label"
+                  name="row-radio-buttons-group"
+                  value={gender || ""}
+                  onChange={(e) => setGender(e.target.value)}
+                >
+                  <FormControlLabel value="Nam" control={<Radio />} label="Nam" />
+                  <FormControlLabel value="Nữ" control={<Radio />} label="Nữ" />
+                </RadioGroup>
+              </FormControl>
+              {order.status === 1 ? (
                 <button
                   style={{ width: 200, height: 50 }}
                   className="btn btn-outline-success"
@@ -2493,38 +2824,32 @@ function BookRoom() {
                 </button>
               ) : null}
             </div>
+            <div style={{ display: "flex", justifyContent: "flex-end" }}></div>
           </div>
         </Box>
-        <Box
-          style={{
-            height: 400,
-            border: "1px solid #ccc",
-            padding: "20px",
-            boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
-            width: 400,
-            marginLeft: 80,
-            marginTop: 30,
-          }}
-        >
-          {cameraEnabled ? (
-            <div style={{ display: "flex", justifyContent: "center" }}>
-              <QrReader
-                delay={delay}
-                style={previewStyle}
-                onError={handleError}
-                onScan={handleScan}
-              />
+        <Dialog open={openQr} onClose={handleCloseQr} maxWidth="md">
+          <DialogTitle>Quét thông tin khách hàng</DialogTitle>
+          <DialogContent>
+            {cameraEnabled ? (
+              <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+                <QrReader
+                  delay={delay}
+                  style={previewStyle}
+                  onError={handleError}
+                  onScan={handleScan}
+                />
+              </div>
+            ) : (
+              <div style={{ display: "flex", justifyContent: "center" }}>Camera is disabled.</div>
+            )}
+            <p>{result}</p>
+            <div style={{ width: 400, display: "flex", justifyContent: "center" }}>
+              <button className="btn btn-outline-primary" onClick={toggleCamera}>
+                {cameraEnabled ? "Disable Camera" : "Enable Camera"}
+              </button>
             </div>
-          ) : (
-            <div style={{ display: "flex", justifyContent: "center" }}>Camera is disabled.</div>
-          )}
-          <p>{result}</p>
-          <div style={{ display: "flex", justifyContent: "center" }}>
-            <button className="btn btn-outline-primary" onClick={toggleCamera}>
-              {cameraEnabled ? "Disable Camera" : "Enable Camera"}
-            </button>
-          </div>
-        </Box>
+          </DialogContent>
+        </Dialog>
         <div
           style={{
             marginTop: 20,
@@ -2539,7 +2864,7 @@ function BookRoom() {
           </h6>
           {renderButtonsBasedOnStatus()}
           <Dialog open={openAcceptOrder} onClose={handleCloseAcceptOrder} maxWidth="md">
-            <DialogTitle>Xác nhận khách hàng nhận phòng</DialogTitle>
+            <DialogTitle>Xác nhận khách hàng đại diện nhận phòng</DialogTitle>
             <hr />
             <DialogContent>
               <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
@@ -2656,7 +2981,11 @@ function BookRoom() {
               <button onClick={createPaymentMomo} className="btn btn-outline-danger">
                 Thanh toán MOMO
               </button>
-              <button style={{ marginRight: 20 }} onClick={createPayment} className="btn btn-outline-dark">
+              <button
+                style={{ marginRight: 20 }}
+                onClick={createPayment}
+                className="btn btn-outline-dark"
+              >
                 Chuyển khoản ngân hàng
               </button>
             </DialogActions>
