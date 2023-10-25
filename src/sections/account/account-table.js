@@ -19,6 +19,7 @@ import {
 import { Scrollbar } from "src/components/scrollbar";
 import TrashIcon from "@heroicons/react/24/solid/TrashIcon";
 import Bars4Icon from "@heroicons/react/24/solid/Bars4Icon";
+import PencilSquareIcon from "@heroicons/react/24/solid/PencilSquareIcon";
 
 export const AccountTable = (props) => {
   const {
@@ -53,7 +54,7 @@ export const AccountTable = (props) => {
 
             <TableBody>
               {items.map((account, index) => {
-                const birthday = moment(account.birthday).format("DD/MM/YYYY");
+                // const birthday = moment(account.birthday).format("YYYY-MM-DD");
                 const isSelected = selected.includes(account.id);
                 const hrefUpdate = `/update/updateAccount/updateAccount?id=${account.id}`;
                 const alertDelete = () => {
@@ -83,22 +84,16 @@ export const AccountTable = (props) => {
                     <TableCell>{account.accountCode}</TableCell>
                     <TableCell>{account.fullname}</TableCell>
                     <TableCell>{account.gender ? "Nam" : "Nữ"}</TableCell>
-                    <TableCell>{birthday}</TableCell>
+                    <TableCell>{account.birthday}</TableCell>
                     <TableCell>{account.phoneNumber}</TableCell>
                     <TableCell>{account.citizenId}</TableCell>
-                    <TableCell>{account.wards} - {account.districts} - {account.provinces}</TableCell>
+                    <TableCell>{account.provinces} - {account.districts} - {account.wards}</TableCell>
                     <TableCell>{account.email}</TableCell>
                     <TableCell>{account.position.positionName === "ROLE_ADMIN" ? "Quản lý" : "Nhân Viên"}</TableCell>
                     <TableCell>
-                      {/* <button className="btn btn-primary" onClick={() => handleEdit(account.id)}>
-                        Edit
-                      </button>
-                      <button className="btn btn-danger m-xl-2" onClick={alertDelete}>
-                        Delete
-                      </button> */}
                       <a className="btn btn-info m-xl-2" href={hrefUpdate}>
                         <SvgIcon fontSize="small">
-                          <Bars4Icon />
+                          <PencilSquareIcon />
                         </SvgIcon>
                       </a>
                       <button className="btn btn-danger m-xl-2" onClick={alertDelete}>
