@@ -12,13 +12,6 @@ import { useRouter } from "next/router";
 const cx = classNames.bind(style);
 const handleSubmit = async (event, id, accountUpdate) => {
   event.preventDefault(); // Ngăn chặn sự kiện submit mặc định
-  const provincesInput = document.querySelector('select[name="provinces"]');
-  const districtsInput = document.querySelector('select[name="districts"]');
-  const wardsInput = document.querySelector('select[name="wards"]');
-
-  const provinces = provincesInput?.value;
-  const districts = districtsInput?.value;
-  const wards = wardsInput?.value;
 
   // Tạo payload dữ liệu để gửi đến API
   const payload = {
@@ -85,7 +78,14 @@ const handleSubmit = async (event, id, accountUpdate) => {
         const isCitizenIdError = error.response.data.citizenId === undefined;
         const isBirthdayError = error.response.data.birthday === undefined;
 
-        if (!isAccountCodeError && !isFullnameError && !isEmailError && !isPhoneNumberError && !isCitizenIdError && !isBirthdayError) {
+        if (
+          !isAccountCodeError &&
+          !isFullnameError &&
+          !isEmailError &&
+          !isPhoneNumberError &&
+          !isCitizenIdError &&
+          !isBirthdayError
+        ) {
           toast.error(error.response.data.accountCode, {
             position: toast.POSITION.BOTTOM_RIGHT,
           });
@@ -215,6 +215,81 @@ function UpdateAccount() {
     fetchData();
   }, []);
 
+  const [provinces, setProvinces] = useState([]);
+  const [districts, setDistricts] = useState([]);
+  const [wards, setWards] = useState([]);
+
+  const [selectedProvince, setSelectedProvince] = useState("");
+  const [selectedDistrict, setSelectedDistrict] = useState("");
+  const [selectedWards, setSelectedWards] = useState("");
+
+  const [idProvince, setIdProvince] = useState(0);
+  const [idDistrict, setIdDistrict] = useState(0);
+
+  const [selectedProvinceName, setSelectedProvinceName] = useState("");
+  const [selectedDistrictName, setSelectedDistrictName] = useState("");
+
+  useEffect(() => {
+    const fetchProvinces = async () => {
+      const response = await axios.get("https://vapi.vnappmob.com/api/province/");
+      setProvinces(response.data.results);
+    };
+    fetchProvinces();
+  }, []);
+
+  useEffect(() => {
+    if (idProvince) {
+      const fetchDistricts = async () => {
+        const response = await axios.get(
+          `https://vapi.vnappmob.com/api/province/district/${idProvince}`
+        );
+        setDistricts(response.data.results);
+      };
+      fetchDistricts();
+    }
+  }, [idProvince]);
+
+  useEffect(() => {
+    if (idDistrict) {
+      const fetchWards = async () => {
+        const response = await axios.get(
+          `https://vapi.vnappmob.com/api/province/ward/${idDistrict}`
+        );
+        setWards(response.data.results);
+      };
+      fetchWards();
+    }
+  }, [idDistrict]);
+
+  const handleProvinceChange = (e) => {
+    setSelectedProvince(e.target.value);
+    const province = provinces.find((p) => p.province_id === e.target.value);
+    setIdProvince(province?.province_id || 0);
+    const name = province ? province.province_name : "";
+    setSelectedProvinceName(name);
+    if (province) {
+      setDistricts([]);
+      setWards([]);
+    }
+    console.log(province);
+  };
+
+  const handleDistrictChange = (e) => {
+    setSelectedDistrict(e.target.value);
+    const district = districts.find((d) => d.district_id === e.target.value);
+    setIdDistrict(district?.district_id || 0);
+    const name = district ? district.district_name : "";
+    setSelectedDistrictName(name);
+    if (district) {
+      setWards([]);
+    }
+    console.log(district);
+  };
+
+  const handleWardsChange = (e) => {
+    setSelectedWards(e.target.value);
+    console.log(e.target.value);
+  };
   return (
     <div className={cx("wrapper")}>
       <h1>Cập nhật tài khoản</h1>
@@ -256,7 +331,9 @@ function UpdateAccount() {
       <br></br>
       <div className="form-floating mb-3">
         <div className="mb-3 row">
-          <label htmlFor="staticEmail" className="col-sm-1 col-form-label">Giới tính</label>
+          <label htmlFor="staticEmail" className="col-sm-1 col-form-label">
+            Giới tính
+          </label>
           <div className="col-sm-10">
             <div className="form-check form-check-inline">
               <input
@@ -268,11 +345,13 @@ function UpdateAccount() {
                 onChange={(e) => {
                   setAccountUpdate((prev) => ({
                     ...prev,
-                    gender: e.target.value === 'true',
+                    gender: e.target.value === "true",
                   }));
                 }}
               />
-              <label className="form-check-label" htmlFor="inlineRadio1">Nam</label>
+              <label className="form-check-label" htmlFor="inlineRadio1">
+                Nam
+              </label>
             </div>
             <div className="form-check form-check-inline">
               <input
@@ -284,11 +363,13 @@ function UpdateAccount() {
                 onChange={(e) => {
                   setAccountUpdate((prev) => ({
                     ...prev,
-                    gender: e.target.value === 'true',
+                    gender: e.target.value === "true",
                   }));
                 }}
               />
-              <label className="form-check-label" htmlFor="inlineRadio2">Nữ</label>
+              <label className="form-check-label" htmlFor="inlineRadio2">
+                Nữ
+              </label>
             </div>
           </div>
         </div>
