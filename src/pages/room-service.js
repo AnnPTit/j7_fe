@@ -548,7 +548,7 @@ function BookRoom() {
   const sumOrderDetail = totalCostForOrderDetail + vatOrderDetail;
   const moneyReturnCustomerOneRoom = givenCustomerOneRoom - sumOrderDetail;
   const vatAmount = totalAmount * 0.05;
-  const sumAmount = totalAmount + vatAmount;
+  const sumAmount = totalAmount + vatAmount - order.deposit;
   const moneyReturnCustomer = givenCustomer - sumAmount;
 
   useEffect(() => {
@@ -557,59 +557,74 @@ function BookRoom() {
   }, [calculateTotalAmountPriceRoom(), calculateTotalService(), calculateTotalCombo()]);
   // Kết thúc xử lí tổng tiền
 
+  // Clear
+  const handleClear = () => {
+    setCccd("");
+    setCustomerName("");
+    setGender("Nam");
+    setBirthday("");
+    setPhoneNumber("");
+    setEmail("");
+    setNationality("");
+    setAddress("");
+  };
+
   const renderButtonsBasedOnStatus = () => {
     switch (order.status) {
       case 1:
         return (
           <React.Fragment>
-            <button
+            <Button
               style={{ width: 100, height: 50 }}
               onClick={handleOpenCancelOrder}
-              className="btn btn-outline-danger"
+              variant="outlined"
+              color="error"
             >
               Hủy
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={handleSave}
               style={{ marginLeft: 20, width: 100, height: 50 }}
-              className="btn btn-outline-success"
+              variant="outlined"
+              color="success"
             >
               Lưu
-            </button>
-            <button
+            </Button>
+            <Button
               style={{
                 marginLeft: 20,
                 width: 150,
                 height: 50,
               }}
               onClick={handleOpenAcceptOrder}
-              className="btn btn-outline-primary"
+              variant="outlined"
             >
               Nhận phòng
-            </button>
+            </Button>
           </React.Fragment>
         );
       case 2:
         return (
           <React.Fragment>
-            <button
+            <Button
               onClick={handleSave}
               style={{ marginLeft: 20, width: 100, height: 50 }}
-              className="btn btn-outline-success"
+              variant="outlined"
+              color="success"
             >
               Lưu
-            </button>
-            <button
+            </Button>
+            <Button
               style={{
                 marginLeft: 20,
                 width: 150,
                 height: 50,
               }}
               onClick={handleOpenReturnRoom}
-              className="btn btn-outline-primary"
+              variant="outlined"
             >
               Trả phòng
-            </button>
+            </Button>
           </React.Fragment>
         );
       case 3:
@@ -675,7 +690,7 @@ function BookRoom() {
       }
       axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
 
-      await axios.put(`http://localhost:2003/api/admin/order/update-accept/${id}`, {
+      await axios.put(`http://localhost:2003/api/order/update-accept/${id}`, {
         customerId: selectedCustomerAccept,
         totalMoney: sumAmount,
         vat: vatAmount,
@@ -710,7 +725,7 @@ function BookRoom() {
 
     try {
       const response = await axios.post(
-        `http://localhost:2003/api/admin/order/return/${selectedOrderDetails}`,
+        `http://localhost:2003/api/order/return/${selectedOrderDetails}`,
         {
           customerId: selectedCustomerReturn,
           totalMoney: sumOrderDetail,
@@ -750,7 +765,7 @@ function BookRoom() {
       }
       axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
 
-      await axios.put(`http://localhost:2003/api/admin/order/update-return/${id}`, {
+      await axios.put(`http://localhost:2003/api/order/update-return/${id}`, {
         totalMoney: sumAmount,
         vat: vatAmount,
         moneyGivenByCustomer: givenCustomer,
@@ -779,7 +794,7 @@ function BookRoom() {
       }
       axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
       // Make an API call to update the order status to "Đã xác nhận" (status: 2)
-      await axios.put(`http://localhost:2003/api/admin/order/delete/${id}`, {
+      await axios.put(`http://localhost:2003/api/order/delete/${id}`, {
         note: noteOrder,
       });
       setOrder({ ...order, status: 0 });
@@ -802,7 +817,7 @@ function BookRoom() {
     }
     axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
     // const updatedTotalMoney = calculateTotal(); // Lấy giá trị tạm tính
-    const response = await axios.put(`http://localhost:2003/api/admin/order/update/${id}`, {
+    const response = await axios.put(`http://localhost:2003/api/order/update/${id}`, {
       totalMoney: sumAmount,
     });
     toast.success("Lưu thành công!", {
@@ -999,6 +1014,11 @@ function BookRoom() {
         position: toast.POSITION.BOTTOM_CENTER,
       });
       return;
+    } else if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(email)) {
+      toast.error("Email không đúng định dạng", {
+        position: toast.POSITION.BOTTOM_CENTER,
+      });
+      return;
     }
 
     const isCustomer = customerInfo.some((customer) => customer.citizenId === cccd);
@@ -1018,7 +1038,7 @@ function BookRoom() {
     });
 
     if (isCustomerAdded) {
-      toast.error("Khách hàng đã có mặt trong 1 phòng khác!", {
+      toast.error("Khách hàng đã có mặt trong phòng khác!", {
         position: toast.POSITION.BOTTOM_CENTER,
       });
       return;
@@ -1440,7 +1460,7 @@ function BookRoom() {
     console.log("Fetching order details for ID:", id); // Add this line
     async function fetchData() {
       try {
-        const response = await axios.get(`http://localhost:2003/api/admin/order/detail/${id}`);
+        const response = await axios.get(`http://localhost:2003/api/order/detail/${id}`);
         console.log("Order API Response:", response.data); // Add this line
         if (response.data) {
           setOrder(response.data);
@@ -1474,8 +1494,12 @@ function BookRoom() {
           position: toast.POSITION.BOTTOM_CENTER,
         });
         return false;
+      } else if (!/^\d+$/.test(numberOfPeople)) {
+        toast.error("Vui lòng chỉ nhập số nguyên!", {
+          position: toast.POSITION.BOTTOM_CENTER,
+        });
+        return;
       }
-
       if (numberOfPeople > rooms.find((r) => r.id === selectedRoomId)?.typeRoom?.capacity) {
         toast.error("Số người không được vượt quá sức chứa!", {
           position: toast.POSITION.BOTTOM_CENTER,
@@ -1502,6 +1526,7 @@ function BookRoom() {
           roomPrice: totalAmount,
           customerQuantity: numberOfPeople,
         });
+
         setOrderDetailData([...orderDetailData, response.data]);
         const responseOrderDetail = await axios.get(
           `http://localhost:2003/api/order-detail/loadOrderDetailByOrderId/${id}`
@@ -1522,6 +1547,15 @@ function BookRoom() {
       } catch (error) {
         console.log("Lỗi khi thêm phòng vào hóa đơn chi tiết:", error);
         // Xử lý lỗi nếu có
+        if (error.response.status === 400) {
+          toast.error("Phòng đã bị trùng. Vui lòng chọn ngày hoặc phòng khác.", {
+            position: toast.POSITION.BOTTOM_CENTER,
+          });
+        } else {
+          toast.error("Lỗi không xác định. Vui lòng thử lại sau.", {
+            position: toast.POSITION.BOTTOM_CENTER,
+          });
+        }
       }
     } else {
       toast.warning("Vui lòng ngày check-in/check-out và giờ check-in/check-out.", {
@@ -1774,12 +1808,9 @@ function BookRoom() {
                         </TableCell>
                         <TableCell>
                           {room.status === 1 && ( // Kiểm tra nếu room.status là 1 thì hiển thị nút
-                            <button
-                              className="btn btn-outline-primary"
-                              onClick={() => handleRoomSelect(room.id)}
-                            >
+                            <Button variant="outlined" onClick={() => handleRoomSelect(room.id)}>
                               Chọn
-                            </button>
+                            </Button>
                           )}
                         </TableCell>
                       </TableRow>
@@ -1914,19 +1945,19 @@ function BookRoom() {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDateDialog} color="primary">
+          <Button onClick={handleCloseDateDialog} variant="outlined" color="error">
             Hủy
           </Button>
-          <Button onClick={createOrderDetail} color="primary">
+          <Button onClick={createOrderDetail} variant="outlined">
             Xác nhận
           </Button>
         </DialogActions>
       </Dialog>
       <div style={{ marginBottom: 20, height: 50, display: "flex", justifyContent: "flex-end" }}>
         {order.status === 1 ? (
-          <button onClick={handleOpenSearchRoom} className="btn btn-outline-primary">
+          <Button onClick={handleOpenSearchRoom} variant="outlined">
             TÌM PHÒNG
-          </button>
+          </Button>
         ) : null}
       </div>
       <Box
@@ -1949,6 +1980,7 @@ function BookRoom() {
                   <TableCell>Tầng</TableCell>
                   <TableCell>Loại phòng</TableCell>
                   <TableCell>Sức chứa</TableCell>
+                  <TableCell>Số khách</TableCell>
                   <TableCell>Ngày check-in</TableCell>
                   <TableCell>Ngày check-out</TableCell>
                   <TableCell>Thành tiền</TableCell>
@@ -1979,6 +2011,7 @@ function BookRoom() {
                     <TableCell>{orderDetail.room.floor.floorName}</TableCell>
                     <TableCell>{orderDetail.room.typeRoom.typeRoomName}</TableCell>
                     <TableCell>{orderDetail.room.typeRoom.capacity}</TableCell>
+                    <TableCell>{orderDetail.customerQuantity}</TableCell>
                     <TableCell>
                       {orderDetail &&
                         orderDetail.checkIn &&
@@ -1989,7 +2022,6 @@ function BookRoom() {
                         orderDetail.checkOut &&
                         format(new Date(orderDetail.checkOut), "dd/MM/yyyy - HH:mm")}
                     </TableCell>
-
                     <TableCell>{formatPrice(orderDetail.roomPrice)}</TableCell>
                     <TableCell>
                       {order.status === 1 ? (
@@ -2252,13 +2284,14 @@ function BookRoom() {
                 }
                 sx={{ maxWidth: 500 }}
               />
-              <button
+              <Button
                 onClick={handleOpenAddCombo}
                 style={{ marginLeft: 310, height: 50 }}
-                className="btn btn-outline-primary"
+                variant="outlined"
+                color="info"
               >
                 COMBO DỊCH VỤ
-              </button>
+              </Button>
             </div>
             <br />
             <Scrollbar>
@@ -2281,12 +2314,12 @@ function BookRoom() {
                         <TableCell>{service.unit.unitName}</TableCell>
                         <TableCell>{formatPrice(service.price)}</TableCell>
                         <TableCell>
-                          <button
+                          <Button
                             onClick={() => handleOpenQuantityNote(service.id)}
-                            className="btn btn-outline-primary"
+                            variant="outlined"
                           >
                             Chọn
-                          </button>
+                          </Button>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -2297,9 +2330,9 @@ function BookRoom() {
           </DialogContent>
         </Dialog>
         {order.status === 1 || order.status === 2 ? (
-          <button onClick={handleOpenAddService} className="btn btn-outline-primary">
+          <Button onClick={handleOpenAddService} variant="outlined">
             THÊM DỊCH VỤ
-          </button>
+          </Button>
         ) : null}
         <Dialog
           open={openQuantityNoteCombo}
@@ -2339,9 +2372,9 @@ function BookRoom() {
             />
           </DialogContent>
           <DialogActions>
-            <button onClick={handleConfirmCombo} className="btn btn-outline-primary">
+            <Button onClick={handleConfirmCombo} variant="outlined">
               XÁC NHẬN
-            </button>
+            </Button>
           </DialogActions>
         </Dialog>
         <Dialog
@@ -2393,11 +2426,7 @@ function BookRoom() {
                           <ul>
                             {combo.comboServiceList.map((comboService) => (
                               <li key={comboService.id}>
-                                <p>
-                                  {" "}
-                                  {comboService.service.serviceName}
-                                  {/* {formatCurrency(comboService.service.price)} */}
-                                </p>
+                                <p> {comboService.service.serviceName}</p>
                               </li>
                             ))}
                           </ul>
@@ -2405,12 +2434,12 @@ function BookRoom() {
                         <TableCell>{formatPrice(combo.price)}</TableCell>
                         <TableCell>{combo.note}</TableCell>
                         <TableCell>
-                          <button
+                          <Button
                             onClick={() => handleOpenQuantityNoteCombo(combo.id)}
-                            className="btn btn-outline-primary"
+                            variant="outlined"
                           >
                             Chọn
-                          </button>
+                          </Button>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -2649,20 +2678,23 @@ function BookRoom() {
         >
           <h3>NHẬP THÔNG TIN KHÁCH HÀNG</h3>
           <div style={{ marginTop: -50, display: "flex", justifyContent: "flex-end", height: 50 }}>
-            <button
+            <Button
+              onClick={handleClear}
+              style={{ width: 100, marginRight: 20 }}
+              variant="outlined"
+            >
+              Clear
+            </Button>
+            <Button
               onClick={handleOpenQr}
-              className="btn btn-outline-primary"
+              variant="outlined"
               style={{ width: 100, marginRight: 20 }}
             >
               <QrCodeScannerIcon />
-            </button>
-            <button
-              onClick={handleOpenChooseCustomer}
-              style={{ width: 100 }}
-              className="btn btn-outline-primary"
-            >
+            </Button>
+            <Button onClick={handleOpenChooseCustomer} style={{ width: 100 }} variant="outlined">
               Chọn
-            </button>
+            </Button>
             <Dialog
               open={openChooseCustomer}
               onClose={handleCloseChooseCustomer}
@@ -2674,7 +2706,7 @@ function BookRoom() {
                 },
               }}
             >
-              <DialogTitle>Chọn khách hàng</DialogTitle>
+              <DialogTitle>Danh sách khách hàng</DialogTitle>
               <DialogContent>
                 <CustomerSearch
                   searchCustomer={searchCustomer}
@@ -2710,12 +2742,12 @@ function BookRoom() {
                             <TableCell>{customer.email}</TableCell>
                             <TableCell>{customer.nationality}</TableCell>
                             <TableCell>
-                              <button
-                                className="btn btn-outline-primary"
+                              <Button
+                                variant="outlined"
                                 onClick={() => handleCustomerSelect(customer)}
                               >
                                 Chọn
-                              </button>
+                              </Button>
                             </TableCell>
                           </TableRow>
                         ))}
@@ -2815,13 +2847,14 @@ function BookRoom() {
                 </RadioGroup>
               </FormControl>
               {order.status === 1 ? (
-                <button
+                <Button
                   style={{ width: 200, height: 50 }}
-                  className="btn btn-outline-success"
+                  variant="outlined"
+                  color="success"
                   onClick={handleAddCustomerToRooms}
                 >
                   Thêm khách hàng
-                </button>
+                </Button>
               ) : null}
             </div>
             <div style={{ display: "flex", justifyContent: "flex-end" }}></div>
@@ -2844,9 +2877,9 @@ function BookRoom() {
             )}
             <p>{result}</p>
             <div style={{ width: 400, display: "flex", justifyContent: "center" }}>
-              <button className="btn btn-outline-primary" onClick={toggleCamera}>
+              <Button variant="outlined" onClick={toggleCamera}>
                 {cameraEnabled ? "Disable Camera" : "Enable Camera"}
-              </button>
+              </Button>
             </div>
           </DialogContent>
         </Dialog>
@@ -2904,7 +2937,9 @@ function BookRoom() {
               />
             </DialogContent>
             <DialogActions>
-              <Button onClick={handleConfirmOrder}>Xác nhận</Button>
+              <Button variant="outlined" onClick={handleConfirmOrder}>
+                Xác nhận
+              </Button>
             </DialogActions>
           </Dialog>
           <Dialog open={openReturnRoom} onClose={handleCloseReturnRoom} maxWidth="md">
@@ -2933,14 +2968,24 @@ function BookRoom() {
                 />
               </div>
               <br />
-              <TextField
-                disabled
-                label="Tổng tiền"
-                value={sumAmount}
-                fullWidth
-                variant="outlined"
-              />
-              <br />
+              <div style={{ display: "flex" }}>
+                <TextField
+                  style={{ width: 520, marginRight: 30 }}
+                  disabled
+                  label="Tổng tiền"
+                  value={sumAmount}
+                  fullWidth
+                  variant="outlined"
+                />
+                <TextField
+                  style={{ width: 550 }}
+                  disabled
+                  label="Tiền cọc"
+                  value={order.deposit}
+                  fullWidth
+                  variant="outlined"
+                />
+              </div>
               <br />
               <TextField
                 label="Khách hàng trả"
@@ -2972,22 +3017,23 @@ function BookRoom() {
               />
             </DialogContent>
             <DialogActions>
-              <button onClick={handleReturnRoom} className="btn btn-outline-primary">
+              <Button onClick={handleReturnRoom} variant="outlined">
                 Tiền mặt
-              </button>
+              </Button>
               {/* <button onClick={createPaymentZaloPay} className="btn btn-outline-primary">
                 Zalo Pay
               </button> */}
-              <button onClick={createPaymentMomo} className="btn btn-outline-danger">
+              <Button onClick={createPaymentMomo} variant="outlined" color="error">
                 Thanh toán MOMO
-              </button>
-              <button
+              </Button>
+              <Button
                 style={{ marginRight: 20 }}
                 onClick={createPayment}
-                className="btn btn-outline-dark"
+                variant="outlined"
+                color="secondary"
               >
                 Chuyển khoản ngân hàng
-              </button>
+              </Button>
             </DialogActions>
             <br />
           </Dialog>
@@ -3006,7 +3052,9 @@ function BookRoom() {
               />
             </DialogContent>
             <DialogActions>
-              <Button onClick={handleCancelOrder}>Xác nhận</Button>
+              <Button variant="outlined" onClick={handleCancelOrder}>
+                Xác nhận
+              </Button>
             </DialogActions>
           </Dialog>
         </div>

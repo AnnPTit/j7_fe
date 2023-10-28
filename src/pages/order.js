@@ -72,7 +72,7 @@ const Page = () => {
         const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
         console.log(accessToken);
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
-        let Api = `http://localhost:2003/api/admin/order/loadAndSearch?current_page=${pageNumber}`; // Thay đổi URL API của bạn tại đây
+        let Api = `http://localhost:2003/api/order/loadAndSearch?current_page=${pageNumber}`; // Thay đổi URL API của bạn tại đây
         if (textSearch !== "") {
           Api = Api + `&key=${textSearch}`;
         }

@@ -39,7 +39,7 @@ const Page = () => {
   // Delete bookRoom
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:2003/api/admin/order/delete/${id}`);
+      await axios.delete(`http://localhost:2003/api/order/delete/${id}`);
       const updatedData = data.filter((bookRoom) => bookRoom.id !== id);
       setData(updatedData);
     } catch (error) {
@@ -54,7 +54,7 @@ const Page = () => {
         console.log(accessToken);
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
 
-        let Api = `http://localhost:2003/api/admin/order/loadBookRoomOnline?current_page=${pageNumber}`; // Thay đổi URL API của bạn tại đây
+        let Api = `http://localhost:2003/api/order/loadBookRoomOnline?current_page=${pageNumber}`; // Thay đổi URL API của bạn tại đây
         if (textSearch !== "") {
           Api = Api + `&key=${textSearch}`;
         }

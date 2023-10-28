@@ -143,7 +143,7 @@ function OrderTimeline() {
           return;
         }
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
-        const response = await axios.get(`http://localhost:2003/api/admin/order/detail/${id}`);
+        const response = await axios.get(`http://localhost:2003/api/order/detail/${id}`);
         const responseOrderTimeline = await axios.get(
           `http://localhost:2003/api/order-timeline/loadByOrderId/${id}`
         );
@@ -219,25 +219,25 @@ function OrderTimeline() {
     fetchData();
   }, [id]);
 
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
-        // Kiểm tra xem accessToken có tồn tại không
-        if (!accessToken) {
-          alert("Bạn chưa đăng nhập");
-          return;
-        }
-        axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
-        const responseOrderDetail = await axios.get(
-          `http://localhost:2003/api/order-detail/loadOrderDetailByOrderId/${id}`
-        );
-      } catch (error) {
-        console.log(error);
-      }
-    }
-    fetchData();
-  }, [id]);
+  // useEffect(() => {
+  //   async function fetchData() {
+  //     try {
+  //       const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
+  //       // Kiểm tra xem accessToken có tồn tại không
+  //       if (!accessToken) {
+  //         alert("Bạn chưa đăng nhập");
+  //         return;
+  //       }
+  //       axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
+  //       const responseOrderDetail = await axios.get(
+  //         `http://localhost:2003/api/order-detail/loadOrderDetailByOrderId/${id}`
+  //       );
+  //     } catch (error) {
+  //       console.log(error);
+  //     }
+  //   }
+  //   fetchData();
+  // }, [id]);
 
   const renderIconForEventType = (eventType) => {
     switch (eventType) {
