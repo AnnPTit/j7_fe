@@ -28,6 +28,7 @@
     "@mui/x-date-pickers": "5.0.19",
     "@react-pdf/renderer": "^3.1.12",
     "@tippyjs/react": "^4.2.6",
+    "antd": "^5.10.2",
     "apexcharts": "3.37.0",
     "axios": "^1.4.0",
     "bootstrap": "^5.3.0",

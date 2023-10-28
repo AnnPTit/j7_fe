@@ -65,7 +65,7 @@ const Page = () => {
         const response = await axios.get(
           `http://localhost:2003/api/admin/floor/search?key=${encodeURIComponent(textSearch)}`
         ); // Thay đổi URL API của bạn tại đây
-        console.log(response.data);
+        // console.log(response.data);
         setTotalPages(response.data.totalPages);
         setTotalElements(response.data.totalElements);
         setData(response.data.content);
@@ -98,7 +98,7 @@ const Page = () => {
         const response = await axios.get(
           `http://localhost:2003/api/admin/floor/load?current_page=${pageNumber}`
         ); // Thay đổi URL API của bạn tại đây
-        console.log(response.data);
+        // console.log(response.data);
         setTotalPages(response.data.totalPages);
         setTotalElements(response.data.totalElements);
         setData(response.data.content);
@@ -128,7 +128,7 @@ const Page = () => {
         component="main"
         sx={{
           flexGrow: 1,
-          py: 8,
+          py: 3,
         }}
       >
         <Container maxWidth="xl">

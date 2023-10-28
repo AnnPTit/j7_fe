@@ -61,7 +61,7 @@ export const BookRoomTable = (props) => {
   const handleCancelOrder = async (id) => {
     try {
       // Make an API call to update the order status to "Đã xác nhận" (status: 2)
-      await axios.put(`http://localhost:2003/api/admin/order/delete/${id}`);
+      await axios.put(`http://localhost:2003/api/order/delete/${id}`);
       setOrder({ ...order, status: 0 });
       toast.success("Hủy thành công!", {
         position: toast.POSITION.BOTTOM_RIGHT,
