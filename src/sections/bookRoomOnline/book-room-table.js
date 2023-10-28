@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
 import moment from "moment";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import {
   Box,
@@ -17,21 +17,34 @@ import {
   TextField,
 } from "@mui/material";
 import { Scrollbar } from "src/components/scrollbar";
-import TrashIcon from "@heroicons/react/24/solid/TrashIcon";
-import PencilSquareIcon from "@heroicons/react/24/solid/PencilSquareIcon";
-import EyeIcon from "@heroicons/react/24/solid/EyeIcon";
 import InformationCircleIcon from "@heroicons/react/24/solid/InformationCircleIcon";
 import { SeverityPill } from "src/components/severity-pill";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { Drawer } from "antd";
-import { format } from "date-fns";
-
+import { DatePicker, TimePicker } from "@mui/x-date-pickers";
+import { parse, format, subYears } from "date-fns";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import FormControl from "@mui/material/FormControl";
+import FormLabel from "@mui/material/FormLabel";
+import Radio from "@mui/material/Radio";
+import RadioGroup from "@mui/material/RadioGroup";
+const numeral = require("numeral");
 export const BookRoomTable = (props) => {
   const { items = [], selected = [] } = props;
   const [order, setOrder] = useState({});
   const [orderDetail, setOrderDetail] = useState([]);
+  const [birthday, setBirthday] = useState(null);
+  const [gender, setGender] = useState(true);
+  const [citizenId, setCitizenId] = useState("");
+  const [nation, setNation] = useState("");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [address, setAddress] = useState("");
+  const [customerId, setCustomerId] = useState("");
+  const [orderId, setOrderId] = useState("");
 
   const [open, setOpen] = useState(false);
   const showDrawer = async (orderId) => {
@@ -51,7 +64,20 @@ export const BookRoomTable = (props) => {
         `http://localhost:2003/api/order/detail-info/${orderId}`
       );
       setOrder(responseOrder.data);
+      console.log("222222222", responseOrder.data);
+      setGender(responseOrder.data.customer.gender);
+      const formattedDate = formatDate(responseOrder.data.customer.birthday);
+      setBirthday(formattedDate);
+      setCitizenId(responseOrder.data.customer.citizenId);
+      setName(responseOrder.data.customer.fullname);
+      setEmail(responseOrder.data.customer.email);
+      setPhone(responseOrder.data.customer.phoneNumber);
+      setNation(responseOrder.data.customer.nationality);
+      setAddress(responseOrder.data.customer.address);
+      setOrderId(responseOrder.data.id);
+      setCustomerId(responseOrder.data.customer.id);
       console.log(responseOrder.data);
+
       const responseOrderDetail = await axios.get(
         `http://localhost:2003/api/order-detail/loadOrderDetailByOrderId/${orderId}`
       );
@@ -83,6 +109,12 @@ export const BookRoomTable = (props) => {
         return { color: "primary", text: "Đã nhận phòng" };
       case 3:
         return { color: "success", text: "Đã trả phòng" };
+      case 4:
+        return { color: "success", text: "Đã xác nhận" };
+      case 5:
+        return { color: "success", text: "Đã thanh toán" };
+      case 6:
+        return { color: "error", text: "Từ chối" };
       default:
         return { color: "default", text: "Unknown" };
     }
@@ -95,7 +127,85 @@ export const BookRoomTable = (props) => {
       await axios.put(`http://localhost:2003/api/order/delete/${id}`);
       setOrder({ ...order, status: 0 });
       toast.success("Hủy thành công!", {
-        position: toast.POSITION.BOTTOM_RIGHT,
+        position: toast.POSITION.TOP_RIGHT,
+      });
+      // router.push(`/orders?id=${id}`);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleBirthDayChange = (date) => {
+    const formattedDate = format(date, "dd/MM/yyyy");
+    setBirthday(formattedDate);
+  };
+
+  function formatDate(inputDate) {
+    const date = new Date(inputDate);
+    const day = date.getDate();
+    const month = date.getMonth() + 1; // Lưu ý: Tháng bắt đầu từ 0
+    const year = date.getFullYear();
+
+    // Đảm bảo hiển thị số 0 trước các ngày và tháng < 10
+    const formattedDay = day < 10 ? `0${day}` : day;
+    const formattedMonth = month < 10 ? `0${month}` : month;
+
+    return `${formattedDay}/${formattedMonth}/${year}`;
+  }
+
+  const handleSubmit = async () => {
+    // tạo payload để gửi xuống
+    console.log(gender);
+    if (citizenId === null) {
+      toast.error("Căn cước công dân không được để trống !", {
+        position: toast.POSITION.TOP_RIGHT,
+      });
+      return;
+    }
+    if (birthday === null) {
+      toast.error("Ngày sinh không được để trống !", {
+        position: toast.POSITION.TOP_RIGHT,
+      });
+      return;
+    }
+    if (gender === null) {
+      toast.error("Giới tính không được để trống !", {
+        position: toast.POSITION.TOP_RIGHT,
+      });
+      return;
+    }
+    if (address === null) {
+      toast.error("Địa chỉ không được để trống !", {
+        position: toast.POSITION.TOP_RIGHT,
+      });
+      return;
+    }
+    if (nation === null) {
+      toast.error("Quốc tịch không được để trống !", {
+        position: toast.POSITION.TOP_RIGHT,
+      });
+      return;
+    }
+    const payload = {
+      citizenId,
+      birthday,
+      gender,
+      address,
+      nation,
+      orderId: orderId,
+      customerId: customerId,
+    };
+
+    try {
+      const accessToken = localStorage.getItem("accessToken");
+      if (!accessToken) {
+        alert("Bạn chưa đăng nhập");
+        return;
+      }
+      axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+      await axios.post(`http://localhost:2003/api/order/confirm-order`, payload);
+      toast.success("Xác nhận thành công !", {
+        position: toast.POSITION.TOP_RIGHT,
       });
       // router.push(`/orders?id=${id}`);
     } catch (error) {
@@ -105,6 +215,7 @@ export const BookRoomTable = (props) => {
 
   return (
     <Card>
+      <ToastContainer></ToastContainer>
       <Scrollbar>
         <Box sx={{ minWidth: 800 }}>
           <Table>
@@ -158,34 +269,144 @@ export const BookRoomTable = (props) => {
                       >
                         <Scrollbar>
                           <div>
+                            <span
+                              style={{
+                                marginRight: 50,
+                              }}
+                            >
+                              <TextField
+                                id="outlined-read-only-input"
+                                label="Tên khách hàng"
+                                value={name}
+                                InputProps={{
+                                  readOnly: true,
+                                }}
+                              />
+                            </span>
+                            <span
+                              style={{
+                                marginRight: 50,
+                              }}
+                            >
+                              <TextField
+                                id="outlined-read-only-input"
+                                label="CCCD"
+                                value={citizenId}
+                                onChange={(e) => setCitizenId(e.target.value)}
+                              />
+                            </span>
                             <TextField
                               id="outlined-read-only-input"
-                              label="Tên khách hàng"
-                              defaultValue={order.customer.fullname}
-                              InputProps={{
-                                readOnly: true,
-                              }}
+                              label="Quốc tịch"
+                              value={nation}
+                              onChange={(e) => setNation(e.target.value)}
                             />
                             <br />
                             <br />
-                            <TextField
-                              id="outlined-read-only-input"
-                              label="Số điện thoại"
-                              defaultValue={order.customer.phoneNumber}
-                              InputProps={{
-                                readOnly: true,
+                            <span
+                              style={{
+                                marginRight: 50,
                               }}
+                            >
+                              <TextField
+                                id="outlined-read-only-input"
+                                label="Số điện thoại"
+                                value={phone}
+                                InputProps={{
+                                  readOnly: true,
+                                }}
+                              />
+                            </span>
+                            <DatePicker
+                              disableFuture
+                              maxDate={subYears(new Date(), 18)}
+                              openTo="year"
+                              label="Ngày sinh"
+                              value={birthday || ""}
+                              onChange={handleBirthDayChange}
+                              renderInput={(params) => (
+                                <TextField
+                                  style={{ width: 350, marginRight: 20 }}
+                                  {...params}
+                                  inputProps={{
+                                    value: birthday || "",
+                                    readOnly: true,
+                                  }}
+                                />
+                              )}
                             />
                             <br />
                             <br />
-                            <TextField
-                              id="outlined-read-only-input"
-                              label="Email"
-                              defaultValue={order.customer.email}
-                              InputProps={{
-                                readOnly: true,
+                            <div
+                              style={{
+                                display: "flex",
+                                justifyContent: "left",
                               }}
-                            />
+                            >
+                              <span
+                                style={{
+                                  marginRight: 50,
+                                }}
+                              >
+                                <TextField
+                                  id="outlined-read-only-input"
+                                  label="Email"
+                                  value={email}
+                                  InputProps={{
+                                    readOnly: true,
+                                  }}
+                                />
+                              </span>
+
+                              <span
+                                style={{
+                                  marginRight: 72,
+                                }}
+                              >
+                                <FormControl
+                                  style={{
+                                    width: 200,
+                                    display: "flex",
+                                    justifyContent: "left",
+                                  }}
+                                >
+                                  <FormLabel
+                                    style={{ display: "flex", justifyContent: "left" }}
+                                    id="demo-row-radio-buttons-group-label"
+                                  >
+                                    Giới tính
+                                  </FormLabel>
+                                  <RadioGroup
+                                    style={{ display: "flex", justifyContent: "left" }}
+                                    row
+                                    aria-labelledby="demo-row-radio-buttons-group-label"
+                                    name="row-radio-buttons-group"
+                                    value={gender || ""}
+                                    onChange={(e) => setGender(e.target.value)}
+                                  >
+                                    <FormControlLabel
+                                      value={true}
+                                      control={<Radio />}
+                                      label="Nam"
+                                    />
+                                    <FormControlLabel
+                                      value={false}
+                                      control={<Radio />}
+                                      label="Nữ"
+                                    />
+                                  </RadioGroup>
+                                </FormControl>
+                              </span>
+                              <span style={{}}>
+                                <TextField
+                                  id="outlined-read-only-input"
+                                  label="Địa chỉ"
+                                  value={address}
+                                  onChange={(e) => setAddress(e.target.value)}
+                                />
+                              </span>
+                            </div>
+
                             <hr />
                             <Box>
                               <Table>
@@ -239,8 +460,14 @@ export const BookRoomTable = (props) => {
                             </Box>
                             <br />
                             <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                              <TextField style={{ marginRight: 20 }} label="Tiền cọc" />
-                              <Button variant="outlined">Xác nhận</Button>
+                              <TextField
+                                style={{ marginRight: 20 }}
+                                value={numeral(order.deposit).format("0,0 ") + "  đ"}
+                                label="Tiền cọc"
+                              />
+                              <Button variant="outlined" onClick={handleSubmit}>
+                                Xác nhận
+                              </Button>
                             </div>
                           </div>
                         </Scrollbar>
