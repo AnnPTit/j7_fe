@@ -30,7 +30,7 @@ export const BookRoomSearch = ({ textSearch, setTextSearch }) => {
         return;
       }
       // Gửi yêu cầu POST đến server để đặt phòng
-      const response = await axios.post("http://localhost:2003/api/admin/order/save", orderData);
+      const response = await axios.post("http://localhost:2003/api/order/save", orderData);
       router.push(`/room-service?id=${response.data.id}`);
       console.log("Tạo thành công:", response.data);
       console.log("Id:", response.data.id);

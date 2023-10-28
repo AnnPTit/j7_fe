@@ -37,15 +37,15 @@ const Page = () => {
           "http://localhost:2003/api/admin/customer/countByStatus"
         );
         setCountCustomer(countCustomer.data);
-        const countCancel = await axios.get("http://localhost:2003/api/admin/order/countByCancel");
+        const countCancel = await axios.get("http://localhost:2003/api/order/countByCancel");
         setCountCancel(countCancel.data);
-        const countWait = await axios.get("http://localhost:2003/api/admin/order/countByWait");
+        const countWait = await axios.get("http://localhost:2003/api/order/countByWait");
         setCountWait(countWait.data);
         const countConfirm = await axios.get(
-          "http://localhost:2003/api/admin/order/countByConfirm"
+          "http://localhost:2003/api/order/countByConfirm"
         );
         setCountConfirm(countConfirm.data);
-        const countAccept = await axios.get("http://localhost:2003/api/admin/order/countByAccept");
+        const countAccept = await axios.get("http://localhost:2003/api/order/countByAccept");
         setCountAccept(countAccept.data);
       } catch (error) {
         console.log(error);
@@ -103,7 +103,7 @@ const Page = () => {
             </Grid>
             <Grid xs={12} md={6} lg={4}>
               <OverviewTraffic
-                chartSeries={[countConfirm, countAccept, countWait, countCancel]}
+                chartSeries={[countConfirm, countAccept, countWait, countCancel]}  
                 labels={["Đã nhận phòng", "Đã trả phòng", "Chờ xác nhận", "Đã hủy"]}
                 sx={{ height: "100%" }}
               />
