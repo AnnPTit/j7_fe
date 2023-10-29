@@ -93,7 +93,7 @@ export const OverviewTraffic = (props) => {
 
   return (
     <Card sx={sx}>
-      <CardHeader title="Loại hóa đơn" />
+      <CardHeader title="Trạng thái hóa đơn" />
       <CardContent>
         <Chart height={300} options={chartOptions} series={chartSeries} type="donut" width="100%" />
         <Stack
@@ -103,7 +103,7 @@ export const OverviewTraffic = (props) => {
           spacing={2}
           sx={{ mt: 2 }}
         >
-          {/* {chartSeries.map((item, index) => {
+          {chartSeries.map((item, index) => {
             const label = labels[index];
             const color = chartOptions.colors[index % chartOptions.colors.length];
 
@@ -122,7 +122,7 @@ export const OverviewTraffic = (props) => {
                 </Typography>
               </Box>
             );
-          })} */}
+          })}
         </Stack>
       </CardContent>
     </Card>
