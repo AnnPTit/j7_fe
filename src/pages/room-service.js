@@ -629,6 +629,38 @@ function BookRoom() {
         );
       case 3:
         return <React.Fragment></React.Fragment>;
+      case 5:
+        return (
+          <React.Fragment>
+            <Button
+              style={{ width: 100, height: 50 }}
+              onClick={handleOpenCancelOrder}
+              variant="outlined"
+              color="error"
+            >
+              Hủy
+            </Button>
+            <Button
+              onClick={handleSave}
+              style={{ marginLeft: 20, width: 100, height: 50 }}
+              variant="outlined"
+              color="success"
+            >
+              Lưu
+            </Button>
+            <Button
+              style={{
+                marginLeft: 20,
+                width: 150,
+                height: 50,
+              }}
+              onClick={handleOpenAcceptOrder}
+              variant="outlined"
+            >
+              Nhận phòng
+            </Button>
+          </React.Fragment>
+        );
       default:
         return null;
     }
@@ -1954,7 +1986,7 @@ function BookRoom() {
         </DialogActions>
       </Dialog>
       <div style={{ marginBottom: 20, height: 50, display: "flex", justifyContent: "flex-end" }}>
-        {order.status === 1 ? (
+        {order.status === 1 || order.status === 5 ? (
           <Button onClick={handleOpenSearchRoom} variant="outlined">
             TÌM PHÒNG
           </Button>
@@ -1985,7 +2017,7 @@ function BookRoom() {
                   <TableCell>Ngày check-out</TableCell>
                   <TableCell>Thành tiền</TableCell>
                   <TableCell>
-                    {order.status === 1 || order.status === 2 ? <>Thao tác</> : null}
+                    {order.status === 1 || order.status === 5 ? <>Thao tác</> : null}
                   </TableCell>
                 </TableRow>
               </TableHead>
@@ -2024,7 +2056,7 @@ function BookRoom() {
                     </TableCell>
                     <TableCell>{formatPrice(orderDetail.roomPrice)}</TableCell>
                     <TableCell>
-                      {order.status === 1 ? (
+                      {order.status === 1 || order.status === 5 ? (
                         <>
                           <Button
                             className="btn btn-primary m-xl-2"
@@ -2329,7 +2361,7 @@ function BookRoom() {
             </Scrollbar>
           </DialogContent>
         </Dialog>
-        {order.status === 1 || order.status === 2 ? (
+        {order.status === 1 || order.status === 2 || order.status === 5 ? (
           <Button onClick={handleOpenAddService} variant="outlined">
             THÊM DỊCH VỤ
           </Button>
@@ -2477,7 +2509,7 @@ function BookRoom() {
                     <TableCell>Phòng</TableCell>
                     <TableCell>Số lượng</TableCell>
                     <TableCell>Thành tiền</TableCell>
-                    <TableCell>{order.status === 1 ? <>Thao tác</> : null}</TableCell>
+                    <TableCell>{order.status === 1 || order.status === 5 ? <>Thao tác</> : null}</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -2491,7 +2523,7 @@ function BookRoom() {
                           {formatPrice(serviceUsed.quantity * serviceUsed.service.price)}
                         </TableCell>
                         <TableCell>
-                          {order.status === 1 ? (
+                          {order.status === 1 || order.status === 5 ? (
                             <>
                               <button
                                 onClick={() => handleDeleteServiceUsed(serviceUsed.id)}
@@ -2538,7 +2570,7 @@ function BookRoom() {
                     <TableCell>Phòng</TableCell>
                     <TableCell>Số lượng</TableCell>
                     <TableCell>Thành tiền</TableCell>
-                    <TableCell>{order.status === 1 ? <>Thao tác</> : null}</TableCell>
+                    <TableCell>{order.status === 1 || order.status === 5 ? <>Thao tác</> : null}</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -2552,7 +2584,7 @@ function BookRoom() {
                           {formatPrice(comboUsed.quantity * comboUsed.combo.price)}
                         </TableCell>
                         <TableCell>
-                          {order.status === 1 ? (
+                          {order.status === 1 || order.status === 5 ? (
                             <>
                               <button
                                 onClick={() => handleDeleteComboUsed(comboUsed.id)}
@@ -2617,7 +2649,7 @@ function BookRoom() {
                   <TableCell>Ngày sinh</TableCell>
                   <TableCell>Số điện thoại</TableCell>
                   <TableCell>Email</TableCell>
-                  <TableCell>{order.status === 1 ? <>Thao tác</> : null}</TableCell>
+                  <TableCell>{order.status === 1 || order.status === 5 ? <>Thao tác</> : null}</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -2631,7 +2663,7 @@ function BookRoom() {
                       <TableCell>{customer.phoneNumber}</TableCell>
                       <TableCell>{customer.email}</TableCell>
                       <TableCell>
-                        {order.status === 1 ? (
+                        {order.status === 1 || order.status === 5 ? (
                           <>
                             <button
                               onClick={() => handleDelete(customer.id)}
@@ -2846,7 +2878,7 @@ function BookRoom() {
                   <FormControlLabel value="Nữ" control={<Radio />} label="Nữ" />
                 </RadioGroup>
               </FormControl>
-              {order.status === 1 ? (
+              {order.status === 1 || order.status === 5 ? (
                 <Button
                   style={{ width: 200, height: 50 }}
                   variant="outlined"
