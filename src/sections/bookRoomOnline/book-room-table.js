@@ -45,6 +45,7 @@ export const BookRoomTable = (props) => {
   const [address, setAddress] = useState("");
   const [customerId, setCustomerId] = useState("");
   const [orderId, setOrderId] = useState("");
+  const [orderStatus, setOrderStatus] = useState(0);
 
   const [open, setOpen] = useState(false);
   const showDrawer = async (orderId) => {
@@ -76,6 +77,7 @@ export const BookRoomTable = (props) => {
       setAddress(responseOrder.data.customer.address);
       setOrderId(responseOrder.data.id);
       setCustomerId(responseOrder.data.customer.id);
+      setOrderStatus(responseOrder.data.status);
       console.log(responseOrder.data);
 
       const responseOrderDetail = await axios.get(
@@ -87,6 +89,7 @@ export const BookRoomTable = (props) => {
       console.log(error);
     }
   };
+  console.log(orderStatus);
   const onClose = () => {
     setOpen(false);
   };
@@ -207,10 +210,15 @@ export const BookRoomTable = (props) => {
       toast.success("Xác nhận thành công !", {
         position: toast.POSITION.TOP_RIGHT,
       });
+      window.location.href = "/book-room-online";
       // router.push(`/orders?id=${id}`);
     } catch (error) {
       console.log(error);
     }
+  };
+
+  const handleRedirect = () => {
+    window.location.href = `/room-service?id=${orderId}`;
   };
 
   return (
@@ -465,9 +473,15 @@ export const BookRoomTable = (props) => {
                                 value={numeral(order.deposit).format("0,0 ") + "  đ"}
                                 label="Tiền cọc"
                               />
-                              <Button variant="outlined" onClick={handleSubmit}>
-                                Xác nhận
-                              </Button>
+                              {orderStatus === 5 ? (
+                                <Button variant="outlined" onClick={handleRedirect}>
+                                  Tiến hành nhận phòng
+                                </Button>
+                              ) : (
+                                <Button variant="outlined" onClick={handleSubmit}>
+                                  Xác nhận
+                                </Button>
+                              )}
                             </div>
                           </div>
                         </Scrollbar>
