@@ -113,9 +113,9 @@ export const BookRoomTable = (props) => {
       case 3:
         return { color: "success", text: "Đã trả phòng" };
       case 4:
-        return { color: "success", text: "Đã xác nhận" };
+        return { color: "secondary", text: "Đã xác nhận" };
       case 5:
-        return { color: "success", text: "Đã thanh toán" };
+        return { color: "info", text: "Thanh toán tiền cọc" };
       case 6:
         return { color: "error", text: "Từ chối" };
       default:

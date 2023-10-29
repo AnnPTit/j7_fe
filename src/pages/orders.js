@@ -6,6 +6,8 @@ import {
   FaTimesCircle,
   FaHome,
   FaSignInAlt,
+  FaCheck,
+  FaWallet,
 } from "react-icons/fa";
 import { Layout as DashboardLayout } from "src/layouts/dashboard/layout";
 import React from "react";
@@ -180,6 +182,16 @@ function OrderTimeline() {
                   eventTitle = "Khách hàng trả phòng";
                   break;
                 case 4:
+                  eventColor = "#6959CD";
+                  eventIcon = FaCheck;
+                  eventTitle = "Xác nhận thông tin khách";
+                  break;
+                case 5:
+                  eventColor = "#00CCCC";
+                  eventIcon = FaWallet;
+                  eventTitle = "Khách hàng thanh toán tiền cọc";
+                  break;
+                case 7:
                   eventColor = "#FFD700";
                   eventIcon = FaSignInAlt;
                   eventTitle = "Trả phòng đi trước";
@@ -250,6 +262,10 @@ function OrderTimeline() {
       case 3:
         return <FaHome style={{ fontSize: "50px", color: "#00CC66" }} />;
       case 4:
+        return <FaCheck style={{ fontSize: "50px", color: "#6959CD" }} />;
+      case 5:
+        return <FaWallet style={{ fontSize: "50px", color: "#00CCCC" }} />;
+      case 7:
         return <FaSignInAlt style={{ fontSize: "50px", color: "#FFD700" }} />;
       default:
         return <FaBug style={{ fontSize: "50px", color: "default" }} />;
@@ -267,6 +283,10 @@ function OrderTimeline() {
       case 3:
         return "Khách hàng trả phòng";
       case 4:
+        return "Xác nhận thông tin khách hàng";
+      case 5:
+        return "Khách hàng thanh toán tiền cọc";
+      case 7:
         return "Trả phòng đi trước";
       default:
         return "Unknown Type";
@@ -542,7 +562,8 @@ function OrderTimeline() {
               <TableCell>Thời gian</TableCell>
               <TableCell>Phương thức thanh toán</TableCell>
               <TableCell>Trạng thái</TableCell>
-              <TableCell>Nhân viên xác nhận</TableCell>
+              <TableCell>Ghi chú</TableCell>
+              <TableCell>Người xác nhận</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -570,6 +591,7 @@ function OrderTimeline() {
                       {statusPaymentText}
                     </SeverityPill>
                   </TableCell>
+                  <TableCell>{paymentMethod.note}</TableCell>
                   <TableCell>{paymentMethod.order.account.fullname}</TableCell>
                 </TableRow>
               );
