@@ -111,7 +111,7 @@ function RoomPlan() {
                           {room.status === 2 ? (
                             <>
                               {room.orderDetailList.map((orderDetail, index) =>
-                                orderDetail.status === 2 ? (
+                                orderDetail.status === 1 || orderDetail.status === 2 ? (
                                   <React.Fragment key={index}>
                                     <Typography>
                                       <SvgIcon fontSize="small">

@@ -16,11 +16,18 @@ import axios from "axios";
 const now = new Date();
 
 const Page = () => {
-  const [countCustomer, setCountCustomer] = useState([]);
-  const [countCancel, setCountCancel] = useState([]);
-  const [countWait, setCountWait] = useState([]);
-  const [countConfirm, setCountConfirm] = useState([]);
-  const [countAccept, setCountAccept] = useState([]);
+  const [countCustomer, setCountCustomer] = useState("");
+  const [countCancel, setCountCancel] = useState("");
+  const [countWait, setCountWait] = useState("");
+  const [countConfirm, setCountConfirm] = useState("");
+  const [countAccept, setCountAccept] = useState("");
+  const [revenueMonth, setRevenueMonth] = useState("");
+  const [revenueYear, setRevenueYear] = useState("");
+  const [booking, setBooking] = useState("");
+
+  const formatPrice = (price) => {
+    return price.toLocaleString("vi-VN");
+  };
 
   // Count Customer
   useEffect(() => {
@@ -41,12 +48,16 @@ const Page = () => {
         setCountCancel(countCancel.data);
         const countWait = await axios.get("http://localhost:2003/api/order/countByWait");
         setCountWait(countWait.data);
-        const countConfirm = await axios.get(
-          "http://localhost:2003/api/order/countByConfirm"
-        );
+        const countConfirm = await axios.get("http://localhost:2003/api/order/countByConfirm");
         setCountConfirm(countConfirm.data);
         const countAccept = await axios.get("http://localhost:2003/api/order/countByAccept");
         setCountAccept(countAccept.data);
+        const revenueMonth = await axios.get("http://localhost:2003/api/order/getRevenueMonth");
+        setRevenueMonth(revenueMonth.data);
+        const revenueYear = await axios.get("http://localhost:2003/api/order/getRevenueYear");
+        setRevenueYear(revenueYear.data);
+        const booking = await axios.get("http://localhost:2003/api/order-detail/getBooking");
+        setBooking(booking.data);
       } catch (error) {
         console.log(error);
       }
@@ -70,7 +81,12 @@ const Page = () => {
         <Container maxWidth="xl">
           <Grid container spacing={3}>
             <Grid xs={12} sm={6} lg={3}>
-              <OverviewBudget difference={12} positive sx={{ height: "100%" }} value="$24k" />
+              <OverviewBudget
+                difference={12}
+                positive
+                sx={{ height: "100%" }}
+                value={formatPrice(revenueYear)}
+              />
             </Grid>
             <Grid xs={12} sm={6} lg={3}>
               <OverviewTotalCustomers
@@ -81,10 +97,10 @@ const Page = () => {
               />
             </Grid>
             <Grid xs={12} sm={6} lg={3}>
-              <OverviewTasksProgress sx={{ height: "100%" }} value={75.5} />
+              <OverviewTasksProgress sx={{ height: "100%" }} value={parseInt(booking)} />
             </Grid>
             <Grid xs={12} sm={6} lg={3}>
-              <OverviewTotalProfit sx={{ height: "100%" }} value="$15k" />
+              <OverviewTotalProfit sx={{ height: "100%" }} value={formatPrice(revenueMonth)} />
             </Grid>
             <Grid xs={12} lg={8}>
               <OverviewSales
@@ -103,7 +119,7 @@ const Page = () => {
             </Grid>
             <Grid xs={12} md={6} lg={4}>
               <OverviewTraffic
-                chartSeries={[countConfirm, countAccept, countWait, countCancel]}  
+                chartSeries={[countConfirm, countAccept, countWait, countCancel]}
                 labels={["Đã nhận phòng", "Đã trả phòng", "Chờ xác nhận", "Đã hủy"]}
                 sx={{ height: "100%" }}
               />

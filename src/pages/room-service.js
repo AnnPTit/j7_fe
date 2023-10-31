@@ -229,6 +229,10 @@ function BookRoom() {
     return price.toLocaleString("vi-VN") + " VND";
   };
 
+  // Chuyển sang chi tiết
+  const handleRedirectOrders = () => {
+    router.push(`/orders?id=${id}`);
+  }
   // Xử lí các hàm đóng, mở dialog
   const handleOpenSearchRoom = () => {
     setOpenSeacrhRoom(true);
@@ -991,8 +995,8 @@ function BookRoom() {
         `http://localhost:2003/api/service-used/load/${selectedOrderDetails}`
       );
       setServiceUsed(responseServiceUsed.data);
-      const newTotal = calculateTotal();
-      setTotalAmount(newTotal);
+      // const newTotal = calculateTotal();
+      // setTotalAmount(newTotal);
       console.log("Service added to serviceUsed: ", response.data);
       // window.location.href = `/room-service?id=${id}`;
       toast.success("Thêm thành công!", {
@@ -1998,13 +2002,18 @@ function BookRoom() {
           </Button>
         </DialogActions>
       </Dialog>
-      <div style={{ marginBottom: 20, height: 50, display: "flex", justifyContent: "flex-end" }}>
+
+      <div style={{ marginBottom: 20, height: 50, display: "flex", justifyContent: "space-between" }}>
+        <Button style={{ marginLeft: 180 }} onClick={handleRedirectOrders} variant="outlined">
+          CHI TIẾT
+        </Button>
         {order.status === 1 || order.status === 5 ? (
           <Button onClick={handleOpenSearchRoom} variant="outlined">
             TÌM PHÒNG
           </Button>
         ) : null}
       </div>
+
       <Box
         style={{
           border: "1px solid #ccc",
@@ -2943,7 +2952,11 @@ function BookRoom() {
           }}
         >
           <div style={{ marginLeft: 150, marginRight: 250, color: "red" }}>
-            <TextField style={{ marginRight: 20 }} label="Tạm tính" value={formatPrice(totalAmount)} />
+            <TextField
+              style={{ marginRight: 20 }}
+              label="Tạm tính"
+              value={formatPrice(totalAmount)}
+            />
             <TextField label="VAT" value={formatPrice(vatAmount)} />
           </div>
           {renderButtonsBasedOnStatus()}

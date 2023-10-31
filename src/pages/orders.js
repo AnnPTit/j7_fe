@@ -559,14 +559,14 @@ function OrderTimeline() {
           marginLeft: 140, // Add the box shadow
         }}
       >
-        <h3 style={{ marginRight: 650 }}>LỊCH SỬ GIAO DỊCH</h3>
+        <h3 style={{ marginRight: 650 }}>LỊCH SỬ THANH TOÁN</h3>
         <hr />
         <Table>
           <TableHead>
             <TableRow>
               <TableCell>Số tiền</TableCell>
               <TableCell>Thời gian</TableCell>
-              <TableCell>Phương thức thanh toán</TableCell>
+              <TableCell>Hình thức</TableCell>
               <TableCell>Trạng thái</TableCell>
               <TableCell>Ghi chú</TableCell>
               <TableCell>Người xác nhận</TableCell>
