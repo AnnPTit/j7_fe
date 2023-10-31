@@ -20,6 +20,8 @@ import { Scrollbar } from "src/components/scrollbar";
 import InformationCircleIcon from "@heroicons/react/24/solid/InformationCircleIcon";
 import { SeverityPill } from "src/components/severity-pill";
 import Link from "next/link";
+import { useRouter } from "next/router";
+import React from "react";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { Drawer } from "antd";
@@ -31,8 +33,10 @@ import FormLabel from "@mui/material/FormLabel";
 import Radio from "@mui/material/Radio";
 import RadioGroup from "@mui/material/RadioGroup";
 const numeral = require("numeral");
+
 export const BookRoomTable = (props) => {
   const { items = [], selected = [] } = props;
+  const router = useRouter();
   const [order, setOrder] = useState({});
   const [orderDetail, setOrderDetail] = useState([]);
   const [birthday, setBirthday] = useState(null);
@@ -113,9 +117,9 @@ export const BookRoomTable = (props) => {
       case 3:
         return { color: "success", text: "Đã trả phòng" };
       case 4:
-        return { color: "success", text: "Đã xác nhận" };
+        return { color: "secondary", text: "Đã xác nhận" };
       case 5:
-        return { color: "success", text: "Đã thanh toán" };
+        return { color: "info", text: "Thanh toán tiền cọc" };
       case 6:
         return { color: "error", text: "Từ chối" };
       default:
@@ -218,7 +222,92 @@ export const BookRoomTable = (props) => {
   };
 
   const handleRedirect = () => {
-    window.location.href = `/room-service?id=${orderId}`;
+    router.push(`/room-service?id=${orderId}`);
+  };
+
+  const renderButtonsBasedOnStatus = () => {
+    switch (order.status) {
+      case 1:
+        return (
+          <React.Fragment>
+            <div style={{ display: "flex", justifyContent: "flex-end" }}>
+              <TextField
+                style={{ marginRight: 20 }}
+                value={numeral(order.deposit).format("0,0 ") + "  đ"}
+                label="Tiền cọc"
+              />
+              <Button variant="outlined" color="error" onClick={handleRedirect}>
+                Hủy xác nhận
+              </Button>
+              <Button variant="outlined" onClick={handleRedirect}>
+                Xác nhận
+              </Button>
+            </div>
+          </React.Fragment>
+        );
+      case 2:
+        return (
+          <React.Fragment>
+            <div style={{ display: "flex", justifyContent: "flex-end" }}>
+              <TextField
+                style={{ marginRight: 20 }}
+                value={numeral(order.deposit).format("0,0 ") + "  đ"}
+                label="Tiền cọc"
+              />
+              <Button variant="outlined" onClick={handleRedirect}>
+                Chi tiết
+              </Button>
+            </div>
+          </React.Fragment>
+        );
+      case 3:
+        return (
+          <React.Fragment>
+            <div style={{ display: "flex", justifyContent: "flex-end" }}>
+              <TextField
+                style={{ marginRight: 20 }}
+                value={numeral(order.deposit).format("0,0 ") + "  đ"}
+                label="Tiền cọc"
+              />
+              <Button variant="outlined" onClick={handleRedirect}>
+                Chi tiết
+              </Button>
+            </div>
+          </React.Fragment>
+        );
+      case 4:
+        return (
+          <React.Fragment>
+            <div style={{ display: "flex", justifyContent: "flex-end" }}>
+              <TextField
+                style={{ marginRight: 20 }}
+                value={numeral(order.deposit).format("0,0 ") + "  đ"}
+                label="Tiền cọc"
+              />
+              <Button variant="outlined" onClick={handleRedirect}>
+                Chi tiết
+              </Button>
+            </div>
+          </React.Fragment>
+        );
+      case 5:
+        return (
+          <React.Fragment>
+            <div style={{ display: "flex", justifyContent: "flex-end" }}>
+              <TextField
+                style={{ marginRight: 20 }}
+                value={numeral(order.deposit).format("0,0 ") + "  đ"}
+                label="Tiền cọc"
+              />
+              <Button variant="outlined" onClick={handleRedirect}>
+                Tiến hành nhận phòng
+              </Button>
+            </div>
+          </React.Fragment>
+        );
+      default:
+        return null;
+    }
   };
 
   return (
@@ -385,20 +474,21 @@ export const BookRoomTable = (props) => {
                                     Giới tính
                                   </FormLabel>
                                   <RadioGroup
-                                    style={{ display: "flex", justifyContent: "left" }}
                                     row
                                     aria-labelledby="demo-row-radio-buttons-group-label"
                                     name="row-radio-buttons-group"
-                                    value={gender || ""}
-                                    onChange={(e) => setGender(e.target.value)}
+                                    value={gender === true ? true : false}
+                                    onChange={(e) =>
+                                      setGender(e.target.value === "true" ? true : false)
+                                    }
                                   >
                                     <FormControlLabel
-                                      value={true}
+                                      value={"true"}
                                       control={<Radio />}
                                       label="Nam"
                                     />
                                     <FormControlLabel
-                                      value={false}
+                                      value={"false"}
                                       control={<Radio />}
                                       label="Nữ"
                                     />
@@ -467,7 +557,8 @@ export const BookRoomTable = (props) => {
                               </Table>
                             </Box>
                             <br />
-                            <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                            {renderButtonsBasedOnStatus()}
+                            {/* <div style={{ display: "flex", justifyContent: "flex-end" }}>
                               <TextField
                                 style={{ marginRight: 20 }}
                                 value={numeral(order.deposit).format("0,0 ") + "  đ"}
@@ -478,11 +569,16 @@ export const BookRoomTable = (props) => {
                                   Tiến hành nhận phòng
                                 </Button>
                               ) : (
-                                <Button variant="outlined" onClick={handleSubmit}>
+                                <p>Loading...</p>
+                              )}
+                              {orderStatus === 1 ? (
+                                <Button variant="outlined" onClick={handleRedirect}>
                                   Xác nhận
                                 </Button>
+                              ) : (
+                                <p>Loading...</p>
                               )}
-                            </div>
+                            </div> */}
                           </div>
                         </Scrollbar>
                       </Drawer>
