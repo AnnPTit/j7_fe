@@ -7,6 +7,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { ToastContainer, toast } from "react-toastify";
 import Swal from "sweetalert2";
 import { parse, format } from "date-fns";
+import "react-toastify/dist/ReactToastify.css";
 
 import React, { Component } from "react";
 import QrReader from "react-qr-scanner";
@@ -179,8 +180,9 @@ function InputAccount() {
           alert("Bạn không có quyền truy cập vào trang này");
           window.location.href = "/auth/login"; // Chuyển hướng đến trang đăng nhập
         } else if (error.response.status === 400) {
+          
           console.log(error.response.data);
-
+          toast.error( error.response.data);
           const isFullnameError = error.response.data.fullname === undefined;
           const isEmailError = error.response.data.email === undefined;
           const isPhoneNumberError = error.response.data.phoneNumber === undefined;
@@ -189,6 +191,9 @@ function InputAccount() {
           const isProvinceError = error.response.data.provinces === undefined;
           const isDistrictError = error.response.data.districts === undefined;
           const isWardError = error.response.data.wards === undefined;
+  
+          
+
           if (
             !isFullnameError &&
             !isEmailError &&
@@ -249,6 +254,18 @@ function InputAccount() {
                 position: toast.POSITION.BOTTOM_RIGHT,
               });
             }
+            toast.error(error.response.data.email, {
+              position: toast.POSITION.BOTTOM_RIGHT,
+            });
+            // if (error.response.data.email) {
+            //   // API trả về lỗi cho trường email
+            //   toast.error("Email này đã tồn tại!");
+            // }
+        
+            // if (error.response.data.citizenId) {
+            //   // API trả về lỗi cho trường số căn cước công dân
+            //   toast.error("Số căn cước công dân này đã tồn tại!");
+            // }
             return false;
           }
         } else {
@@ -324,7 +341,6 @@ function InputAccount() {
     return `${day}/${month}/${year}`;
   };
 
-  console.log(gender);
   const handleBirthDayChange = (date) => {
     const formattedDate = formatToDDMMYYYY(date);
     setBirthday(formattedDate);
@@ -384,7 +400,7 @@ function InputAccount() {
           </button>
         </div>
       </Paper>
-
+      <br></br>
       <div className="form-floating">
         <input
           type="text"
@@ -420,6 +436,7 @@ function InputAccount() {
           </RadioGroup>
         </FormControl>
       </div>
+      <br></br>
       <DatePicker
         label="Ngày sinh"
         value={birthday || null}
@@ -436,7 +453,7 @@ function InputAccount() {
           />
         )}
       />
-      <br></br>
+
       <br></br>
       <div className="form-floating mb-3">
         <input
