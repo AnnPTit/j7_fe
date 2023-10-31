@@ -8,11 +8,12 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { ToastContainer, toast } from "react-toastify";
 import Swal from "sweetalert2";
 import { useRouter } from "next/router";
+import { TextField } from "@mui/material";
+import { DatePicker, TimePicker } from "@mui/x-date-pickers";
 
 const cx = classNames.bind(style);
 const handleSubmit = async (event, id, accountUpdate) => {
   event.preventDefault(); // Ngăn chặn sự kiện submit mặc định
-
   // Tạo payload dữ liệu để gửi đến API
   const payload = {
     ...accountUpdate,
@@ -43,9 +44,6 @@ const handleSubmit = async (event, id, accountUpdate) => {
       `http://localhost:2003/api/admin/account/update/${id}`,
       payload
     ); // Gọi API /api/service-type/save với payload và access token
-    toast.success("update Successfully!", {
-      position: toast.POSITION.BOTTOM_RIGHT,
-    });
     console.log(response); //
 
     if (response.status === 200) {
@@ -215,6 +213,14 @@ function UpdateAccount() {
     fetchData();
   }, []);
 
+  const handleBirthDayChange = (date) => {
+    setAccountUpdate((prev) => ({
+      ...prev,
+      birthday: date, // Store the date object in the state
+    }));
+  };
+
+  // call api địa chỉ
   const [provinces, setProvinces] = useState([]);
   const [districts, setDistricts] = useState([]);
   const [wards, setWards] = useState([]);
@@ -290,6 +296,25 @@ function UpdateAccount() {
     setSelectedWards(e.target.value);
     console.log(e.target.value);
   };
+  const findProvinceIdByName = (name) => {
+    const province = provinces.find((p) => p.province_name === name);
+    return province ? province.province_id : null;
+  };
+
+  const findDistrictIdByName = (name) => {
+    const district = districts.find((d) => d.district_name === name);
+    return district ? district.district_id : null;
+  };
+
+  const findWardIdByName = (name) => {
+    const ward = wards.find((w) => w.ward_name === name);
+    return ward ? ward.ward_id : null;
+  };
+  const selectedProvinceId = findProvinceIdByName(selectedProvinceName);
+  const selectedDistrictId = findDistrictIdByName(selectedDistrictName);
+  const selectedWardId = findWardIdByName(selectedWards);
+
+  console.log(provinces);
   return (
     <div className={cx("wrapper")}>
       <h1>Cập nhật tài khoản</h1>
@@ -307,6 +332,7 @@ function UpdateAccount() {
               accountCode: e.target.value,
             }));
           }}
+          disabled
         />
 
         <label htmlFor="floatingInput">Mã nhân viên</label>
@@ -375,23 +401,20 @@ function UpdateAccount() {
         </div>
       </div>
 
-      <div className="form-floating">
-        <input
-          type="date"
-          className="form-control"
-          id="floatingBirthday"
-          placeholder="Ngày sinh"
-          name="birthday"
-          value={accountUpdate.birthday}
-          onChange={(e) => {
-            setAccountUpdate((prev) => ({
-              ...prev,
-              birthday: e.target.value,
-            }));
-          }}
-        />
-        <label htmlFor="floatingBirthday">Ngày sinh</label>
-      </div>
+      <DatePicker
+        label="Ngày sinh"
+        value={accountUpdate.birthday}
+        onChange={handleBirthDayChange}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            inputProps={{
+              value: accountUpdate.birthday || "", // Ensure the value is a string
+              readOnly: true,
+            }}
+          />
+        )}
+      />
 
       <br></br>
       <div className="form-floating mb-3">
@@ -448,62 +471,102 @@ function UpdateAccount() {
       </div>
 
       <br></br>
-      <div className="form-floating">
-        <input
-          type="text"
-          className="form-control"
-          id="floatingPassword"
-          placeholder="Password"
-          name="provinces"
-          value={accountUpdate.provinces}
-          onChange={(e) => {
-            setAccountUpdate((prev) => ({
-              ...prev,
-              provinces: e.target.value,
-            }));
-          }}
-        />
-        <label htmlFor="floatingPassword">Tỉnh/Thành Phố</label>
-      </div>
 
-      <br></br>
-      <div className="form-floating">
-        <input
-          type="text"
-          className="form-control"
-          id="floatingPassword"
-          placeholder="Password"
-          name="districts"
-          value={accountUpdate.districts}
-          onChange={(e) => {
-            setAccountUpdate((prev) => ({
-              ...prev,
-              districts: e.target.value,
-            }));
-          }}
-        />
-        <label htmlFor="floatingPassword">Quận/Huyện</label>
-      </div>
+      {/* Tạo ô select cho tỉnh/thành phố */}
+      <p>Tỉnh/Thành Phố</p>
+      <select
+        className="form-select"
+        name="provinces"
+        value={selectedProvinceId} // Sử dụng giá trị đã tìm thấy
+        onChange={handleProvinceChange}
+      >
+        <option value="">Chọn tỉnh thành</option>
+        {provinces.map((province) => (
+          <option key={province.province_id} value={province.province_id}>
+            {province.province_name}
+          </option>
+        ))}
+      </select>
 
-      <br></br>
-      <div className="form-floating">
-        <input
-          type="text"
-          className="form-control"
-          id="floatingPassword"
-          placeholder="Password"
-          name="wards"
-          value={accountUpdate.wards}
-          onChange={(e) => {
-            setAccountUpdate((prev) => ({
-              ...prev,
-              wards: e.target.value,
-            }));
-          }}
-        />
-        <label htmlFor="floatingPassword">Phường/Xã</label>
-      </div>
+      {/* Tạo ô select cho quận/huyện */}
+      <p>Quận/Huyện</p>
+      <select
+        className="form-select"
+        name="districts"
+        value={selectedDistrictId} // Sử dụng giá trị đã tìm thấy
+        onChange={handleDistrictChange}
+      >
+        <option value="">Chọn quận huyện</option>
+        {districts.map((district) => (
+          <option key={district.district_id} value={district.district_id}>
+            {district.district_name}
+          </option>
+        ))}
+      </select>
 
+      {/* Tạo ô select cho phường/xã */}
+      <p>Phường/Xã</p>
+      <select
+        className="form-select"
+        name="wards"
+        value={selectedWardId} // Sử dụng giá trị đã tìm thấy
+        onChange={handleWardsChange}
+      >
+        <option value="">Chọn phường xã</option>
+        {wards.map((ward) => (
+          <option key={ward.ward_id} value={ward.ward_id}>
+            {ward.ward_name}
+          </option>
+        ))}
+      </select>
+
+      {/* <p>Tỉnh/Thành Phố</p>
+      <select
+        className="form-select"
+        name="provinces"
+        value={selectedProvince}
+        onChange={handleProvinceChange}
+      >
+        <option value="">Chọn tỉnh thành</option>
+        {provinces.map((province) => (
+          <option key={province.province_id} value={province.province_id}>
+            {province.province_name}
+          </option>
+        ))}
+      </select>
+
+      <br />
+
+      <p>Quận/Huyện</p>
+      <select
+        className="form-select"
+        name="districts"
+        value={selectedDistrict}
+        onChange={handleDistrictChange}
+      >
+        <option value="">Chọn quận huyện</option>
+        {districts.map((district) => (
+          <option key={district.district_id} value={district.district_id}>
+            {district.district_name}
+          </option>
+        ))}
+      </select>
+      <br />
+
+      <p>Phường/Xã</p>
+      <select
+        className="form-select"
+        name="wards"
+        value={selectedWards}
+        onChange={handleWardsChange}
+      >
+        <option value="">Chọn phường xã</option>
+        {wards.map((ward) => (
+          <option key={ward.ward_id} value={ward.wards_id}>
+            {ward.ward_name}
+          </option>
+        ))}
+      </select> */}
       <br></br>
       <button
         className={(cx("input-btn"), "btn btn-primary")}
