@@ -1,13 +1,13 @@
 import { Timeline, TimelineEvent } from "@mailtop/horizontal-timeline";
 import {
   FaBug,
-  FaRegCalendarCheck,
   FaRegFileAlt,
   FaTimesCircle,
   FaHome,
   FaSignInAlt,
   FaCheck,
   FaWallet,
+  FaShareSquare,
 } from "react-icons/fa";
 import { Layout as DashboardLayout } from "src/layouts/dashboard/layout";
 import React from "react";
@@ -173,12 +173,12 @@ function OrderTimeline() {
                   break;
                 case 2:
                   eventColor = "#00CC66";
-                  eventIcon = FaRegCalendarCheck;
+                  eventIcon = FaHome;
                   eventTitle = "Khách hàng nhận phòng";
                   break;
                 case 3:
                   eventColor = "#00CC66";
-                  eventIcon = FaHome;
+                  eventIcon = FaShareSquare;
                   eventTitle = "Khách hàng trả phòng";
                   break;
                 case 4:
@@ -258,9 +258,9 @@ function OrderTimeline() {
       case 1:
         return <FaRegFileAlt style={{ fontSize: "50px", color: "#00CC66" }} />;
       case 2:
-        return <FaRegCalendarCheck style={{ fontSize: "50px", color: "#00CC66" }} />;
-      case 3:
         return <FaHome style={{ fontSize: "50px", color: "#00CC66" }} />;
+      case 3:
+        return <FaShareSquare style={{ fontSize: "50px", color: "#00CC66" }} />;
       case 4:
         return <FaCheck style={{ fontSize: "50px", color: "#6959CD" }} />;
       case 5:
@@ -523,6 +523,12 @@ function OrderTimeline() {
             <label>Tổng tiền + (VAT)</label>
             <span style={{ marginLeft: 93, color: "red" }}>
               {order.totalMoney ? formatPrice(order.totalMoney) : "0 VND"}
+            </span>
+            <br />
+            <br />
+            <label>Tiền cọc</label>
+            <span style={{ marginLeft: 160, color: "red" }}>
+              {order.deposit ? formatPrice(order.deposit) : "0 VND"}
             </span>
             <br />
             <br />
