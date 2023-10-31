@@ -54,7 +54,7 @@ export const AccountTable = (props) => {
 
             <TableBody>
               {items.map((account, index) => {
-                // const birthday = moment(account.birthday).format("YYYY-MM-DD");
+                const birthday = moment(account.birthday).format("DD/MM/YYYY");
                 const isSelected = selected.includes(account.id);
                 const hrefUpdate = `/update/updateAccount/updateAccount?id=${account.id}`;
                 const alertDelete = () => {
@@ -84,14 +84,14 @@ export const AccountTable = (props) => {
                     <TableCell>{account.accountCode}</TableCell>
                     <TableCell>{account.fullname}</TableCell>
                     <TableCell>{account.gender ? "Nam" : "Nữ"}</TableCell>
-                    <TableCell>{account.birthday}</TableCell>
+                    <TableCell>{birthday}</TableCell>
                     <TableCell>{account.phoneNumber}</TableCell>
                     <TableCell>{account.citizenId}</TableCell>
                     <TableCell>{account.provinces} - {account.districts} - {account.wards}</TableCell>
                     <TableCell>{account.email}</TableCell>
                     <TableCell>{account.position.positionName === "ROLE_ADMIN" ? "Quản lý" : "Nhân Viên"}</TableCell>
                     <TableCell>
-                      <a className="btn btn-info m-xl-2" href={hrefUpdate}>
+                      <a className="btn btn-primary m-xl-2" href={hrefUpdate}>
                         <SvgIcon fontSize="small">
                           <PencilSquareIcon />
                         </SvgIcon>
