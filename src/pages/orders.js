@@ -70,8 +70,24 @@ function OrderTimeline() {
     setOpenDetail(false);
   };
 
-  const handlePrintInvoice = () => {
-    setIsPrinting(true);
+  const handlePrintInvoice = (id) => {
+    // setIsPrinting(true);
+    // Gửi yêu cầu GET đến API để lấy tệp ByteArrayResource
+    axios
+      .get(`http://localhost:2003/api/order/recommended/${id}`, { responseType: "arraybuffer" })
+      .then((response) => {
+        const blob = new Blob([response.data], { type: "application/msword" });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "invoice.docx";
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+      })
+      .catch((error) => {
+        console.error("Lỗi khi tải tệp .docx", error);
+      });
   };
 
   const getPaymentMethodColor = (method) => {
@@ -436,7 +452,7 @@ function OrderTimeline() {
             )}
             {order.status === 3 && (
               <button
-                // onClick={handlePrintInvoice}
+                onClick={() => handlePrintInvoice(order.id)}
                 style={{ height: 50, width: 130 }}
                 className="btn btn-warning m-xl-2"
               >
