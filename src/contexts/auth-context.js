@@ -135,7 +135,9 @@ export const AuthProvider = (props) => {
       })
       .then((response) => {
         const accessToken = response.data.accessToken;
+        const idAccount = response.data.idUser;
         const fullName = response.data.fullName;
+        console.log(idAccount);
         console.log(fullName);
         console.log(accessToken);
         if (accessToken === undefined) {
@@ -144,6 +146,7 @@ export const AuthProvider = (props) => {
         } // Lưu trữ access token
         window.sessionStorage.setItem("authenticated", "true");
         localStorage.setItem("accessToken", accessToken); // Lưu access token vào localStorage
+        localStorage.setItem("idAccount", idAccount);
         localStorage.setItem("fullName", fullName);
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
         const user = {

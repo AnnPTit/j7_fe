@@ -42,7 +42,7 @@ import Radio from "@mui/material/Radio";
 import RadioGroup from "@mui/material/RadioGroup";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import FormControl from "@mui/material/FormControl";
-import FormLabel from "@mui/material/FormLabel"; // ...
+import FormLabel from "@mui/material/FormLabel";
 import { parse, format, subYears } from "date-fns";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -55,6 +55,8 @@ import { CustomerSearch } from "src/sections/bookRoomOffline/customer-search";
 function BookRoom() {
   const router = useRouter(); // Sử dụng useRouter để truy cập router của Next.js
   const { id } = router.query;
+  const idAccount = localStorage.getItem("idAccount");
+  const fullname = localStorage.getItem("fullName");
   const [order, setOrder] = useState({
     id: "",
     typeOfOrder: "",
@@ -232,7 +234,7 @@ function BookRoom() {
   // Chuyển sang chi tiết
   const handleRedirectOrders = () => {
     router.push(`/orders?id=${id}`);
-  }
+  };
   // Xử lí các hàm đóng, mở dialog
   const handleOpenSearchRoom = () => {
     setOpenSeacrhRoom(true);
@@ -548,10 +550,10 @@ function BookRoom() {
     return calculateTotalAmountPriceRoom() + calculateTotalService() + calculateTotalCombo();
   };
 
-  const vatOrderDetail = totalCostForOrderDetail * 0.05;
+  const vatOrderDetail = totalCostForOrderDetail * 0.1;
   const sumOrderDetail = totalCostForOrderDetail + vatOrderDetail;
   const moneyReturnCustomerOneRoom = givenCustomerOneRoom - sumOrderDetail;
-  const vatAmount = totalAmount * 0.05;
+  const vatAmount = totalAmount * 0.1;
   const sumAmount = totalAmount + vatAmount - order.deposit;
   const moneyReturnCustomer = givenCustomer - sumAmount;
 
@@ -763,6 +765,7 @@ function BookRoom() {
       const response = await axios.post(
         `http://localhost:2003/api/order/return/${selectedOrderDetails}`,
         {
+          account: { id: idAccount },
           customerId: selectedCustomerReturn,
           totalMoney: sumOrderDetail,
           vat: vatOrderDetail,
@@ -832,9 +835,10 @@ function BookRoom() {
       // Make an API call to update the order status to "Đã xác nhận" (status: 2)
       await axios.put(`http://localhost:2003/api/order/delete/${id}`, {
         note: noteOrder,
+        deleted: fullname,
       });
       setOrder({ ...order, status: 0 });
-      handleCloseAcceptOrder();
+      handleCloseCancelOrder();
       toast.success("Hủy thành công!", {
         position: toast.POSITION.BOTTOM_CENTER,
       });
@@ -1549,7 +1553,13 @@ function BookRoom() {
         });
         return;
       }
-      if (numberOfPeople > rooms.find((r) => r.id === selectedRoomId)?.typeRoom?.capacity) {
+      const adult = parseInt(numberOfPeople);
+      const children = parseInt(
+        rooms.find((r) => r.id === selectedRoomId)?.typeRoom?.children || 0
+      );
+      const totalPeople = parseInt(adult + children);
+      const capacity = rooms.find((r) => r.id === selectedRoomId)?.typeRoom?.capacity || 0;
+      if (totalPeople > capacity) {
         toast.error("Số người không được vượt quá sức chứa!", {
           position: toast.POSITION.BOTTOM_CENTER,
         });
@@ -1574,6 +1584,8 @@ function BookRoom() {
           checkOut: new Date(valueTo.setHours(valueTimeTo.getHours(), valueTimeTo.getMinutes())),
           roomPrice: totalAmount,
           customerQuantity: numberOfPeople,
+          createBy: fullname,
+          updatedBy: fullname,
         });
 
         setOrderDetailData([...orderDetailData, response.data]);
@@ -1989,8 +2001,19 @@ function BookRoom() {
             fullWidth
             value={numberOfPeople}
             onChange={(e) => setNumberOfPeople(e.target.value)}
-            label="Số người"
+            label="Người lớn"
             variant="outlined"
+          />
+          <br />
+          <br />
+          <TextField
+            fullWidth
+            label="Trẻ em"
+            variant="outlined"
+            disabled
+            value={
+              selectedRoomId ? rooms.find((r) => r.id === selectedRoomId)?.typeRoom?.children : ""
+            }
           />
         </DialogContent>
         <DialogActions>
@@ -2003,7 +2026,9 @@ function BookRoom() {
         </DialogActions>
       </Dialog>
 
-      <div style={{ marginBottom: 20, height: 50, display: "flex", justifyContent: "space-between" }}>
+      <div
+        style={{ marginBottom: 20, height: 50, display: "flex", justifyContent: "space-between" }}
+      >
         <Button style={{ marginLeft: 180 }} onClick={handleRedirectOrders} variant="outlined">
           CHI TIẾT
         </Button>
@@ -2034,7 +2059,8 @@ function BookRoom() {
                   <TableCell>Tầng</TableCell>
                   <TableCell>Loại phòng</TableCell>
                   <TableCell>Sức chứa</TableCell>
-                  <TableCell>Số khách</TableCell>
+                  <TableCell>Người lớn</TableCell>
+                  <TableCell>Trẻ em</TableCell>
                   <TableCell>Ngày check-in</TableCell>
                   <TableCell>Ngày check-out</TableCell>
                   <TableCell>Thành tiền</TableCell>
@@ -2066,15 +2092,16 @@ function BookRoom() {
                     <TableCell>{orderDetail.room.typeRoom.typeRoomName}</TableCell>
                     <TableCell>{orderDetail.room.typeRoom.capacity}</TableCell>
                     <TableCell>{orderDetail.customerQuantity}</TableCell>
+                    <TableCell>{orderDetail.room.typeRoom.children}</TableCell>
                     <TableCell>
                       {orderDetail &&
                         orderDetail.checkIn &&
-                        format(new Date(orderDetail.checkIn), "dd/MM/yyyy - HH:mm")}
+                        format(new Date(orderDetail.checkIn), "dd/MM/yyyy")}
                     </TableCell>
                     <TableCell>
                       {orderDetail &&
                         orderDetail.checkOut &&
-                        format(new Date(orderDetail.checkOut), "dd/MM/yyyy - HH:mm")}
+                        format(new Date(orderDetail.checkOut), "dd/MM/yyyy")}
                     </TableCell>
                     <TableCell>{formatPrice(orderDetail.roomPrice)}</TableCell>
                     <TableCell>
@@ -3014,7 +3041,6 @@ function BookRoom() {
                 <br />
                 <TextField
                   style={{ width: 520, marginRight: 30 }}
-                  disabled
                   label="Số tiền"
                   value={totalAmount}
                   fullWidth
@@ -3024,7 +3050,6 @@ function BookRoom() {
                 <br />
                 <TextField
                   style={{ width: 550 }}
-                  disabled
                   label="VAT"
                   value={vatAmount}
                   fullWidth
@@ -3035,7 +3060,6 @@ function BookRoom() {
               <div style={{ display: "flex" }}>
                 <TextField
                   style={{ width: 520, marginRight: 30 }}
-                  disabled
                   label="Tổng tiền"
                   value={sumAmount}
                   fullWidth
@@ -3043,7 +3067,6 @@ function BookRoom() {
                 />
                 <TextField
                   style={{ width: 550 }}
-                  disabled
                   label="Tiền cọc"
                   value={order.deposit}
                   fullWidth
@@ -3051,14 +3074,23 @@ function BookRoom() {
                 />
               </div>
               <br />
-              <TextField
-                label="Khách hàng trả"
-                value={givenCustomer}
-                onChange={(e) => setGivenCustomer(e.target.value)}
-                fullWidth
-                variant="outlined"
-              />
-              <br />
+              <div style={{ display: "flex" }}>
+                <TextField
+                  style={{ width: 520, marginRight: 30 }}
+                  label="Khách hàng trả"
+                  value={givenCustomer}
+                  onChange={(e) => setGivenCustomer(e.target.value)}
+                  fullWidth
+                  variant="outlined"
+                />
+                <TextField
+                  style={{ width: 550 }}
+                  label="Phụ thu"
+                  value={order.surcharge}
+                  fullWidth
+                  variant="outlined"
+                />
+              </div>
               <br />
               <TextField
                 disabled
