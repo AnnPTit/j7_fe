@@ -81,7 +81,9 @@ const Page = () => {
         <Container maxWidth="xl">
           <Grid container spacing={3}>
             <Grid xs={12} sm={6} lg={3}>
-              {isNaN(revenueYear) ? null : (
+              {revenueYear === "" ? (
+                <OverviewBudget difference={0} positive sx={{ height: "100%" }} value="0" />
+              ) : (
                 <OverviewBudget
                   difference={12}
                   positive
@@ -106,8 +108,15 @@ const Page = () => {
               )}
             </Grid>
             <Grid xs={12} sm={6} lg={3}>
-              {isNaN(revenueMonth) ? null : (
-                <OverviewTotalProfit sx={{ height: "100%" }} value={formatPrice(revenueMonth)} />
+              {revenueMonth === "" ? (
+                <OverviewTotalProfit difference={1} positive sx={{ height: "100%" }} value="0" />
+              ) : (
+                <OverviewTotalProfit
+                  difference={12}
+                  positive
+                  sx={{ height: "100%" }}
+                  value={formatPrice(revenueMonth)}
+                />
               )}
             </Grid>
             <Grid xs={12} lg={8}>

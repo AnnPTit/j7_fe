@@ -19,8 +19,14 @@ export const BookRoomSearch = ({ textSearch, setTextSearch }) => {
     ),
   };
   const active = item.path ? pathname === item.path : false;
+  const account = localStorage.getItem("idAccount");
+  const fullname = localStorage.getItem("fullName");
 
-  const orderData = {};
+  const orderData = {
+    account: { id: account },
+    // createBy: fullname,
+    // updatedBy: fullname,
+  };
 
   const createOrder = async () => {
     try {

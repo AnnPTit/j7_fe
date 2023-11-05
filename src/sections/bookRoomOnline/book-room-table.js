@@ -236,10 +236,10 @@ export const BookRoomTable = (props) => {
                 value={numeral(order.deposit).format("0,0 ") + "  đ"}
                 label="Tiền cọc"
               />
-              <Button variant="outlined" color="error" onClick={handleRedirect}>
+              <Button variant="outlined" color="error">
                 Hủy xác nhận
               </Button>
-              <Button variant="outlined" onClick={handleRedirect}>
+              <Button variant="outlined" onClick={handleSubmit}>
                 Xác nhận
               </Button>
             </div>

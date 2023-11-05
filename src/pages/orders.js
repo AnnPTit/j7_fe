@@ -461,40 +461,35 @@ function OrderTimeline() {
               Chi tiết
             </button>
           </div>
-
-          <Dialog open={openDetail} onClose={handleCloseDetail} maxWidth="md">
-            <DialogContent>
-              <DialogContentText>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell></TableCell>
-                      <TableCell></TableCell>
-                      <TableCell>Thời gian</TableCell>
-                      <TableCell>Người xác nhận</TableCell>
-                      <TableCell>Ghi chú</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {selectedOrderTimelines.map((event, index) => (
-                      <TableRow hover key={index}>
-                        <TableCell>
-                          <Box component="span">{renderIconForEventType(event.type)}</Box>
-                        </TableCell>
-                        <TableCell>{renderTitleForEventType(event.type)}</TableCell>
-                        <TableCell>
-                          {format(new Date(event.createAt), "dd-MM-yyyy hh:mm:ss")}
-                        </TableCell>
-                        <TableCell>{event.account.fullname}</TableCell>
-                        <TableCell>{event.note}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </DialogContentText>
-            </DialogContent>
-          </Dialog>
         </div>
+        <Dialog open={openDetail} onClose={handleCloseDetail} maxWidth="md">
+          <DialogContent>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell></TableCell>
+                  <TableCell></TableCell>
+                  <TableCell>Thời gian</TableCell>
+                  <TableCell>Người xác nhận</TableCell>
+                  <TableCell>Ghi chú</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {selectedOrderTimelines.map((event, index) => (
+                  <TableRow hover key={index}>
+                    <TableCell>
+                      <Box>{renderIconForEventType(event.type)}</Box>
+                    </TableCell>
+                    <TableCell>{renderTitleForEventType(event.type)}</TableCell>
+                    <TableCell>{format(new Date(event.createAt), "dd-MM-yyyy hh:mm:ss")}</TableCell>
+                    <TableCell>{event.account.fullname}</TableCell>
+                    <TableCell>{event.note}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </DialogContent>
+        </Dialog>
       </Box>
       <Box
         style={{
@@ -510,8 +505,8 @@ function OrderTimeline() {
         <hr />
         <div style={{ display: "flex" }}>
           <div style={{ marginLeft: 30, fontFamily: "inherit", fontSize: "17px" }}>
-            <label>Loại</label>
-            <SeverityPill style={{ marginLeft: 190 }}>
+            <label>Loại hóa đơn</label>
+            <SeverityPill style={{ marginLeft: 125 }}>
               {order.typeOfOrder == 0 ? "Online" : "Tại quầy"}
             </SeverityPill>
             <br />
