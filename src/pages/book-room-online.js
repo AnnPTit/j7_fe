@@ -9,6 +9,7 @@ import { BookRoomSearch } from "src/sections/bookRoomOnline/book-room-search";
 import { applyPagination } from "src/utils/apply-pagination";
 import MyPagination from "src/components/Pagination";
 import "bootstrap/dist/css/bootstrap.min.css";
+import BookRoomOnlineFilter from "src/sections/bookRoomOnline/book-room-filter";
 
 const useBookRoom = (data, page, rowsPerPage) => {
   return useMemo(() => {
@@ -33,6 +34,7 @@ const Page = () => {
   const bookRoomSelection = useSelection(bookRoomIds);
   const [pageNumber, setPageNumber] = useState(0);
   const [textSearch, setTextSearch] = useState("");
+  const [statusChoose, setStatusChoose] = useState("");
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
 
@@ -58,6 +60,9 @@ const Page = () => {
         if (textSearch !== "") {
           Api = Api + `&key=${textSearch}`;
         }
+        if (statusChoose !== "") {
+          Api = Api + `&status=${statusChoose}`;
+        }
         const response = await axios.get(Api); // Thay đổi URL API của bạn tại đây
         console.log(response.data);
         setTotalPages(response.data.totalPages);
@@ -78,7 +83,7 @@ const Page = () => {
       }
     };
     fetchData();
-  }, [pageNumber, dataChange, textSearch]);
+  }, [pageNumber, dataChange, textSearch, statusChoose]);
 
   return (
     <>
@@ -95,6 +100,7 @@ const Page = () => {
         <Container maxWidth="xl">
           <Stack spacing={3}>
             <BookRoomSearch textSearch={textSearch} setTextSearch={setTextSearch} />
+            <BookRoomOnlineFilter statusChoose={statusChoose} setStatusChoose={setStatusChoose}/>
             <div style={{ minHeight: 500 }}>
               {" "}
               <BookRoomTable

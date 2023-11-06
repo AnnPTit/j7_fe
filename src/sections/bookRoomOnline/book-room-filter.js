@@ -1,23 +1,9 @@
 import { MenuItem, FormControl, InputLabel, Select } from "@mui/material";
 
-function OrderFilter({ typeOfOrderChoose, statusChoose, setTypeOfOrderChoose, setStatusChoose }) {
+function BookRoomOnlineFilter({ statusChoose, setStatusChoose }) {
   return (
-    <div style={{ marginTop: -10 }}>
-      <FormControl variant="standard" style={{ marginLeft: 100 }} sx={{ minWidth: 180 }}>
-        <InputLabel id="demo-simple-select-standard-label">Loại đơn</InputLabel>
-        <Select
-          labelId="demo-simple-select-standard-label"
-          id="demo-simple-select-standard"
-          label="Loại đơn"
-          value={typeOfOrderChoose}
-          onChange={(e) => setTypeOfOrderChoose(e.target.value)}
-        >
-          <MenuItem value="">Tất cả</MenuItem>
-          <MenuItem value={0}>Online</MenuItem>
-          <MenuItem value={1}>Tại quầy</MenuItem>
-        </Select>
-      </FormControl>
-      <FormControl variant="standard" style={{ marginLeft: 50 }} sx={{ minWidth: 180 }}>
+    <div style={{ marginTop: -90 }}>
+      <FormControl variant="standard" style={{ marginLeft: 550 }} sx={{ minWidth: 180 }}>
         <InputLabel id="demo-simple-select-standard-label">Trạng thái</InputLabel>
         <Select
           labelId="demo-simple-select-standard-label"
@@ -39,4 +25,4 @@ function OrderFilter({ typeOfOrderChoose, statusChoose, setTypeOfOrderChoose, se
   );
 }
 
-export default OrderFilter;
+export default BookRoomOnlineFilter;

@@ -87,7 +87,7 @@ export const BookRoomTable = (props) => {
   };
 
   return (
-    <Card>
+    <Card sx={{ marginTop: 5, marginBottom: 3 }}>
       <ToastContainer />
       <Scrollbar>
         <Box sx={{ minWidth: 800 }}>
