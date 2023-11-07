@@ -1,6 +1,5 @@
 import ChartBarIcon from "@heroicons/react/24/solid/ChartBarIcon";
 import ShoppingBagIcon from "@heroicons/react/24/solid/ShoppingBagIcon";
-import UserPlusIcon from "@heroicons/react/24/solid/UserPlusIcon";
 import UsersIcon from "@heroicons/react/24/solid/UsersIcon";
 import XCircleIcon from "@heroicons/react/24/solid/XCircleIcon";
 import TVIcon from "@heroicons/react/24/solid/TVIcon";
@@ -22,7 +21,7 @@ import Link from "next/link";
 
 export const items = [
   {
-    title: "Overview",
+    title: "Thống kê",
     path: "/",
     icon: (
       <SvgIcon fontSize="small">
@@ -278,22 +277,13 @@ export const items = [
       </SvgIcon>
     ),
   },
-  {
-    title: "Đăng kí",
-    path: "/auth/register",
-    icon: (
-      <SvgIcon fontSize="small">
-        <UserPlusIcon />
-      </SvgIcon>
-    ),
-  },
-  {
-    title: "Error",
-    path: "/404",
-    icon: (
-      <SvgIcon fontSize="small">
-        <XCircleIcon />
-      </SvgIcon>
-    ),
-  },
+  // {
+  //   title: "Error",
+  //   path: "/404",
+  //   icon: (
+  //     <SvgIcon fontSize="small">
+  //       <XCircleIcon />
+  //     </SvgIcon>
+  //   ),
+  // },
 ];

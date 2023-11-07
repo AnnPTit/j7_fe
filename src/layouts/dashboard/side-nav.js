@@ -69,7 +69,7 @@ export const SideNav = (props) => {
           >
             <div>
               <Typography color="inherit" variant="subtitle1">
-                Booking Hotel Finder
+                Armani Hotel
               </Typography>
               <Typography color="neutral.400" variant="body2">
                 Admin

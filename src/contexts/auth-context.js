@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useReducer, useRef } from "react";
 import PropTypes from "prop-types";
 import axios from "axios";
+import { toast } from "react-toastify";
 
 const HANDLERS = {
   INITIALIZE: "INITIALIZE",
@@ -133,10 +134,20 @@ export const AuthProvider = (props) => {
         password: password,
       })
       .then((response) => {
-        console.log(response.data);
-        const accessToken = response.data.accessToken; // Lưu trữ access token
+        const accessToken = response.data.accessToken;
+        const idAccount = response.data.idUser;
+        const fullName = response.data.fullName;
+        console.log(idAccount);
+        console.log(fullName);
+        console.log(accessToken);
+        if (accessToken === undefined) {
+          alert("Login fail !");
+          window.location.href = "/auth/login";
+        } // Lưu trữ access token
         window.sessionStorage.setItem("authenticated", "true");
         localStorage.setItem("accessToken", accessToken); // Lưu access token vào localStorage
+        localStorage.setItem("idAccount", idAccount);
+        localStorage.setItem("fullName", fullName);
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
         const user = {
           email: email,

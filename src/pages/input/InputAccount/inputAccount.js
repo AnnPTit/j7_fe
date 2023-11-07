@@ -7,6 +7,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { ToastContainer, toast } from "react-toastify";
 import Swal from "sweetalert2";
 import { parse, format } from "date-fns";
+import "react-toastify/dist/ReactToastify.css";
 
 import React, { Component } from "react";
 import QrReader from "react-qr-scanner";
@@ -51,7 +52,9 @@ function InputAccount() {
   useEffect(() => {
     if (idProvince) {
       const fetchDistricts = async () => {
-        const response = await axios.get(`https://vapi.vnappmob.com/api/province/district/${idProvince}`);
+        const response = await axios.get(
+          `https://vapi.vnappmob.com/api/province/district/${idProvince}`
+        );
         setDistricts(response.data.results);
       };
       fetchDistricts();
@@ -61,7 +64,9 @@ function InputAccount() {
   useEffect(() => {
     if (idDistrict) {
       const fetchWards = async () => {
-        const response = await axios.get(`https://vapi.vnappmob.com/api/province/ward/${idDistrict}`);
+        const response = await axios.get(
+          `https://vapi.vnappmob.com/api/province/ward/${idDistrict}`
+        );
         setWards(response.data.results);
       };
       fetchWards();
@@ -72,8 +77,8 @@ function InputAccount() {
     setSelectedProvince(e.target.value);
     const province = provinces.find((p) => p.province_id === e.target.value);
     setIdProvince(province?.province_id || 0);
-    const name = province ? province.province_name : ''; 
-    setSelectedProvinceName(name); 
+    const name = province ? province.province_name : "";
+    setSelectedProvinceName(name);
     if (province) {
       setDistricts([]);
       setWards([]);
@@ -85,8 +90,8 @@ function InputAccount() {
     setSelectedDistrict(e.target.value);
     const district = districts.find((d) => d.district_id === e.target.value);
     setIdDistrict(district?.district_id || 0);
-    const name = district ? district.district_name : ''; 
-    setSelectedDistrictName(name); 
+    const name = district ? district.district_name : "";
+    setSelectedDistrictName(name);
     if (district) {
       setWards([]);
     }
@@ -99,19 +104,6 @@ function InputAccount() {
   };
 
 
-  // QR Code
-  const [delay, setDelay] = useState(100);
-  const [result, setResult] = useState("No result");
-  const [cameraEnabled, setCameraEnabled] = useState(false);
-
-  const [citizenId, setCitizenId] = useState("");
-  const [fullname, setFullname] = useState("");
-  const [birthday, setBirthday] = useState(null);
-  const [gender, setGender] = useState("true");
-
-  // const provinces = provincesInput?.value;
-  // const districts = districtsInput?.value;
-  // const wards = wardsInput?.value;
 
   const handleSubmit = async (event) => {
     event.preventDefault(); // Ngăn chặn sự kiện submit mặc định
@@ -120,13 +112,12 @@ function InputAccount() {
     const passwordInput = document.querySelector('input[name="password"]');
     const fullNameInput = document.querySelector('input[name="fullname"]');
     const genderdInput = document.querySelector('input[name="gender"]');
-    // const birthdayInput = document.querySelector('input[name="birthday"]');
     const emailInput = document.querySelector('input[name="email"]');
     const phoneInput = document.querySelector('input[name="phoneNumber"]');
     const citizenIdInput = document.querySelector('input[name="citizenId"]');
-    // const provincesInput = document.querySelector('select[name="provinces"]');
-    // const districtsInput = document.querySelector('select[name="districts"]');
-    // const wardsInput = document.querySelector('select[name="wards"]');
+
+    const wardsInput = document.querySelector('select[name="wards"]');
+    const wards = wardsInput?.value;
 
     const accountCode = accountCodeInput?.value;
     const password = passwordInput?.value;
@@ -136,9 +127,6 @@ function InputAccount() {
     const phoneNumber = phoneInput?.value;
     const birthdayAccount = birthday;
     const citizenId = citizenIdInput?.value;
-    // const provinces = provincesInput?.value;
-    // const districts = districtsInput?.value;
-    // const wards = wardsInput?.value;
 
     // Tạo payload dữ liệu để gửi đến API
     const payload = {
@@ -158,12 +146,12 @@ function InputAccount() {
 
     try {
       const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
-      console, log("accessToken ", accessToken);
       // Kiểm tra xem accessToken có tồn tại không
       if (!accessToken) {
         alert("Bạn chưa đăng nhập");
         return false;
       }
+
       axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
 
       const response = await axios.post("http://localhost:2003/api/admin/account/save", payload); // Gọi API /api/service-type/save với payload và access token
@@ -192,20 +180,27 @@ function InputAccount() {
           alert("Bạn không có quyền truy cập vào trang này");
           window.location.href = "/auth/login"; // Chuyển hướng đến trang đăng nhập
         } else if (error.response.status === 400) {
+          
           console.log(error.response.data);
-
+          toast.error( error.response.data);
           const isFullnameError = error.response.data.fullname === undefined;
           const isEmailError = error.response.data.email === undefined;
           const isPhoneNumberError = error.response.data.phoneNumber === undefined;
           const isCitizenIdError = error.response.data.citizenId === undefined;
           const isBirthdayError = error.response.data.birthday === undefined;
+          const isProvinceError = error.response.data.provinces === undefined;
+          const isDistrictError = error.response.data.districts === undefined;
+          const isWardError = error.response.data.wards === undefined;
+  
+          
 
           if (
             !isFullnameError &&
             !isEmailError &&
             !isPhoneNumberError &&
             !isCitizenIdError &&
-            !isBirthdayError
+            !isBirthdayError &&
+            !isWardError
           ) {
             toast.error(error.response.data.fullname, {
               position: toast.POSITION.BOTTOM_RIGHT,
@@ -220,6 +215,9 @@ function InputAccount() {
               position: toast.POSITION.BOTTOM_RIGHT,
             });
             toast.error(error.response.data.birthday, {
+              position: toast.POSITION.BOTTOM_RIGHT,
+            });
+            toast.error(error.response.data.wards, {
               position: toast.POSITION.BOTTOM_RIGHT,
             });
             return false;
@@ -251,6 +249,23 @@ function InputAccount() {
                 position: toast.POSITION.BOTTOM_RIGHT,
               });
             }
+            if (!isWardError) {
+              toast.error(error.response.data.wards, {
+                position: toast.POSITION.BOTTOM_RIGHT,
+              });
+            }
+            toast.error(error.response.data.email, {
+              position: toast.POSITION.BOTTOM_RIGHT,
+            });
+            // if (error.response.data.email) {
+            //   // API trả về lỗi cho trường email
+            //   toast.error("Email này đã tồn tại!");
+            // }
+        
+            // if (error.response.data.citizenId) {
+            //   // API trả về lỗi cho trường số căn cước công dân
+            //   toast.error("Số căn cước công dân này đã tồn tại!");
+            // }
             return false;
           }
         } else {
@@ -263,7 +278,16 @@ function InputAccount() {
       }
     }
   };
-  console.log(gender);
+    // QR Code
+    const [delay, setDelay] = useState(100);
+    const [result, setResult] = useState("No result");
+    const [cameraEnabled, setCameraEnabled] = useState(false);
+  
+    const [citizenId, setCitizenId] = useState("");
+    const [fullname, setFullname] = useState("");
+    const [birthday, setBirthday] = useState(null);
+    const [gender, setGender] = useState("true");
+
   const handleScan = (data) => {
     if (data && data.text) {
       const scannedText = data.text;
@@ -274,9 +298,9 @@ function InputAccount() {
         const fullnameValue = dataParts[2];
         const birthdateValue = dataParts[3];
         const genderValue = dataParts[4];
-        const provinceValue = dataParts[5];
-        const districtValue = dataParts[6];
-        const wardValue = dataParts[7];
+        // const provinceValue = dataParts[5];
+        // const districtValue = dataParts[6];
+        // const wardValue = dataParts[7];
         const formattedBirthdate = `${birthdateValue.substr(0, 2)}/${birthdateValue.substr(
           2,
           2
@@ -287,15 +311,14 @@ function InputAccount() {
         setFullname(fullnameValue);
         setGender(genderIsMale);
         setBirthday(formattedBirthdate);
-
       } else if (dataParts.length === 7) {
         const citizenIdValue = dataParts[0];
         const fullnameValue = dataParts[2];
         const birthdateValue = dataParts[3];
         const genderValue = dataParts[4];
-        const provinceValue = dataParts[5];
-        const districtValue = dataParts[6];
-        const wardValue = dataParts[7];
+        // const provinceValue = dataParts[5];
+        // const districtValue = dataParts[6];
+        // const wardValue = dataParts[7];
         const formattedBirthdate = `${birthdateValue.substr(0, 2)}/${birthdateValue.substr(
           2,
           2
@@ -306,7 +329,6 @@ function InputAccount() {
         setFullname(fullnameValue);
         setGender(genderIsMale);
         setBirthday(formattedBirthdate);
-        
       } else {
         console.log("Lỗi khi quét QR CCCD:", dataParts.length);
       }
@@ -378,7 +400,7 @@ function InputAccount() {
           </button>
         </div>
       </Paper>
-
+      <br></br>
       <div className="form-floating">
         <input
           type="text"
@@ -405,7 +427,7 @@ function InputAccount() {
             style={{ display: "flex", justifyContent: "center" }}
             row
             aria-labelledby="demo-row-radio-buttons-group-label"
-            name="row-radio-buttons-group"
+            name="gender"
             value={gender || ""}
             onChange={(e) => setGender(e.target.value)}
           >
@@ -414,13 +436,15 @@ function InputAccount() {
           </RadioGroup>
         </FormControl>
       </div>
+      <br></br>
       <DatePicker
         label="Ngày sinh"
         value={birthday || null}
         onChange={handleBirthDayChange}
+        className="form-control"
         renderInput={(params) => (
           <TextField
-            style={{ width: 290 }}
+            // style={{ width: 290 }}
             {...params}
             inputProps={{
               value: birthday || "",
@@ -429,7 +453,7 @@ function InputAccount() {
           />
         )}
       />
-      <br></br>
+
       <br></br>
       <div className="form-floating mb-3">
         <input
@@ -499,7 +523,12 @@ function InputAccount() {
       <br />
 
       <p>Phường/Xã</p>
-      <select className="form-select" name="wards" value={selectedWards} onChange={handleWardsChange}>
+      <select
+        className="form-select"
+        name="wards"
+        value={selectedWards}
+        onChange={handleWardsChange}
+      >
         <option value="">Chọn phường xã</option>
         {wards.map((ward) => (
           <option key={ward.ward_id} value={ward.wards_id}>
@@ -540,4 +569,4 @@ function InputAccount() {
 InputAccount.getLayout = (page) => <DashboardLayout>{page}</DashboardLayout>;
 
 export default InputAccount;
-// Test pull request 
+// Test pull request

@@ -21,7 +21,7 @@ export const OverviewBudget = (props) => {
               color="text.secondary"
               variant="overline"
             >
-              Budget
+              Doanh thu năm nay
             </Typography>
             <Typography variant="h4">
               {value}
@@ -68,7 +68,7 @@ export const OverviewBudget = (props) => {
               color="text.secondary"
               variant="caption"
             >
-              Since last month
+              Since last year
             </Typography>
           </Stack>
         )}

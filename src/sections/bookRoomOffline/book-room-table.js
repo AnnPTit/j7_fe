@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
 import moment from "moment";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import {
   Box,
@@ -24,6 +24,7 @@ import { useRouter } from "next/router";
 
 export const BookRoomTable = (props) => {
   const { items = [], selected = [] } = props;
+  const fullname = localStorage.getItem("fullName");
   const router = useRouter(); // Sử dụng useRouter để truy cập router của Next.js
   const [order, setOrder] = useState({
     id: "",
@@ -58,22 +59,36 @@ export const BookRoomTable = (props) => {
   };
 
   // Hủy hóa đơn
-  const handleCancelOrder = async (id) => {
+  const handleCancelOrder = async (orderId) => {
     try {
-      // Make an API call to update the order status to "Đã xác nhận" (status: 2)
-      await axios.put(`http://localhost:2003/api/admin/order/delete/${id}`);
+      const payload = {
+        deleted: fullname,
+      };
+
+      const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
+      // Kiểm tra xem accessToken có tồn tại không
+      if (!accessToken) {
+        alert("Bạn chưa đăng nhập");
+        return;
+      }
+      axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+
+      // Gửi payload về máy chủ để thực hiện hủy hóa đơn
+      await axios.put(`http://localhost:2003/api/order/delete/${orderId}`, payload);
+
       setOrder({ ...order, status: 0 });
       toast.success("Hủy thành công!", {
-        position: toast.POSITION.BOTTOM_RIGHT,
+        position: toast.POSITION.BOTTOM_CENTER,
       });
-      // router.push(`/orders?id=${id}`);
+      router.push(`/orders?id=${orderId}`);
     } catch (error) {
       console.log(error);
     }
   };
 
   return (
-    <Card>
+    <Card sx={{ marginTop: 5, marginBottom: 3 }}>
+      <ToastContainer />
       <Scrollbar>
         <Box sx={{ minWidth: 800 }}>
           <Table>

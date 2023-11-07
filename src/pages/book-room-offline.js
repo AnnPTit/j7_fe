@@ -9,6 +9,7 @@ import { BookRoomSearch } from "src/sections/bookRoomOffline/book-room-search";
 import { applyPagination } from "src/utils/apply-pagination";
 import MyPagination from "src/components/Pagination";
 import "bootstrap/dist/css/bootstrap.min.css";
+import BookRoomOfflineFilter from "src/sections/bookRoomOffline/book-room-filter";
 
 const useBookRoom = (data, page, rowsPerPage) => {
   return useMemo(() => {
@@ -33,13 +34,14 @@ const Page = () => {
   const bookRoomSelection = useSelection(bookRoomIds);
   const [pageNumber, setPageNumber] = useState(0);
   const [textSearch, setTextSearch] = useState("");
+  const [statusChoose, setStatusChoose] = useState("");
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
 
   // Delete bookRoom
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:2003/api/admin/order/delete/${id}`);
+      await axios.delete(`http://localhost:2003/api/order/delete/${id}`);
       const updatedData = data.filter((bookRoom) => bookRoom.id !== id);
       setData(updatedData);
     } catch (error) {
@@ -54,9 +56,12 @@ const Page = () => {
         console.log(accessToken);
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
 
-        let Api = `http://localhost:2003/api/admin/order/loadBookRoomOffline?current_page=${pageNumber}`; // Thay đổi URL API của bạn tại đây
+        let Api = `http://localhost:2003/api/order/loadBookRoomOffline?current_page=${pageNumber}`; // Thay đổi URL API của bạn tại đây
         if (textSearch !== "") {
           Api = Api + `&key=${textSearch}`;
+        }
+        if (statusChoose !== "") {
+          Api = Api + `&status=${statusChoose}`;
         }
         const response = await axios.get(Api); // Thay đổi URL API của bạn tại đây
         // console.log(response.data);
@@ -78,7 +83,7 @@ const Page = () => {
       }
     };
     fetchData();
-  }, [pageNumber, dataChange, textSearch]);
+  }, [pageNumber, dataChange, textSearch, statusChoose]);
 
   return (
     <>
@@ -95,6 +100,7 @@ const Page = () => {
         <Container maxWidth="xl">
           <Stack spacing={3}>
             <BookRoomSearch textSearch={textSearch} setTextSearch={setTextSearch} />
+            <BookRoomOfflineFilter statusChoose={statusChoose} setStatusChoose={setStatusChoose}/>
             <div style={{ minHeight: 500 }}>
               {" "}
               <BookRoomTable
