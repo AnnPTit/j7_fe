@@ -218,6 +218,7 @@ export const BookRoomTable = (props) => {
       // router.push(`/orders?id=${id}`);
     } catch (error) {
       console.log(error);
+      toast.error("Căn cước công dân không được trùng nhau !");
     }
   };
 
@@ -236,7 +237,7 @@ export const BookRoomTable = (props) => {
                 value={numeral(order.deposit).format("0,0 ") + "  đ"}
                 label="Tiền cọc"
               />
-              <Button variant="outlined" color="error">
+              <Button style={{ marginRight: 20 }} variant="outlined" color="error">
                 Hủy xác nhận
               </Button>
               <Button variant="outlined" onClick={handleSubmit}>
