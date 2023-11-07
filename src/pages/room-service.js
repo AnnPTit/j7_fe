@@ -42,7 +42,7 @@ import Radio from "@mui/material/Radio";
 import RadioGroup from "@mui/material/RadioGroup";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import FormControl from "@mui/material/FormControl";
-import FormLabel from "@mui/material/FormLabel"; // ...
+import FormLabel from "@mui/material/FormLabel";
 import { parse, format, subYears } from "date-fns";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -55,6 +55,8 @@ import { CustomerSearch } from "src/sections/bookRoomOffline/customer-search";
 function BookRoom() {
   const router = useRouter(); // Sử dụng useRouter để truy cập router của Next.js
   const { id } = router.query;
+  const idAccount = localStorage.getItem("idAccount");
+  const fullname = localStorage.getItem("fullName");
   const [order, setOrder] = useState({
     id: "",
     typeOfOrder: "",
@@ -229,6 +231,10 @@ function BookRoom() {
     return price.toLocaleString("vi-VN") + " VND";
   };
 
+  // Chuyển sang chi tiết
+  const handleRedirectOrders = () => {
+    router.push(`/orders?id=${id}`);
+  };
   // Xử lí các hàm đóng, mở dialog
   const handleOpenSearchRoom = () => {
     setOpenSeacrhRoom(true);
@@ -544,10 +550,10 @@ function BookRoom() {
     return calculateTotalAmountPriceRoom() + calculateTotalService() + calculateTotalCombo();
   };
 
-  const vatOrderDetail = totalCostForOrderDetail * 0.05;
+  const vatOrderDetail = totalCostForOrderDetail * 0.1;
   const sumOrderDetail = totalCostForOrderDetail + vatOrderDetail;
   const moneyReturnCustomerOneRoom = givenCustomerOneRoom - sumOrderDetail;
-  const vatAmount = totalAmount * 0.05;
+  const vatAmount = totalAmount * 0.1;
   const sumAmount = totalAmount + vatAmount - order.deposit;
   const moneyReturnCustomer = givenCustomer - sumAmount;
 
@@ -629,6 +635,38 @@ function BookRoom() {
         );
       case 3:
         return <React.Fragment></React.Fragment>;
+      case 5:
+        return (
+          <React.Fragment>
+            <Button
+              style={{ width: 100, height: 50 }}
+              onClick={handleOpenCancelOrder}
+              variant="outlined"
+              color="error"
+            >
+              Hủy
+            </Button>
+            <Button
+              onClick={handleSave}
+              style={{ marginLeft: 20, width: 100, height: 50 }}
+              variant="outlined"
+              color="success"
+            >
+              Lưu
+            </Button>
+            <Button
+              style={{
+                marginLeft: 20,
+                width: 150,
+                height: 50,
+              }}
+              onClick={handleOpenAcceptOrder}
+              variant="outlined"
+            >
+              Nhận phòng
+            </Button>
+          </React.Fragment>
+        );
       default:
         return null;
     }
@@ -727,6 +765,7 @@ function BookRoom() {
       const response = await axios.post(
         `http://localhost:2003/api/order/return/${selectedOrderDetails}`,
         {
+          account: { id: idAccount },
           customerId: selectedCustomerReturn,
           totalMoney: sumOrderDetail,
           vat: vatOrderDetail,
@@ -796,9 +835,10 @@ function BookRoom() {
       // Make an API call to update the order status to "Đã xác nhận" (status: 2)
       await axios.put(`http://localhost:2003/api/order/delete/${id}`, {
         note: noteOrder,
+        deleted: fullname,
       });
       setOrder({ ...order, status: 0 });
-      handleCloseAcceptOrder();
+      handleCloseCancelOrder();
       toast.success("Hủy thành công!", {
         position: toast.POSITION.BOTTOM_CENTER,
       });
@@ -878,9 +918,9 @@ function BookRoom() {
       setQuantityCombo("");
       setNoteCombo("");
       setOpenQuantityNoteCombo(false);
-      setOpenAddCombo(false);
-      setOpenAddService(false);
-      setComboUsed(response.data);
+      // setOpenAddCombo(false);
+      // setOpenAddService(false);
+      // setComboUsed(response.data);
       console.log("Combo added to comboUsed: ", response.data);
       setComboUsed([...comboUsed, response.data]);
       const responseComboPrice = await axios.get("http://localhost:2003/api/combo-used/load");
@@ -952,7 +992,6 @@ function BookRoom() {
       setQuantity("");
       setNote("");
       setOpenQuantityNote(false);
-      setOpenAddService(false);
       setServiceUsed([...serviceUsed, response.data]);
       const responseServicePrice = await axios.get("http://localhost:2003/api/service-used/load");
       setServiceUsedTotalPrice(responseServicePrice.data);
@@ -960,8 +999,8 @@ function BookRoom() {
         `http://localhost:2003/api/service-used/load/${selectedOrderDetails}`
       );
       setServiceUsed(responseServiceUsed.data);
-      const newTotal = calculateTotal();
-      setTotalAmount(newTotal);
+      // const newTotal = calculateTotal();
+      // setTotalAmount(newTotal);
       console.log("Service added to serviceUsed: ", response.data);
       // window.location.href = `/room-service?id=${id}`;
       toast.success("Thêm thành công!", {
@@ -1408,9 +1447,6 @@ function BookRoom() {
         const response5 = await axios.get(Api);
         const response6 = await axios.get("http://localhost:2003/api/service-used/load");
         const response7 = await axios.get("http://localhost:2003/api/combo-used/load");
-        const response8 = await axios.get(
-          `http://localhost:2003/api/admin/customer/getAllByOrderId/${id}`
-        );
         const response9 = await axios.get("http://localhost:2003/api/information-customer/load");
         const response10 = await axios.get(
           `http://localhost:2003/api/admin/customer/getAllByOrderDetailId/${selectedOrderDetails}`
@@ -1422,7 +1458,6 @@ function BookRoom() {
         setCustomer(response5.data);
         setServiceUsedTotalPrice(response6.data);
         setComboUsedTotalPrice(response7.data);
-        setCustomerOrder(response8.data);
         setInfoCustomer(response9.data);
         setCustomerOrderDetail(response10.data);
       } catch (error) {
@@ -1472,6 +1507,24 @@ function BookRoom() {
     fetchData();
   }, [id]);
 
+  // Load khách hàng theo hóa đơn
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const response = await axios.get(
+          `http://localhost:2003/api/admin/customer/getAllByOrderId/${id}`
+        );
+        console.log("CustomerOrder:", response.data);
+        if (response.data) {
+          setCustomerOrder(response.data);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    }
+    fetchData();
+  }, [id]);
+
   const handleRoomSelect = (roomId) => {
     setSelectedRoomId(roomId);
     handleOpenDateDialog();
@@ -1500,7 +1553,13 @@ function BookRoom() {
         });
         return;
       }
-      if (numberOfPeople > rooms.find((r) => r.id === selectedRoomId)?.typeRoom?.capacity) {
+      const adult = parseInt(numberOfPeople);
+      const children = parseInt(
+        rooms.find((r) => r.id === selectedRoomId)?.typeRoom?.children || 0
+      );
+      const totalPeople = parseInt(adult + children);
+      const capacity = rooms.find((r) => r.id === selectedRoomId)?.typeRoom?.capacity || 0;
+      if (totalPeople > capacity) {
         toast.error("Số người không được vượt quá sức chứa!", {
           position: toast.POSITION.BOTTOM_CENTER,
         });
@@ -1525,6 +1584,8 @@ function BookRoom() {
           checkOut: new Date(valueTo.setHours(valueTimeTo.getHours(), valueTimeTo.getMinutes())),
           roomPrice: totalAmount,
           customerQuantity: numberOfPeople,
+          createBy: fullname,
+          updatedBy: fullname,
         });
 
         setOrderDetailData([...orderDetailData, response.data]);
@@ -1940,8 +2001,19 @@ function BookRoom() {
             fullWidth
             value={numberOfPeople}
             onChange={(e) => setNumberOfPeople(e.target.value)}
-            label="Số người"
+            label="Người lớn"
             variant="outlined"
+          />
+          <br />
+          <br />
+          <TextField
+            fullWidth
+            label="Trẻ em"
+            variant="outlined"
+            disabled
+            value={
+              selectedRoomId ? rooms.find((r) => r.id === selectedRoomId)?.typeRoom?.children : ""
+            }
           />
         </DialogContent>
         <DialogActions>
@@ -1953,13 +2025,20 @@ function BookRoom() {
           </Button>
         </DialogActions>
       </Dialog>
-      <div style={{ marginBottom: 20, height: 50, display: "flex", justifyContent: "flex-end" }}>
-        {order.status === 1 ? (
+
+      <div
+        style={{ marginBottom: 20, height: 50, display: "flex", justifyContent: "space-between" }}
+      >
+        <Button style={{ marginLeft: 180 }} onClick={handleRedirectOrders} variant="outlined">
+          CHI TIẾT
+        </Button>
+        {order.status === 1 || order.status === 5 ? (
           <Button onClick={handleOpenSearchRoom} variant="outlined">
             TÌM PHÒNG
           </Button>
         ) : null}
       </div>
+
       <Box
         style={{
           border: "1px solid #ccc",
@@ -1980,12 +2059,13 @@ function BookRoom() {
                   <TableCell>Tầng</TableCell>
                   <TableCell>Loại phòng</TableCell>
                   <TableCell>Sức chứa</TableCell>
-                  <TableCell>Số khách</TableCell>
+                  <TableCell>Người lớn</TableCell>
+                  <TableCell>Trẻ em</TableCell>
                   <TableCell>Ngày check-in</TableCell>
                   <TableCell>Ngày check-out</TableCell>
                   <TableCell>Thành tiền</TableCell>
                   <TableCell>
-                    {order.status === 1 || order.status === 2 ? <>Thao tác</> : null}
+                    {order.status === 1 || order.status === 5 ? <>Thao tác</> : null}
                   </TableCell>
                 </TableRow>
               </TableHead>
@@ -2012,19 +2092,20 @@ function BookRoom() {
                     <TableCell>{orderDetail.room.typeRoom.typeRoomName}</TableCell>
                     <TableCell>{orderDetail.room.typeRoom.capacity}</TableCell>
                     <TableCell>{orderDetail.customerQuantity}</TableCell>
+                    <TableCell>{orderDetail.room.typeRoom.children}</TableCell>
                     <TableCell>
                       {orderDetail &&
                         orderDetail.checkIn &&
-                        format(new Date(orderDetail.checkIn), "dd/MM/yyyy - HH:mm")}
+                        format(new Date(orderDetail.checkIn), "dd/MM/yyyy")}
                     </TableCell>
                     <TableCell>
                       {orderDetail &&
                         orderDetail.checkOut &&
-                        format(new Date(orderDetail.checkOut), "dd/MM/yyyy - HH:mm")}
+                        format(new Date(orderDetail.checkOut), "dd/MM/yyyy")}
                     </TableCell>
                     <TableCell>{formatPrice(orderDetail.roomPrice)}</TableCell>
                     <TableCell>
-                      {order.status === 1 ? (
+                      {order.status === 1 || order.status === 5 ? (
                         <>
                           <Button
                             className="btn btn-primary m-xl-2"
@@ -2329,7 +2410,7 @@ function BookRoom() {
             </Scrollbar>
           </DialogContent>
         </Dialog>
-        {order.status === 1 || order.status === 2 ? (
+        {order.status === 1 || order.status === 2 || order.status === 5 ? (
           <Button onClick={handleOpenAddService} variant="outlined">
             THÊM DỊCH VỤ
           </Button>
@@ -2477,7 +2558,9 @@ function BookRoom() {
                     <TableCell>Phòng</TableCell>
                     <TableCell>Số lượng</TableCell>
                     <TableCell>Thành tiền</TableCell>
-                    <TableCell>{order.status === 1 ? <>Thao tác</> : null}</TableCell>
+                    <TableCell>
+                      {order.status === 1 || order.status === 5 ? <>Thao tác</> : null}
+                    </TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -2491,7 +2574,7 @@ function BookRoom() {
                           {formatPrice(serviceUsed.quantity * serviceUsed.service.price)}
                         </TableCell>
                         <TableCell>
-                          {order.status === 1 ? (
+                          {order.status === 1 || order.status === 5 ? (
                             <>
                               <button
                                 onClick={() => handleDeleteServiceUsed(serviceUsed.id)}
@@ -2538,7 +2621,9 @@ function BookRoom() {
                     <TableCell>Phòng</TableCell>
                     <TableCell>Số lượng</TableCell>
                     <TableCell>Thành tiền</TableCell>
-                    <TableCell>{order.status === 1 ? <>Thao tác</> : null}</TableCell>
+                    <TableCell>
+                      {order.status === 1 || order.status === 5 ? <>Thao tác</> : null}
+                    </TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -2552,7 +2637,7 @@ function BookRoom() {
                           {formatPrice(comboUsed.quantity * comboUsed.combo.price)}
                         </TableCell>
                         <TableCell>
-                          {order.status === 1 ? (
+                          {order.status === 1 || order.status === 5 ? (
                             <>
                               <button
                                 onClick={() => handleDeleteComboUsed(comboUsed.id)}
@@ -2617,7 +2702,9 @@ function BookRoom() {
                   <TableCell>Ngày sinh</TableCell>
                   <TableCell>Số điện thoại</TableCell>
                   <TableCell>Email</TableCell>
-                  <TableCell>{order.status === 1 ? <>Thao tác</> : null}</TableCell>
+                  <TableCell>
+                    {order.status === 1 || order.status === 5 ? <>Thao tác</> : null}
+                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -2631,7 +2718,7 @@ function BookRoom() {
                       <TableCell>{customer.phoneNumber}</TableCell>
                       <TableCell>{customer.email}</TableCell>
                       <TableCell>
-                        {order.status === 1 ? (
+                        {order.status === 1 || order.status === 5 ? (
                           <>
                             <button
                               onClick={() => handleDelete(customer.id)}
@@ -2846,7 +2933,7 @@ function BookRoom() {
                   <FormControlLabel value="Nữ" control={<Radio />} label="Nữ" />
                 </RadioGroup>
               </FormControl>
-              {order.status === 1 ? (
+              {order.status === 1 || order.status === 5 ? (
                 <Button
                   style={{ width: 200, height: 50 }}
                   variant="outlined"
@@ -2891,10 +2978,14 @@ function BookRoom() {
             justifyContent: "flex-end",
           }}
         >
-          <h6 style={{ marginTop: 20, marginRight: 350, color: "red" }}>
-            <span style={{ marginRight: 30 }}>TẠM TÍNH: {formatPrice(totalAmount)}</span>
-            VAT: {formatPrice(vatAmount)}
-          </h6>
+          <div style={{ marginLeft: 150, marginRight: 250, color: "red" }}>
+            <TextField
+              style={{ marginRight: 20 }}
+              label="Tạm tính"
+              value={formatPrice(totalAmount)}
+            />
+            <TextField label="VAT" value={formatPrice(vatAmount)} />
+          </div>
           {renderButtonsBasedOnStatus()}
           <Dialog open={openAcceptOrder} onClose={handleCloseAcceptOrder} maxWidth="md">
             <DialogTitle>Xác nhận khách hàng đại diện nhận phòng</DialogTitle>
@@ -2950,7 +3041,6 @@ function BookRoom() {
                 <br />
                 <TextField
                   style={{ width: 520, marginRight: 30 }}
-                  disabled
                   label="Số tiền"
                   value={totalAmount}
                   fullWidth
@@ -2960,7 +3050,6 @@ function BookRoom() {
                 <br />
                 <TextField
                   style={{ width: 550 }}
-                  disabled
                   label="VAT"
                   value={vatAmount}
                   fullWidth
@@ -2971,7 +3060,6 @@ function BookRoom() {
               <div style={{ display: "flex" }}>
                 <TextField
                   style={{ width: 520, marginRight: 30 }}
-                  disabled
                   label="Tổng tiền"
                   value={sumAmount}
                   fullWidth
@@ -2979,7 +3067,6 @@ function BookRoom() {
                 />
                 <TextField
                   style={{ width: 550 }}
-                  disabled
                   label="Tiền cọc"
                   value={order.deposit}
                   fullWidth
@@ -2987,14 +3074,23 @@ function BookRoom() {
                 />
               </div>
               <br />
-              <TextField
-                label="Khách hàng trả"
-                value={givenCustomer}
-                onChange={(e) => setGivenCustomer(e.target.value)}
-                fullWidth
-                variant="outlined"
-              />
-              <br />
+              <div style={{ display: "flex" }}>
+                <TextField
+                  style={{ width: 520, marginRight: 30 }}
+                  label="Khách hàng trả"
+                  value={givenCustomer}
+                  onChange={(e) => setGivenCustomer(e.target.value)}
+                  fullWidth
+                  variant="outlined"
+                />
+                <TextField
+                  style={{ width: 550 }}
+                  label="Phụ thu"
+                  value={order.surcharge}
+                  fullWidth
+                  variant="outlined"
+                />
+              </div>
               <br />
               <TextField
                 disabled

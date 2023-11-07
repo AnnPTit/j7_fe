@@ -21,7 +21,7 @@ import Link from "next/link";
 
 export const items = [
   {
-    title: "Overview",
+    title: "Thống kê",
     path: "/",
     icon: (
       <SvgIcon fontSize="small">

@@ -1,11 +1,13 @@
 import { Timeline, TimelineEvent } from "@mailtop/horizontal-timeline";
 import {
   FaBug,
-  FaRegCalendarCheck,
   FaRegFileAlt,
   FaTimesCircle,
   FaHome,
   FaSignInAlt,
+  FaCheck,
+  FaWallet,
+  FaShareSquare,
 } from "react-icons/fa";
 import { Layout as DashboardLayout } from "src/layouts/dashboard/layout";
 import React from "react";
@@ -22,6 +24,7 @@ import {
   CardMedia,
   Grid,
   Typography,
+  Button,
 } from "@mui/material";
 import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
@@ -68,8 +71,24 @@ function OrderTimeline() {
     setOpenDetail(false);
   };
 
-  const handlePrintInvoice = () => {
-    setIsPrinting(true);
+  const handlePrintInvoice = (id) => {
+    // setIsPrinting(true);
+    // Gửi yêu cầu GET đến API để lấy tệp ByteArrayResource
+    axios
+      .get(`http://localhost:2003/api/order/recommended/${id}`, { responseType: "arraybuffer" })
+      .then((response) => {
+        const blob = new Blob([response.data], { type: "application/msword" });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "invoice.docx";
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+      })
+      .catch((error) => {
+        console.error("Lỗi khi tải tệp .docx", error);
+      });
   };
 
   const getPaymentMethodColor = (method) => {
@@ -171,15 +190,25 @@ function OrderTimeline() {
                   break;
                 case 2:
                   eventColor = "#00CC66";
-                  eventIcon = FaRegCalendarCheck;
+                  eventIcon = FaHome;
                   eventTitle = "Khách hàng nhận phòng";
                   break;
                 case 3:
                   eventColor = "#00CC66";
-                  eventIcon = FaHome;
+                  eventIcon = FaShareSquare;
                   eventTitle = "Khách hàng trả phòng";
                   break;
                 case 4:
+                  eventColor = "#6959CD";
+                  eventIcon = FaCheck;
+                  eventTitle = "Xác nhận thông tin khách";
+                  break;
+                case 5:
+                  eventColor = "#00CCCC";
+                  eventIcon = FaWallet;
+                  eventTitle = "Khách hàng thanh toán tiền cọc";
+                  break;
+                case 7:
                   eventColor = "#FFD700";
                   eventIcon = FaSignInAlt;
                   eventTitle = "Trả phòng đi trước";
@@ -246,10 +275,14 @@ function OrderTimeline() {
       case 1:
         return <FaRegFileAlt style={{ fontSize: "50px", color: "#00CC66" }} />;
       case 2:
-        return <FaRegCalendarCheck style={{ fontSize: "50px", color: "#00CC66" }} />;
-      case 3:
         return <FaHome style={{ fontSize: "50px", color: "#00CC66" }} />;
+      case 3:
+        return <FaShareSquare style={{ fontSize: "50px", color: "#00CC66" }} />;
       case 4:
+        return <FaCheck style={{ fontSize: "50px", color: "#6959CD" }} />;
+      case 5:
+        return <FaWallet style={{ fontSize: "50px", color: "#00CCCC" }} />;
+      case 7:
         return <FaSignInAlt style={{ fontSize: "50px", color: "#FFD700" }} />;
       default:
         return <FaBug style={{ fontSize: "50px", color: "default" }} />;
@@ -267,6 +300,10 @@ function OrderTimeline() {
       case 3:
         return "Khách hàng trả phòng";
       case 4:
+        return "Xác nhận thông tin khách hàng";
+      case 5:
+        return "Khách hàng thanh toán tiền cọc";
+      case 7:
         return "Trả phòng đi trước";
       default:
         return "Unknown Type";
@@ -415,13 +452,14 @@ function OrderTimeline() {
               </Link>
             )}
             {order.status === 3 && (
-              <button
-                // onClick={handlePrintInvoice}
+              <Button
+                variant="outlined"
+                onClick={() => handlePrintInvoice(order.id)}
                 style={{ height: 50, width: 130 }}
-                className="btn btn-warning m-xl-2"
+                color="warning"
               >
                 In hóa đơn
-              </button>
+              </Button>
             )}
             {isPrinting && (
               <PDFDownloadLink
@@ -433,48 +471,44 @@ function OrderTimeline() {
                 }
               </PDFDownloadLink>
             )}
-            <button
+            <Button
+              variant="outlined"
               onClick={handleShowOrderTimeline}
-              style={{ height: 50, width: 130 }}
-              className="btn btn-dark m-xl-2"
+              style={{ height: 50, width: 130, marginLeft: 20 }}
+              color="info"
             >
               Chi tiết
-            </button>
+            </Button>
           </div>
-
-          <Dialog open={openDetail} onClose={handleCloseDetail} maxWidth="md">
-            <DialogContent>
-              <DialogContentText>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell></TableCell>
-                      <TableCell></TableCell>
-                      <TableCell>Thời gian</TableCell>
-                      <TableCell>Người xác nhận</TableCell>
-                      <TableCell>Ghi chú</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {selectedOrderTimelines.map((event, index) => (
-                      <TableRow hover key={index}>
-                        <TableCell>
-                          <Box component="span">{renderIconForEventType(event.type)}</Box>
-                        </TableCell>
-                        <TableCell>{renderTitleForEventType(event.type)}</TableCell>
-                        <TableCell>
-                          {format(new Date(event.createAt), "dd-MM-yyyy hh:mm:ss")}
-                        </TableCell>
-                        <TableCell>{event.account.fullname}</TableCell>
-                        <TableCell>{event.note}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </DialogContentText>
-            </DialogContent>
-          </Dialog>
         </div>
+        <Dialog open={openDetail} onClose={handleCloseDetail} maxWidth="md">
+          <DialogContent>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell></TableCell>
+                  <TableCell></TableCell>
+                  <TableCell>Thời gian</TableCell>
+                  <TableCell>Người xác nhận</TableCell>
+                  <TableCell>Ghi chú</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {selectedOrderTimelines.map((event, index) => (
+                  <TableRow hover key={index}>
+                    <TableCell>
+                      <Box>{renderIconForEventType(event.type)}</Box>
+                    </TableCell>
+                    <TableCell>{renderTitleForEventType(event.type)}</TableCell>
+                    <TableCell>{format(new Date(event.createAt), "dd-MM-yyyy hh:mm:ss")}</TableCell>
+                    <TableCell>{event.account.fullname}</TableCell>
+                    <TableCell>{event.note}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </DialogContent>
+        </Dialog>
       </Box>
       <Box
         style={{
@@ -490,8 +524,8 @@ function OrderTimeline() {
         <hr />
         <div style={{ display: "flex" }}>
           <div style={{ marginLeft: 30, fontFamily: "inherit", fontSize: "17px" }}>
-            <label>Loại</label>
-            <SeverityPill style={{ marginLeft: 190 }}>
+            <label>Loại hóa đơn</label>
+            <SeverityPill style={{ marginLeft: 125 }}>
               {order.typeOfOrder == 0 ? "Online" : "Tại quầy"}
             </SeverityPill>
             <br />
@@ -503,6 +537,12 @@ function OrderTimeline() {
             <label>Tổng tiền + (VAT)</label>
             <span style={{ marginLeft: 93, color: "red" }}>
               {order.totalMoney ? formatPrice(order.totalMoney) : "0 VND"}
+            </span>
+            <br />
+            <br />
+            <label>Tiền cọc</label>
+            <span style={{ marginLeft: 160, color: "red" }}>
+              {order.deposit ? formatPrice(order.deposit) : "0 VND"}
             </span>
             <br />
             <br />
@@ -533,16 +573,17 @@ function OrderTimeline() {
           marginLeft: 140, // Add the box shadow
         }}
       >
-        <h3 style={{ marginRight: 650 }}>LỊCH SỬ GIAO DỊCH</h3>
+        <h3 style={{ marginRight: 650 }}>LỊCH SỬ THANH TOÁN</h3>
         <hr />
         <Table>
           <TableHead>
             <TableRow>
               <TableCell>Số tiền</TableCell>
               <TableCell>Thời gian</TableCell>
-              <TableCell>Phương thức thanh toán</TableCell>
+              <TableCell>Hình thức</TableCell>
               <TableCell>Trạng thái</TableCell>
-              <TableCell>Nhân viên xác nhận</TableCell>
+              <TableCell>Ghi chú</TableCell>
+              <TableCell>Người xác nhận</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -570,6 +611,7 @@ function OrderTimeline() {
                       {statusPaymentText}
                     </SeverityPill>
                   </TableCell>
+                  <TableCell>{paymentMethod.note}</TableCell>
                   <TableCell>{paymentMethod.order.account.fullname}</TableCell>
                 </TableRow>
               );

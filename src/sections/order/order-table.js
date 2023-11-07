@@ -39,6 +39,10 @@ export const OrderTable = (props) => {
         return { color: "primary", text: "Đã nhận phòng" };
       case 3:
         return { color: "success", text: "Đã trả phòng" };
+      case 4:
+        return { color: "secondary", text: "Xác nhận thông tin" };
+      case 5:
+        return { color: "info", text: "Thanh toán tiền cọc" };
       default:
         return { color: "default", text: "Unknown" };
     }
@@ -86,7 +90,10 @@ export const OrderTable = (props) => {
                     <TableCell>
                       {order.account && order.account.fullname ? order.account.fullname : "NaN"}
                     </TableCell>
-                    <TableCell>  {order.customer && order.customer.fullname ? order.customer.fullname : "NaN"}</TableCell>
+                    <TableCell>
+                      {" "}
+                      {order.customer && order.customer.fullname ? order.customer.fullname : "NaN"}
+                    </TableCell>
                     <TableCell style={{ color: "red" }}>{formatPrice(order.totalMoney)}</TableCell>
                     <TableCell>{order.note}</TableCell>
                     <TableCell>{created}</TableCell>
