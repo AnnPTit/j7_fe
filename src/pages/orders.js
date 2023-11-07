@@ -24,6 +24,7 @@ import {
   CardMedia,
   Grid,
   Typography,
+  Button,
 } from "@mui/material";
 import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
@@ -451,13 +452,14 @@ function OrderTimeline() {
               </Link>
             )}
             {order.status === 3 && (
-              <button
+              <Button
+                variant="outlined"
                 onClick={() => handlePrintInvoice(order.id)}
                 style={{ height: 50, width: 130 }}
-                className="btn btn-warning m-xl-2"
+                color="warning"
               >
                 In hóa đơn
-              </button>
+              </Button>
             )}
             {isPrinting && (
               <PDFDownloadLink
@@ -469,13 +471,14 @@ function OrderTimeline() {
                 }
               </PDFDownloadLink>
             )}
-            <button
+            <Button
+              variant="outlined"
               onClick={handleShowOrderTimeline}
-              style={{ height: 50, width: 130 }}
-              className="btn btn-dark m-xl-2"
+              style={{ height: 50, width: 130, marginLeft: 20 }}
+              color="info"
             >
               Chi tiết
-            </button>
+            </Button>
           </div>
         </div>
         <Dialog open={openDetail} onClose={handleCloseDetail} maxWidth="md">
