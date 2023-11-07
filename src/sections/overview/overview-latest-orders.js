@@ -1,6 +1,6 @@
-import { format } from 'date-fns';
-import PropTypes from 'prop-types';
-import ArrowRightIcon from '@heroicons/react/24/solid/ArrowRightIcon';
+import { format } from "date-fns";
+import PropTypes from "prop-types";
+import ArrowRightIcon from "@heroicons/react/24/solid/ArrowRightIcon";
 import {
   Box,
   Button,
@@ -13,15 +13,34 @@ import {
   TableBody,
   TableCell,
   TableHead,
-  TableRow
-} from '@mui/material';
-import { Scrollbar } from 'src/components/scrollbar';
-import { SeverityPill } from 'src/components/severity-pill';
+  TableRow,
+} from "@mui/material";
+import { Scrollbar } from "src/components/scrollbar";
+import { SeverityPill } from "src/components/severity-pill";
 
 const statusMap = {
-  pending: 'warning',
-  delivered: 'success',
-  refunded: 'error'
+  1: "warning",
+  3: "success",
+  refunded: "error",
+};
+
+const getStatusButtonColor = (status) => {
+  switch (status) {
+    case 0:
+      return { color: "error", text: "Đã hủy" };
+    case 1:
+      return { color: "warning", text: "Chờ xác nhận" };
+    case 2:
+      return { color: "primary", text: "Đã nhận phòng" };
+    case 3:
+      return { color: "success", text: "Đã trả phòng" };
+    case 4:
+      return { color: "secondary", text: "Xác nhận thông tin" };
+    case 5:
+      return { color: "info", text: "Thanh toán tiền cọc" };
+    default:
+      return { color: "default", text: "Unknown" };
+  }
 };
 
 export const OverviewLatestOrders = (props) => {
@@ -29,47 +48,33 @@ export const OverviewLatestOrders = (props) => {
 
   return (
     <Card sx={sx}>
-      <CardHeader title="Latest Orders" />
+      <CardHeader title="HÓA ĐƠN MỚI NHẤT" />
       <Scrollbar sx={{ flexGrow: 1 }}>
         <Box sx={{ minWidth: 800 }}>
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>
-                  Order
-                </TableCell>
-                <TableCell>
-                  Customer
-                </TableCell>
-                <TableCell sortDirection="desc">
-                  Date
-                </TableCell>
-                <TableCell>
-                  Status
-                </TableCell>
+                <TableCell>Order</TableCell>
+                <TableCell>Customer</TableCell>
+                <TableCell sortDirection="desc">Date</TableCell>
+                <TableCell>Status</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {orders.map((order) => {
-                const createdAt = format(order.createdAt, 'dd/MM/yyyy');
+                const statusData = getStatusButtonColor(order.status);
+                const statusText = statusData.text;
 
                 return (
-                  <TableRow
-                    hover
-                    key={order.id}
-                  >
+                  <TableRow hover key={order.id}>
+                    <TableCell>{order.ref}</TableCell>
+                    <TableCell>{order.customer.name}</TableCell>
                     <TableCell>
-                      {order.ref}
+                      {order && order.createdAt && format(new Date(order.createdAt), "dd/MM/yyyy")}
                     </TableCell>
                     <TableCell>
-                      {order.customer.name}
-                    </TableCell>
-                    <TableCell>
-                      {createdAt}
-                    </TableCell>
-                    <TableCell>
-                      <SeverityPill color={statusMap[order.status]}>
-                        {order.status}
+                      <SeverityPill variant="contained" color={statusData.color}>
+                        {statusText}
                       </SeverityPill>
                     </TableCell>
                   </TableRow>
@@ -79,26 +84,11 @@ export const OverviewLatestOrders = (props) => {
           </Table>
         </Box>
       </Scrollbar>
-      <Divider />
-      <CardActions sx={{ justifyContent: 'flex-end' }}>
-        <Button
-          color="inherit"
-          endIcon={(
-            <SvgIcon fontSize="small">
-              <ArrowRightIcon />
-            </SvgIcon>
-          )}
-          size="small"
-          variant="text"
-        >
-          View all
-        </Button>
-      </CardActions>
     </Card>
   );
 };
 
 OverviewLatestOrders.prototype = {
   orders: PropTypes.array,
-  sx: PropTypes.object
+  sx: PropTypes.object,
 };

@@ -94,7 +94,7 @@ const useChartOptions = () => {
     },
     yaxis: {
       labels: {
-        formatter: (value) => (value > 0 ? `${value}K` : `${value}`),
+        formatter: (value) => (value > 0 ? `${formatPrice(value)}` : `${formatPrice(value)}`),
         offsetX: -10,
         style: {
           colors: theme.palette.text.secondary
@@ -104,6 +104,10 @@ const useChartOptions = () => {
   };
 };
 
+const formatPrice = (price) => {
+  return price.toLocaleString("vi-VN");
+};
+
 export const OverviewSales = (props) => {
   const { chartSeries, sx } = props;
   const chartOptions = useChartOptions();
@@ -111,20 +115,20 @@ export const OverviewSales = (props) => {
   return (
     <Card sx={sx}>
       <CardHeader
-        action={(
-          <Button
-            color="inherit"
-            size="small"
-            startIcon={(
-              <SvgIcon fontSize="small">
-                <ArrowPathIcon />
-              </SvgIcon>
-            )}
-          >
-            Sync
-          </Button>
-        )}
-        title="Sales"
+        // action={(
+        //   <Button
+        //     color="inherit"
+        //     size="small"
+        //     startIcon={(
+        //       <SvgIcon fontSize="small">
+        //         <ArrowPathIcon />
+        //       </SvgIcon>
+        //     )}
+        //   >
+        //     Sync
+        //   </Button>
+        // )}
+        title="Doanh thu từng tháng"
       />
       <CardContent>
         <Chart
@@ -136,7 +140,7 @@ export const OverviewSales = (props) => {
         />
       </CardContent>
       <Divider />
-      <CardActions sx={{ justifyContent: 'flex-end' }}>
+      {/* <CardActions sx={{ justifyContent: 'flex-end' }}>
         <Button
           color="inherit"
           endIcon={(
@@ -148,7 +152,7 @@ export const OverviewSales = (props) => {
         >
           Overview
         </Button>
-      </CardActions>
+      </CardActions> */}
     </Card>
   );
 };
