@@ -4,12 +4,11 @@ import "react-toastify/dist/ReactToastify.css";
 import style from "./updateCustomer.module.scss";
 import { Layout as DashboardLayout } from "src/layouts/dashboard/layout";
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { ToastContainer, toast } from "react-toastify";
 import Swal from "sweetalert2";
 import { useRouter } from "next/router";
-import Select from "react-select";
 
 const cx = classNames.bind(style);
 const handleSubmit = async (event, id, customerUpdate) => {
@@ -229,10 +228,9 @@ function UpdateCustomer() {
         console.log(error);
       }
     }
-
     // Gọi hàm fetchData ngay lập tức
     fetchData();
-  }, []);
+  }, [id]);
 
   // call api địa chỉ
   const [provinces, setProvinces] = useState([]);
@@ -241,21 +239,40 @@ function UpdateCustomer() {
 
   const [selectedProvince, setSelectedProvince] = useState("");
   const [selectedDistrict, setSelectedDistrict] = useState("");
-  const [selectedWards, setSelectedWards] = useState("");
+  const [selectedWards, setSelectedWards] = useState("Doan Hung");
 
   const [idProvince, setIdProvince] = useState(0);
   const [idDistrict, setIdDistrict] = useState(0);
 
   const [selectedProvinceName, setSelectedProvinceName] = useState("");
   const [selectedDistrictName, setSelectedDistrictName] = useState("");
+  const [proId, setProId] = useState();
+  const findProvinceIdByName = (name) => {
+    const province = provinces.find((p) => p.province_name === name);
+    return province ? province.province_id : null;
+  };
 
   useEffect(() => {
     const fetchProvinces = async () => {
       const response = await axios.get("https://vapi.vnappmob.com/api/province/");
       setProvinces(response.data.results);
+      const idP = response.data.results
+        ? response.data.results.find((p) => p.province_name === customerUpdate.provinces)
+        : null;
+      console.log(idP);
+      const province = response.data.results.find((p) => p.province_id === idP?.province_id);
+      setSelectedProvince(province);
+      setIdProvince(province?.province_id || 0);
+      const name = province ? province.province_name : "";
+      setSelectedProvinceName(name);
+      if (province) {
+        setDistricts([]);
+        setWards([]);
+      }
+      console.log(province);
     };
     fetchProvinces();
-  }, []);
+  }, [customerUpdate.provinces, id]);
 
   useEffect(() => {
     if (idProvince) {
@@ -294,6 +311,8 @@ function UpdateCustomer() {
     console.log(province);
   };
 
+  useEffect(() => {}, []);
+
   const handleDistrictChange = (e) => {
     setSelectedDistrict(e.target.value);
     const district = districts.find((d) => d.district_id === e.target.value);
@@ -309,11 +328,6 @@ function UpdateCustomer() {
   const handleWardsChange = (e) => {
     setSelectedWards(e.target.value);
     console.log(e.target.value);
-  };
-
-  const findProvinceIdByName = (name) => {
-    const province = provinces.find((p) => p.province_name === name);
-    return province ? province.province_id : null;
   };
 
   const findDistrictIdByName = (name) => {
@@ -518,7 +532,7 @@ function UpdateCustomer() {
           </option>
         ))}
       </select>
-
+      <br></br>
       {/* Tạo ô select cho quận/huyện */}
       <p>Quận/Huyện</p>
       <select
