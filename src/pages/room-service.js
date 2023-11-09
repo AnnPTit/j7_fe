@@ -231,6 +231,10 @@ function BookRoom() {
     return price.toLocaleString("vi-VN") + " VND";
   };
 
+  const formatPriceCustomerGiven = (price) => {
+    return price.toLocaleString("vi-VN");
+  };
+
   // Chuyển sang chi tiết
   const handleRedirectOrders = () => {
     router.push(`/orders?id=${id}`);
@@ -966,6 +970,11 @@ function BookRoom() {
 
     if (!quantity) {
       toast.error("Vui lòng không để trống số lượng!", {
+        position: toast.POSITION.BOTTOM_CENTER,
+      });
+      return;
+    }  else if (quantity > 10) {
+      toast.error("Vui lòng chỉ thêm tối đa 10.", {
         position: toast.POSITION.BOTTOM_CENTER,
       });
       return;
@@ -3042,7 +3051,7 @@ function BookRoom() {
                 <TextField
                   style={{ width: 520, marginRight: 30 }}
                   label="Số tiền"
-                  value={totalAmount}
+                  value={totalAmount ? formatPrice(totalAmount) : "0 VND"}
                   fullWidth
                   variant="outlined"
                 />
@@ -3051,7 +3060,7 @@ function BookRoom() {
                 <TextField
                   style={{ width: 550 }}
                   label="VAT"
-                  value={vatAmount}
+                  value={vatAmount ? formatPrice(vatAmount) : "0 VND"}
                   fullWidth
                   variant="outlined"
                 />
@@ -3061,14 +3070,14 @@ function BookRoom() {
                 <TextField
                   style={{ width: 520, marginRight: 30 }}
                   label="Tổng tiền"
-                  value={sumAmount}
+                  value={sumAmount ? formatPrice(sumAmount) : "0 VND"}
                   fullWidth
                   variant="outlined"
                 />
                 <TextField
                   style={{ width: 550 }}
                   label="Tiền cọc"
-                  value={order.deposit}
+                  value={order.deposit ? formatPrice(order.deposit) : "0 VND"}
                   fullWidth
                   variant="outlined"
                 />
@@ -3078,7 +3087,7 @@ function BookRoom() {
                 <TextField
                   style={{ width: 520, marginRight: 30 }}
                   label="Khách hàng trả"
-                  value={givenCustomer}
+                  value={givenCustomer ? formatPriceCustomerGiven(givenCustomer) : ""}
                   onChange={(e) => setGivenCustomer(e.target.value)}
                   fullWidth
                   variant="outlined"
@@ -3086,16 +3095,15 @@ function BookRoom() {
                 <TextField
                   style={{ width: 550 }}
                   label="Phụ thu"
-                  value={order.surcharge}
+                  value={order.surcharge ? formatPrice(order.surcharge) : "0 VND"}
                   fullWidth
                   variant="outlined"
                 />
               </div>
               <br />
               <TextField
-                disabled
                 label="Tiền trả lại"
-                value={givenCustomer - sumAmount}
+                value={(givenCustomer - sumAmount) ? formatPrice(givenCustomer - sumAmount) : "0 VND"}
                 fullWidth
                 variant="outlined"
               />
