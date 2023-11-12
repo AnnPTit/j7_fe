@@ -446,9 +446,9 @@ function OrderTimeline() {
           <div style={{ display: "flex", justifyContent: "flex-end" }}>
             {order.status === 2 && (
               <Link href={hrefReturnRoom}>
-                <button style={{ height: 50, width: 130 }} className="btn btn-danger m-xl-2">
+                <Button style={{ height: 50, width: 130 }} variant="outlined" color="error">
                   Trả phòng
-                </button>
+                </Button>
               </Link>
             )}
             {order.status === 3 && (
