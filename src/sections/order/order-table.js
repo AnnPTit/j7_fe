@@ -43,6 +43,10 @@ export const OrderTable = (props) => {
         return { color: "secondary", text: "Xác nhận thông tin" };
       case 5:
         return { color: "info", text: "Thanh toán tiền cọc" };
+      case 6:
+        return { color: "error", text: "Từ chối" };
+      case 7:
+        return { color: "error", text: "Hết hạn" };
       default:
         return { color: "default", text: "Unknown" };
     }
