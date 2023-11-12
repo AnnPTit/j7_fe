@@ -26,7 +26,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { Drawer } from "antd";
 import { DatePicker, TimePicker } from "@mui/x-date-pickers";
-import { parse, format, subYears } from "date-fns";
+import { parse, format, subYears, differenceInYears } from "date-fns";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import FormControl from "@mui/material/FormControl";
 import FormLabel from "@mui/material/FormLabel";
@@ -69,7 +69,6 @@ export const BookRoomTable = (props) => {
         `http://localhost:2003/api/order/detail-info/${orderId}`
       );
       setOrder(responseOrder.data);
-      console.log("222222222", responseOrder.data);
       setGender(responseOrder.data.customer.gender);
       const formattedDate = formatDate(responseOrder.data.customer.birthday);
       setBirthday(formattedDate);
@@ -122,6 +121,8 @@ export const BookRoomTable = (props) => {
         return { color: "info", text: "Thanh toán tiền cọc" };
       case 6:
         return { color: "error", text: "Từ chối" };
+      case 7:
+        return { color: "error", text: "Hết hạn" };
       default:
         return { color: "default", text: "Unknown" };
     }
@@ -130,13 +131,15 @@ export const BookRoomTable = (props) => {
   // Hủy hóa đơn
   const handleCancelOrder = async (id) => {
     try {
-      // Make an API call to update the order status to "Đã xác nhận" (status: 2)
-      await axios.put(`http://localhost:2003/api/order/delete/${id}`);
-      setOrder({ ...order, status: 0 });
-      toast.success("Hủy thành công!", {
-        position: toast.POSITION.TOP_RIGHT,
-      });
-      // router.push(`/orders?id=${id}`);
+      console.log(id);
+      const response = await axios.post(`http://localhost:2003/api/home/order/cancel/${orderId}/6`);
+      if (response.data.status === 1) {
+        toast.success(response.data.message);
+      }
+      if (response.data.status === 0) {
+        toast.error(response.data.message);
+      }
+      window.location.href = `/book-room-online`;
     } catch (error) {
       console.log(error);
     }
@@ -174,6 +177,16 @@ export const BookRoomTable = (props) => {
         position: toast.POSITION.TOP_RIGHT,
       });
       return;
+    } else {
+      const currentDate = new Date();
+      const birthday2 = parse(birthday, "dd/MM/yyyy", new Date());
+      const age = differenceInYears(currentDate, birthday2);
+      if (age < 18) {
+        toast.error("Bạn chưa đủ 18 tuổi !", {
+          position: toast.POSITION.TOP_RIGHT,
+        });
+        return;
+      }
     }
     if (gender === null) {
       toast.error("Giới tính không được để trống !", {
@@ -210,16 +223,24 @@ export const BookRoomTable = (props) => {
         return;
       }
       axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
-      await axios.post(`http://localhost:2003/api/order/confirm-order`, payload);
-      toast.success("Xác nhận thành công !", {
-        position: toast.POSITION.TOP_RIGHT,
-      });
-      window.location.href = "/book-room-online";
-      // router.push(`/orders?id=${id}`);
+      const response = await axios.post(`http://localhost:2003/api/order/confirm-order`, payload);
+      if (response.data.message !== null) {
+        toast.error(response.data.message, {
+          position: toast.POSITION.TOP_RIGHT,
+        });
+      } else {
+        toast.success("Xác nhận thành công !", {
+          position: toast.POSITION.TOP_RIGHT,
+        });
+        window.location.href = "/book-room-online";
+      }
     } catch (error) {
       console.log(error);
+      toast.error("Có lỗi xảy ra !");
     }
   };
+
+  const refuseOrder = async () => {};
 
   const handleRedirect = () => {
     router.push(`/room-service?id=${orderId}`);
@@ -236,7 +257,12 @@ export const BookRoomTable = (props) => {
                 value={numeral(order.deposit).format("0,0 ") + "  đ"}
                 label="Tiền cọc"
               />
-              <Button variant="outlined" color="error">
+              <Button
+                style={{ marginRight: 20 }}
+                variant="outlined"
+                color="error"
+                onClick={() => handleCancelOrder(orderId)}
+              >
                 Hủy xác nhận
               </Button>
               <Button variant="outlined" onClick={handleSubmit}>
