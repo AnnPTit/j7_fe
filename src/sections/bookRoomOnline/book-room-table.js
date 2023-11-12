@@ -26,7 +26,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { Drawer } from "antd";
 import { DatePicker, TimePicker } from "@mui/x-date-pickers";
-import { parse, format, subYears } from "date-fns";
+import { parse, format, subYears, differenceInYears } from "date-fns";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import FormControl from "@mui/material/FormControl";
 import FormLabel from "@mui/material/FormLabel";
@@ -174,6 +174,16 @@ export const BookRoomTable = (props) => {
         position: toast.POSITION.TOP_RIGHT,
       });
       return;
+    } else {
+      const currentDate = new Date();
+      const birthday2 = parse(birthday, "dd/MM/yyyy", new Date());
+      const age = differenceInYears(currentDate, birthday2);
+      if (age < 18) {
+        toast.error("Bạn chưa đủ 18 tuổi !", {
+          position: toast.POSITION.TOP_RIGHT,
+        });
+        return;
+      }
     }
     if (gender === null) {
       toast.error("Giới tính không được để trống !", {
@@ -210,15 +220,20 @@ export const BookRoomTable = (props) => {
         return;
       }
       axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
-      await axios.post(`http://localhost:2003/api/order/confirm-order`, payload);
-      toast.success("Xác nhận thành công !", {
-        position: toast.POSITION.TOP_RIGHT,
-      });
-      window.location.href = "/book-room-online";
-      // router.push(`/orders?id=${id}`);
+      const response = await axios.post(`http://localhost:2003/api/order/confirm-order`, payload);
+      if (response.data.message !== null) {
+        toast.error(response.data.message, {
+          position: toast.POSITION.TOP_RIGHT,
+        });
+      } else {
+        toast.success("Xác nhận thành công !", {
+          position: toast.POSITION.TOP_RIGHT,
+        });
+        window.location.href = "/book-room-online";
+      }
     } catch (error) {
       console.log(error);
-      toast.error("Căn cước công dân không được trùng nhau !");
+      toast.error("Có lỗi xảy ra !");
     }
   };
 
