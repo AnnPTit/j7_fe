@@ -867,7 +867,7 @@ function BookRoom() {
     toast.success("Lưu thành công!", {
       position: toast.POSITION.BOTTOM_CENTER,
     });
-    router.push(`/room-service?id=${id}`);
+    // router.push(`/room-service?id=${id}`);
     console.log(response.data);
   };
 
@@ -973,7 +973,7 @@ function BookRoom() {
         position: toast.POSITION.BOTTOM_CENTER,
       });
       return;
-    }  else if (quantity > 10) {
+    } else if (quantity > 10) {
       toast.error("Vui lòng chỉ thêm tối đa 10.", {
         position: toast.POSITION.BOTTOM_CENTER,
       });
@@ -1606,7 +1606,7 @@ function BookRoom() {
           "http://localhost:2003/api/admin/room/loadAndSearchBookRoom"
         );
         setRooms(responseRoom.data);
-        router.push(`/room-service?id=${id}`);
+        // router.push(`/room-service?id=${id}`);
         toast.success("Thêm phòng thành công!", {
           position: toast.POSITION.BOTTOM_CENTER,
         });
@@ -1782,6 +1782,7 @@ function BookRoom() {
                 onChange={handleDateFromChange}
                 renderInput={(params) => (
                   <TextField
+                    style={{ marginRight: 20 }}
                     {...params}
                     inputProps={{
                       value: formatDate(valueDateFrom),
@@ -3103,7 +3104,7 @@ function BookRoom() {
               <br />
               <TextField
                 label="Tiền trả lại"
-                value={(givenCustomer - sumAmount) ? formatPrice(givenCustomer - sumAmount) : "0 VND"}
+                value={givenCustomer - sumAmount ? formatPrice(givenCustomer - sumAmount) : "0 VND"}
                 fullWidth
                 variant="outlined"
               />
