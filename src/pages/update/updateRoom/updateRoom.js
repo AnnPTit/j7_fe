@@ -10,136 +10,9 @@ import Swal from "sweetalert2";
 import { useRouter } from "next/router";
 import Card from "react-bootstrap/Card";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import { Autocomplete, TextField } from "@mui/material";
 
 const cx = classNames.bind(style);
-
-const handleSubmit = async (event, id, roomUpdate, selectedImages) => {
-  event.preventDefault(); // Ngăn chặn sự kiện submit mặc định
-  const floorIput = document.querySelector('select[name="floor"]');
-  const typeRoomIput = document.querySelector('select[name="typeRoom"]');
-  const floor = floorIput?.value;
-  const typeRoom = typeRoomIput?.value;
-
-  let floorObj = {
-    id: floor,
-  };
-
-  let typeRoomObj = {
-    id: typeRoom,
-  };
-
-  // Tạo payload dữ liệu để gửi đến API
-  const payload = {
-    ...roomUpdate,
-    id: id,
-    roomCode: roomUpdate.roomCode,
-    roomName: roomUpdate.roomName,
-    note: roomUpdate.note,
-    floor: floorObj,
-    typeRoom: typeRoomObj,
-  };
-  console.log("payload ", payload);
-
-  const formData = new FormData();
-
-  // Append room information to formData
-  formData.append("id", id);
-  formData.append("roomCode", roomUpdate.roomCode);
-  formData.append("roomName", roomUpdate.roomName);
-  formData.append("note", roomUpdate.note);
-  formData.append("typeRoom", roomUpdate.typeRoom.id);
-  formData.append("floor", roomUpdate.floor.id);
-
-  // Append each image file to formData
-  selectedImages.forEach((image) => {
-    formData.append("photos", image);
-  });
-
-  try {
-    const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
-    // Kiểm tra xem accessToken có tồn tại không
-    if (!accessToken) {
-      alert("Bạn chưa đăng nhập");
-      return false;
-    }
-
-    axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
-    const response = await axios.put(`http://localhost:2003/api/admin/room/update/${id}`, formData); // Gọi API /api/room-type/save với payload và access token
-    toast.success("Cập nhật thành công!", {
-      position: toast.POSITION.BOTTOM_RIGHT,
-    });
-    console.log(response); //
-
-    if (response.status === 200) {
-      // Xử lý khi API thành công
-      console.log("API call successful");
-      window.location.href = "/room";
-      return true;
-      // Thực hiện các hành động khác sau khi API thành công
-    } else {
-      // Xử lý khi API gặp lỗi
-      console.log("API call failed");
-      return false;
-      // Thực hiện các hành động khác khi gọi API thất bại
-    }
-  } catch (error) {
-    // Xử lý khi có lỗi xảy ra trong quá trình gọi API
-    if (error.response) {
-      // Xử lý response lỗi
-      if (error.response.status === 403) {
-        alert("Bạn không có quyền truy cập vào trang này");
-        window.location.href = "/auth/login"; // Chuyển hướng đến trang đăng nhập
-        return false;
-      } else if (error.response.status === 400) {
-        console.log(error.response.data);
-
-        const isRoomNameError = error.response.data.roomName === undefined;
-        const isRoomCodeError = error.response.data.roomCode === undefined;
-        const isNoteError = error.response.data.note === undefined;
-
-        // Kiểm tra nếu tất cả các trường không bị thiếu, hiển thị thông báo lỗi cho cả 3 trường
-        if (!isRoomNameError && !isRoomCodeError && !isNoteError) {
-          toast.error(error.response.data.roomName, {
-            position: toast.POSITION.BOTTOM_RIGHT,
-          });
-          toast.error(error.response.data.roomCode, {
-            position: toast.POSITION.BOTTOM_RIGHT,
-          });
-          toast.error(error.response.data.note, {
-            position: toast.POSITION.BOTTOM_RIGHT,
-          });
-          return false;
-        } else {
-          // Nếu có ít nhất một trường bị thiếu, xóa thông báo lỗi cho trường đó nếu có
-          // và hiển thị thông báo lỗi cho các trường còn lại
-          if (!isRoomNameError) {
-            alert(error.response.data.roomName);
-            toast.error(error.response.data.roomName, {
-              position: toast.POSITION.BOTTOM_RIGHT,
-            });
-          }
-          if (!isRoomCodeError) {
-            toast.error(error.response.data.roomCode, {
-              position: toast.POSITION.BOTTOM_RIGHT,
-            });
-          }
-          if (!isNoteError) {
-            toast.error(error.response.data.note, {
-              position: toast.POSITION.BOTTOM_RIGHT,
-            });
-          }
-          return false;
-        }
-      } else {
-        alert("Có lỗi xảy ra trong quá trình gọi API");
-        return false;
-      }
-    } else {
-      console.log("Không thể kết nối đến API");
-      return false;
-    }
-  }
-};
 
 function UpdateRoom() {
   const [typeRoom, setTypeRoom] = useState([]);
@@ -147,6 +20,7 @@ function UpdateRoom() {
   const router = useRouter(); // Sử dụng useRouter để truy cập router của Next.js
   const { id } = router.query; // Lấy thông tin từ URL qua router.query
   const [roomImages, setRoomImages] = useState([]);
+  const [roomFacilities, setRoomFacilities] = useState([]);
   const [selectedImages, setSelectedImages] = useState([]);
   const fileInputRef = useRef(null);
   const [roomUpdate, setRoomUpdate] = useState({
@@ -158,8 +32,151 @@ function UpdateRoom() {
     floor: {},
     typeRoom: {},
   });
-
   const MAX_IMAGE_COUNT = 6; // Giới hạn số lượng ảnh tối đa
+  const [facility, setFacility] = useState([]);
+  const [selectedFacilities, setSelectedFacilities] = useState([]);
+
+  const handleSubmit = async (event, id, roomUpdate, selectedImages) => {
+    event.preventDefault(); // Ngăn chặn sự kiện submit mặc định
+    const floorIput = document.querySelector('select[name="floor"]');
+    const typeRoomIput = document.querySelector('select[name="typeRoom"]');
+    const floor = floorIput?.value;
+    const typeRoom = typeRoomIput?.value;
+
+    let floorObj = {
+      id: floor,
+    };
+
+    let typeRoomObj = {
+      id: typeRoom,
+    };
+
+    // Tạo payload dữ liệu để gửi đến API
+    const payload = {
+      ...roomUpdate,
+      id: id,
+      roomCode: roomUpdate.roomCode,
+      roomName: roomUpdate.roomName,
+      note: roomUpdate.note,
+      floor: floorObj,
+      typeRoom: typeRoomObj,
+      facilities: selectedFacilities.map((facility) => facility.id),
+    };
+    console.log("payload ", payload);
+
+    const formData = new FormData();
+
+    // Append room information to formData
+    formData.append("id", id);
+    formData.append("roomCode", roomUpdate.roomCode);
+    formData.append("roomName", roomUpdate.roomName);
+    formData.append("note", roomUpdate.note);
+    formData.append("typeRoom", roomUpdate.typeRoom.id);
+    formData.append("floor", roomUpdate.floor.id);
+
+    // Append each image file to formData
+    selectedImages.forEach((image) => {
+      formData.append("photos", image);
+    });
+
+    Object.entries(payload).forEach(([key, value]) => {
+      if (key === "roomFacilityList") {
+        value.forEach((facilityId) => {
+          formData.append("roomFacilityList", facilityId);
+        });
+      } else {
+        formData.append(key, value);
+      }
+    });
+
+    try {
+      const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
+      // Kiểm tra xem accessToken có tồn tại không
+      if (!accessToken) {
+        alert("Bạn chưa đăng nhập");
+        return false;
+      }
+
+      axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
+      const response = await axios.put(
+        `http://localhost:2003/api/admin/room/update/${id}`,
+        formData
+      ); // Gọi API /api/room-type/save với payload và access token
+      toast.success("Cập nhật thành công!", {
+        position: toast.POSITION.BOTTOM_CENTER,
+      });
+      console.log(response); //
+
+      if (response.status === 200) {
+        // Xử lý khi API thành công
+        console.log("API call successful");
+        window.location.href = "/room";
+        return true;
+        // Thực hiện các hành động khác sau khi API thành công
+      } else {
+        // Xử lý khi API gặp lỗi
+        console.log("API call failed");
+        return false;
+        // Thực hiện các hành động khác khi gọi API thất bại
+      }
+    } catch (error) {
+      // Xử lý khi có lỗi xảy ra trong quá trình gọi API
+      if (error.response) {
+        // Xử lý response lỗi
+        if (error.response.status === 403) {
+          alert("Bạn không có quyền truy cập vào trang này");
+          window.location.href = "/auth/login"; // Chuyển hướng đến trang đăng nhập
+          return false;
+        } else if (error.response.status === 400) {
+          console.log(error.response.data);
+
+          const isRoomNameError = error.response.data.roomName === undefined;
+          const isRoomCodeError = error.response.data.roomCode === undefined;
+          const isNoteError = error.response.data.note === undefined;
+
+          // Kiểm tra nếu tất cả các trường không bị thiếu, hiển thị thông báo lỗi cho cả 3 trường
+          if (!isRoomNameError && !isRoomCodeError && !isNoteError) {
+            toast.error(error.response.data.roomName, {
+              position: toast.POSITION.BOTTOM_CENTER,
+            });
+            toast.error(error.response.data.roomCode, {
+              position: toast.POSITION.BOTTOM_CENTER,
+            });
+            toast.error(error.response.data.note, {
+              position: toast.POSITION.BOTTOM_CENTER,
+            });
+            return false;
+          } else {
+            // Nếu có ít nhất một trường bị thiếu, xóa thông báo lỗi cho trường đó nếu có
+            // và hiển thị thông báo lỗi cho các trường còn lại
+            if (!isRoomNameError) {
+              alert(error.response.data.roomName);
+              toast.error(error.response.data.roomName, {
+                position: toast.POSITION.BOTTOM_CENTER,
+              });
+            }
+            if (!isRoomCodeError) {
+              toast.error(error.response.data.roomCode, {
+                position: toast.POSITION.BOTTOM_CENTER,
+              });
+            }
+            if (!isNoteError) {
+              toast.error(error.response.data.note, {
+                position: toast.POSITION.BOTTOM_CENTER,
+              });
+            }
+            return false;
+          }
+        } else {
+          alert("Có lỗi xảy ra trong quá trình gọi API");
+          return false;
+        }
+      } else {
+        console.log("Không thể kết nối đến API");
+        return false;
+      }
+    }
+  };
 
   const handleImageChange = (event) => {
     const files = event.target.files;
@@ -178,7 +195,7 @@ function UpdateRoom() {
     // If the total number of images (preloaded + selected) exceeds the limit, show an error
     if (preloadedImageCount + fileList.length > MAX_IMAGE_COUNT) {
       toast.error(`Chỉ được chọn tối đa ${MAX_IMAGE_COUNT} ảnh!`, {
-        position: toast.POSITION.BOTTOM_RIGHT,
+        position: toast.POSITION.BOTTOM_CENTER,
       });
       return;
     }
@@ -197,7 +214,6 @@ function UpdateRoom() {
 
   // Lấy data cho combobox;
   useEffect(() => {
-    // Định nghĩa hàm fetchData bên trong useEffect
     async function fetchData() {
       try {
         const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
@@ -209,6 +225,8 @@ function UpdateRoom() {
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
         const response = await axios.get("http://localhost:2003/api/admin/type-room/getList");
         const response2 = await axios.get("http://localhost:2003/api/admin/floor/getList");
+        const facility = await axios.get("http://localhost:2003/api/admin/facility/load");
+        setFacility(facility.data);
         setTypeRoom(response.data);
         setFloor(response2.data);
       } catch (error) {
@@ -238,13 +256,31 @@ function UpdateRoom() {
         console.log("Error fetching room images:", error);
       }
     }
-    // Call the fetchRoomImages function inside useEffect
     fetchRoomImages();
+  }, [id]);
+
+  useEffect(() => {
+    async function fetchFacilites() {
+      try {
+        const accessToken = localStorage.getItem("accessToken");
+        if (!accessToken) {
+          alert("Bạn chưa đăng nhập");
+          return;
+        }
+
+        axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+        const response = await axios.get(`http://localhost:2003/api/admin/room/facilities/${id}`);
+        console.log("Response data:", response.data);
+        setRoomFacilities(response.data);
+      } catch (error) {
+        console.log("Error fetching room images:", error);
+      }
+    }
+    fetchFacilites();
   }, [id]);
 
   //Hàm detail
   useEffect(() => {
-    // Định nghĩa hàm fetchData bên trong useEffect
     async function fetchData() {
       try {
         const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
@@ -256,18 +292,13 @@ function UpdateRoom() {
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
         const response = await axios.get(`http://localhost:2003/api/admin/room/detail/${id}`);
         console.log("Room", response.data);
-
-        if (response.data) {
-          setRoomUpdate(response.data);
-        }
+        setRoomUpdate(response.data);
       } catch (error) {
         console.log(error);
       }
     }
-
-    // Gọi hàm fetchData ngay lập tức
     fetchData();
-  }, []);
+  }, [id]);
 
   const handleDeleteImage = async (photoId, index) => {
     try {
@@ -298,7 +329,7 @@ function UpdateRoom() {
           const updatedImages = roomImages.filter((photo) => photo.id !== photoId);
           setRoomImages(updatedImages);
           toast.success("Image deleted successfully!", {
-            position: toast.POSITION.BOTTOM_RIGHT,
+            position: toast.POSITION.BOTTOM_CENTER,
           });
         }
       } else {
@@ -307,13 +338,13 @@ function UpdateRoom() {
         updatedImages.splice(index, 1);
         setRoomImages(updatedImages);
         toast.success("Image deleted successfully!", {
-          position: toast.POSITION.BOTTOM_RIGHT,
+          position: toast.POSITION.BOTTOM_CENTER,
         });
       }
     } catch (error) {
       console.log("Error deleting image:", error);
       toast.error("Error deleting image!", {
-        position: toast.POSITION.BOTTOM_RIGHT,
+        position: toast.POSITION.BOTTOM_CENTER,
       });
     }
   };
@@ -381,11 +412,11 @@ function UpdateRoom() {
         className="form-select"
         aria-label="Default select example"
         name="typeRoom"
-        value={roomUpdate.typeRoom.id} // Thiết lập giá trị value cho select
+        value={roomUpdate.typeRoom?.id}
         onChange={(e) => {
           setRoomUpdate((prev) => ({
             ...prev,
-            typeRoom: e.target.value, // Cập nhật giá trị typeRoom khi select thay đổi
+            typeRoom: e.target.value,
           }));
         }}
       >
@@ -401,11 +432,11 @@ function UpdateRoom() {
         className="form-select"
         aria-label="Default select example"
         name="floor"
-        value={roomUpdate.floor.id} // Thiết lập giá trị value cho select
+        value={roomUpdate.floor?.id}
         onChange={(e) => {
           setRoomUpdate((prev) => ({
             ...prev,
-            floor: e.target.value, // Cập nhật giá trị floor khi select thay đổi
+            floor: e.target.value,
           }));
         }}
       >
@@ -475,6 +506,29 @@ function UpdateRoom() {
         ))}
       </div>
       <br></br>
+      <hr />
+      <Autocomplete
+        multiple
+        id="tags-outlined"
+        options={facility}
+        getOptionLabel={(facility) => facility?.facilityName}
+        value={roomFacilities
+          .filter((facilityId) => facilityId !== undefined) // Filter out undefined values
+          .map((facilityId) => facility.find((item) => item.id === facilityId.facility.id)) || selectedFacilities} 
+        onChange={(event, newValue) => {
+          setSelectedFacilities(newValue);
+        }}
+        filterSelectedOptions
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            label="Tiện nghi"
+            placeholder="Chọn tiện nghi có sẵn trong phòng"
+          />
+        )}
+      />
+
+      <br />
       <button
         className={(cx("input-btn"), "btn btn-primary")}
         onClick={() => {
