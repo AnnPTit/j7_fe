@@ -23,7 +23,7 @@ function InputRoom() {
   const [newPhotos, setNewPhotos] = useState([]);
   const [previewImages, setPreviewImages] = useState([]);
   const [facility, setFacility] = useState([]);
-  const [selectedFacilities, setSelectedFacilities] = useState([]); // Trạng thái kiểm soát giá trị của Autocomplete
+  const [selectedFacilities, setSelectedFacilities] = useState([]);
 
   const [showFloor, setShowFloor] = useState(false);
   const [showTypeRoom, setShowTypeRoom] = useState(false);
@@ -64,6 +64,7 @@ function InputRoom() {
       note,
       floor: floorObj,
       typeRoom: typeRoomObj,
+      facilities: selectedFacilities.map((facility) => facility.id),
     };
     console.log("payload ", payload);
 
@@ -80,6 +81,11 @@ function InputRoom() {
       formData.append("photos", newPhotos[i]);
     }
 
+    // Append facility IDs to the FormData
+    for (let i = 0; i < selectedFacilities.length; i++) {
+      formData.append("facilities", selectedFacilities[i].id);
+    }
+
     try {
       const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
       // Kiểm tra xem accessToken có tồn tại không
@@ -90,9 +96,17 @@ function InputRoom() {
 
       axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
 
+      if (selectedFacilities.length === 0) {
+        // Display an error message or take appropriate action
+        toast.error("Hãy chọn tiện nghi cho phòng.", {
+          position: toast.POSITION.BOTTOM_CENTER,
+        });
+        return;
+      }
+
       const response = await axios.post("http://localhost:2003/api/admin/room/save", formData); // Gọi API /api/room-type/save với payload và access token
       toast.success("Thêm thành công!", {
-        position: toast.POSITION.BOTTOM_RIGHT,
+        position: toast.POSITION.BOTTOM_CENTER,
       });
       console.log(response); //
       console.log("formData: ", formData);
@@ -118,14 +132,14 @@ function InputRoom() {
           console.log(error.response);
           if (error.response.data.roomName == undefined && error.response.data.note == undefined) {
             toast.error(error.response.data, {
-              position: toast.POSITION.BOTTOM_RIGHT,
+              position: toast.POSITION.BOTTOM_CENTER,
             });
           }
           // toast.error(error.response.data.roomCode, {
-          //   position: toast.POSITION.BOTTOM_RIGHT,
+          //   position: toast.POSITION.BOTTOM_CENTER,
           // });
           toast.error(error.response.data.roomName, {
-            position: toast.POSITION.BOTTOM_RIGHT,
+            position: toast.POSITION.BOTTOM_CENTER,
           });
         } else {
           alert("Có lỗi xảy ra trong quá trình gọi API");
@@ -150,7 +164,6 @@ function InputRoom() {
         const response = await axios.get("http://localhost:2003/api/admin/type-room/getList");
         const response2 = await axios.get("http://localhost:2003/api/admin/floor/getList");
         const facility = await axios.get("http://localhost:2003/api/admin/facility/load");
-        console.log(facility.data);
         setFacility(facility.data);
         setTypeRoom(response.data);
         setFloor(response2.data);
@@ -194,7 +207,7 @@ function InputRoom() {
     } else {
       // Notify user that maximum number of images is reached
       toast.error(`Bạn chỉ được thêm tối đa ${MAX_IMAGES} ảnh.`, {
-        position: toast.POSITION.BOTTOM_RIGHT,
+        position: toast.POSITION.BOTTOM_CENTER,
       });
     }
   };
@@ -373,41 +386,14 @@ function InputRoom() {
         </div>
         <br></br>
         <hr />
-        {/* <Autocomplete
-          id="size-small-filled"
-          size="small"
-          options={facility}
-          getOptionLabel={(facility) => facility.facilityName}
-          defaultValue={facility.length > 0 ? [facility[10]] : []}
-          renderTags={(value, getTagProps) =>
-            value.map((facility, index) => (
-              <Chip
-                key={facility.id}
-                variant="outlined"
-                label={facility.facilityName}
-                size="small"
-                {...getTagProps({ facility })}
-              />
-            ))
-          }
-          renderInput={(params) => (
-            <TextField
-              style={{ height: 100 }}
-                {...params}
-              variant="filled"
-              label="Size small"
-              placeholder="Favorites"
-            />
-          )}
-        /> */}
         <Autocomplete
           multiple
           id="tags-outlined"
           options={facility}
           getOptionLabel={(facility) => facility.facilityName}
-          value={selectedFacilities} // Sử dụng giá trị kiểm soát thay vì defaultValue
+          value={selectedFacilities}
           onChange={(event, newValue) => {
-            setSelectedFacilities(newValue); // Cập nhật giá trị khi có thay đổi
+            setSelectedFacilities(newValue);
           }}
           filterSelectedOptions
           renderInput={(params) => (
