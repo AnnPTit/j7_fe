@@ -95,7 +95,7 @@ function OrderTimeline() {
     if (method === true) {
       return { color: "primary", text: "Tiền mặt" };
     } else if (method === false) {
-      return { color: "error", text: "Chuyển khoản" };
+      return { color: "warning", text: "Chuyển khoản" };
     } else {
       return { color: "default", text: "Unknown" };
     }
@@ -595,9 +595,9 @@ function OrderTimeline() {
 
               return (
                 <TableRow hover key={paymentMethod.id}>
-                  <TableCell style={{ color: "red" }}>
-                    {formatPrice(paymentMethod.totalMoney)}
-                  </TableCell>
+                  <TableCell>
+                      <SeverityPill color="error">{formatPrice(paymentMethod.totalMoney)}</SeverityPill>
+                    </TableCell>
                   <TableCell>
                     {format(new Date(paymentMethod.createAt), "dd/MM/yyyy - HH:mm:ss")}
                   </TableCell>

@@ -105,6 +105,12 @@ export const BookRoomTable = (props) => {
     return price.toLocaleString({ style: "currency", currency: "VND" }).replace(/\D00(?=\D*$)/, "");
   };
 
+  const formatPhoneNumber = (phoneNumber) => {
+    const digits = phoneNumber.replace(/\D/g, '');
+    const formattedNumber = digits.replace(/(\d{4})(\d{3})(\d{3})/, '$1-$2-$3');
+    return formattedNumber;
+  };
+
   const getStatusButtonColor = (status) => {
     switch (status) {
       case 0:
@@ -370,7 +376,7 @@ export const BookRoomTable = (props) => {
                     </TableCell>
                     <TableCell>{order.orderCode}</TableCell>
                     <TableCell>{order.customer.fullname}</TableCell>
-                    <TableCell>{order.customer.phoneNumber}</TableCell>
+                    <TableCell>{formatPhoneNumber(order.customer.phoneNumber)}</TableCell>
                     <TableCell>{order.customer.email}</TableCell>
                     <TableCell>{created}</TableCell>
                     <TableCell>
