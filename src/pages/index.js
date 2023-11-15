@@ -140,11 +140,11 @@ const Page = () => {
               <OverviewSales
                 chartSeries={[
                   {
-                    name: "This year",
+                    name: "This month",
                     data: thisYearData,
                   },
                   {
-                    name: "Last year",
+                    name: "Last month",
                     data: lastYearData,
                   },
                 ]}

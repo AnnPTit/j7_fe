@@ -61,6 +61,7 @@ function OrderTimeline() {
   const [paymentMethod, setPaymentMethod] = useState([]);
   const [serviceUsed, setServiceUsed] = useState([]);
   const [selectedOrderTimelines, setSelectedOrderTimelines] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   let totalServiceCost = 0;
   let totalComboCost = 0;
@@ -72,8 +73,7 @@ function OrderTimeline() {
   };
 
   const handlePrintInvoice = (id) => {
-    // setIsPrinting(true);
-    // Gửi yêu cầu GET đến API để lấy tệp ByteArrayResource
+    setLoading(true);
     axios
       .get(`http://localhost:2003/api/order/recommended/${id}`, { responseType: "arraybuffer" })
       .then((response) => {
@@ -88,6 +88,9 @@ function OrderTimeline() {
       })
       .catch((error) => {
         console.error("Lỗi khi tải tệp .docx", error);
+      })
+      .finally(() => {
+        setLoading(false);
       });
   };
 
@@ -443,12 +446,19 @@ function OrderTimeline() {
           ))}
         </Timeline>
         <div>
+          {loading && (
+            <div class="d-flex justify-content-center">
+              <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+            </div>
+          )}
           <div style={{ display: "flex", justifyContent: "flex-end" }}>
             {order.status === 2 && (
               <Link href={hrefReturnRoom}>
-                <button style={{ height: 50, width: 130 }} className="btn btn-danger m-xl-2">
+                <Button style={{ height: 50, width: 130 }} variant="outlined" color="error">
                   Trả phòng
-                </button>
+                </Button>
               </Link>
             )}
             {order.status === 3 && (

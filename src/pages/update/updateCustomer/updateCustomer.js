@@ -239,7 +239,7 @@ function UpdateCustomer() {
 
   const [selectedProvince, setSelectedProvince] = useState("");
   const [selectedDistrict, setSelectedDistrict] = useState("");
-  const [selectedWards, setSelectedWards] = useState("Doan Hung");
+  const [selectedWards, setSelectedWards] = useState("");
 
   const [idProvince, setIdProvince] = useState(0);
   const [idDistrict, setIdDistrict] = useState(0);
@@ -281,10 +281,20 @@ function UpdateCustomer() {
           `https://vapi.vnappmob.com/api/province/district/${idProvince}`
         );
         setDistricts(response.data.results);
+        const idD = response.data.results.find((d) => d.district_name === customerUpdate.districts);
+        setSelectedDistrict(idD?.district_id);
+        const district = response.data.results.find((d) => d.district_id === idD?.district_id);
+        setIdDistrict(district?.district_id || 0);
+        const name = district ? district.district_name : "";
+        setSelectedDistrictName(name);
+        if (district) {
+          setWards([]);
+        }
+        console.log(district);
       };
       fetchDistricts();
     }
-  }, [idProvince]);
+  }, [customerUpdate.districts, idProvince]);
 
   useEffect(() => {
     if (idDistrict) {
@@ -293,10 +303,15 @@ function UpdateCustomer() {
           `https://vapi.vnappmob.com/api/province/ward/${idDistrict}`
         );
         setWards(response.data.results);
+        const ward = response.data.results.find((w) => w.ward_name === customerUpdate.wards);
+        console.log(ward);
+        setSelectedWards(ward?.ward_id);
+        const name = ward ? ward.ward_name : "";
+        setSelectedWards(name);
       };
       fetchWards();
     }
-  }, [idDistrict]);
+  }, [customerUpdate.wards, idDistrict, selectedWards]);
 
   const handleProvinceChange = (e) => {
     setSelectedProvince(e.target.value);
