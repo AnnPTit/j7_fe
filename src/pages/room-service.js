@@ -71,6 +71,7 @@ function BookRoom() {
   const [customer, setCustomer] = useState([]);
   const [customerOrder, setCustomerOrder] = useState([]);
   const [customerOrderDetail, setCustomerOrderDetail] = useState([]);
+  const [customerInfoOrder, setCustomerInfoOrder] = useState([]);
   const [floor, setFloor] = useState([]);
   const [typeRoom, setTypeRoom] = useState([]);
   const [floorChose, setFloorChose] = useState("");
@@ -296,6 +297,7 @@ function BookRoom() {
   };
 
   const handleCloseAcceptOrder = () => {
+    setSelectedCustomerAccept("");
     setNoteOrder("");
     setOpenAcceptOrder(false);
   };
@@ -707,16 +709,18 @@ function BookRoom() {
       return;
     }
 
-    // {orderDetailData.map((orderDetailData) => {
-    //   if (orderDetailData.informationCustomerList.length == 0) {
-    //     toast.error("Có phòng chưa có khách ở!", {
-    //       position: toast.POSITION.BOTTOM_CENTER,
-    //     });
-    //     return;
-    //   }
-    // })}
+    const hasOrderDetailWithoutCustomer = orderDetailData.some(
+      (orderDetail) => orderDetail.informationCustomerList.length === 0
+    );
 
-    if (infoCustomer.length == 0) {
+    if (hasOrderDetailWithoutCustomer) {
+      toast.error("Có phòng chưa có khách ở!", {
+        position: toast.POSITION.BOTTOM_CENTER,
+      });
+      return;
+    }
+
+    if (customerInfoOrder.length == 0) {
       toast.error("Phòng chưa có khách ở!", {
         position: toast.POSITION.BOTTOM_CENTER,
       });
@@ -1140,6 +1144,14 @@ function BookRoom() {
         `http://localhost:2003/api/information-customer/load/${selectedOrderDetails}`
       );
       setCustomerInfo(responseInfo.data);
+      const responseInfoCustomer = await axios.get(
+        "http://localhost:2003/api/information-customer/load"
+      );
+      setInfoCustomer(responseInfoCustomer.data);
+      const responseInfoCustomerOrder = await axios.get(
+        `http://localhost:2003/api/information-customer/load/order/${id}`
+      );
+      setCustomerInfoOrder(responseInfoCustomerOrder.data);
       const responseCustomerOrder = await axios.get(
         `http://localhost:2003/api/admin/customer/getAllByOrderId/${id}`
       );
@@ -1255,6 +1267,10 @@ function BookRoom() {
       setCustomerInfo(response.data);
       const responseInfo = await axios.get("http://localhost:2003/api/information-customer/load");
       setInfoCustomer(responseInfo.data);
+      const responseInfoCustomerOrder = await axios.get(
+        `http://localhost:2003/api/information-customer/load/order/${id}`
+      );
+      setCustomerInfoOrder(responseInfoCustomerOrder.data);
       const responseCustomer = await axios.get(
         `http://localhost:2003/api/admin/customer/getAllByOrderId/${id}`
       );
@@ -1460,6 +1476,13 @@ function BookRoom() {
         const response10 = await axios.get(
           `http://localhost:2003/api/admin/customer/getAllByOrderDetailId/${selectedOrderDetails}`
         );
+        const response11 = await axios.get(
+          `http://localhost:2003/api/information-customer/load/order/${id}`
+        );
+        const responseOrderDetail = await axios.get(
+          `http://localhost:2003/api/order-detail/loadOrderDetailByOrderId/${id}`
+        );
+        setOrderDetailData(responseOrderDetail.data);
         setFloor(response.data);
         setTypeRoom(response2.data);
         setServiceType(response3.data);
@@ -1469,13 +1492,14 @@ function BookRoom() {
         setComboUsedTotalPrice(response7.data);
         setInfoCustomer(response9.data);
         setCustomerOrderDetail(response10.data);
+        setCustomerInfoOrder(response11.data);
       } catch (error) {
         console.log(error);
       }
     };
     // Gọi hàm fetchData ngay lập tức
     fetchData();
-  }, [searchCustomer]);
+  }, [searchCustomer, selectedOrderDetails, id]);
 
   // Load hóa đơn chi tiết theo id hóa đơn
   useEffect(() => {
