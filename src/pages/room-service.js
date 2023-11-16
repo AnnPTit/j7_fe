@@ -43,7 +43,7 @@ import RadioGroup from "@mui/material/RadioGroup";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import FormControl from "@mui/material/FormControl";
 import FormLabel from "@mui/material/FormLabel";
-import { parse, format, subYears } from "date-fns";
+import { parse, format, subYears, addDays } from "date-fns";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { RoomSearch } from "src/sections/room/room-search";
@@ -182,6 +182,8 @@ function BookRoom() {
     dateFrom: new Date(),
     dateTo: new Date(),
   });
+
+  const maxDate = addDays(valueFrom, 30); // Tính ngày tối đa là 30 ngày sau ngày bắt đầu
 
   const handleFromDateChange = (newValue) => {
     setValueFrom(newValue);
@@ -1973,6 +1975,7 @@ function BookRoom() {
             disablePast
             label="Đến ngày"
             minDate={dataForm.dateFrom}
+            maxDate={maxDate}
             value={valueTo}
             onChange={handleToDateChange}
             renderInput={(params) => (
@@ -2320,399 +2323,7 @@ function BookRoom() {
         </DialogActions>
         <br />
       </Dialog>
-      <div
-        style={{
-          marginBottom: 20,
-          marginTop: 20,
-          height: 50,
-          display: "flex",
-          justifyContent: "flex-end",
-        }}
-      >
-        <Dialog
-          open={openQuantityNote}
-          onClose={handleCloseQuantityNote}
-          fullWidth
-          PaperProps={{
-            style: {
-              maxWidth: "30%",
-              maxHeight: "90%",
-            },
-          }}
-        >
-          <DialogTitle>
-            {selectedServiceId !== null &&
-              service.find((service) => service.id === selectedServiceId)?.serviceName}
-          </DialogTitle>
-          <DialogContent>
-            <TextField
-              style={{ marginTop: 10 }}
-              label="Số lượng"
-              fullWidth
-              variant="outlined"
-              value={quantity}
-              onChange={(e) => setQuantity(e.target.value)}
-            />
-            <br />
-            <br />
-            <TextareaAutosize
-              className="form-control"
-              placeholder="Ghi chú"
-              name="note"
-              cols={100}
-              style={{ height: 150 }}
-              variant="outlined"
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-            />
-          </DialogContent>
-          <DialogActions>
-            <button onClick={handleConfirm} className="btn btn-outline-primary">
-              XÁC NHẬN
-            </button>
-          </DialogActions>
-        </Dialog>
-        <Dialog
-          open={openAddService}
-          onClose={handleCloseAddService}
-          fullWidth
-          PaperProps={{
-            style: {
-              maxWidth: "60%",
-              maxHeight: "90%",
-            },
-          }}
-        >
-          <DialogTitle>CÁC LOẠI DỊCH VỤ</DialogTitle>
-          <DialogContent>
-            <div>
-              <OutlinedInput
-                fullWidth
-                defaultValue=""
-                placeholder="Tìm kiếm dịch vụ"
-                startAdornment={
-                  <InputAdornment position="start">
-                    <SvgIcon color="action" fontSize="small">
-                      <MagnifyingGlassIcon />
-                    </SvgIcon>
-                  </InputAdornment>
-                }
-                sx={{ maxWidth: 500 }}
-              />
-              <Button
-                onClick={handleOpenAddCombo}
-                style={{ marginLeft: 310, height: 50 }}
-                variant="outlined"
-                color="info"
-              >
-                COMBO DỊCH VỤ
-              </Button>
-            </div>
-            <br />
-            <Scrollbar>
-              <Box sx={{ minWidth: 800 }}>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Tên dịch vụ</TableCell>
-                      <TableCell>Loại dịch vụ</TableCell>
-                      <TableCell>Đơn vị tính</TableCell>
-                      <TableCell>Giá</TableCell>
-                      <TableCell>Thao tác</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {service.map((service) => (
-                      <TableRow key={service.id}>
-                        <TableCell>{service.serviceName}</TableCell>
-                        <TableCell>{service.serviceType.serviceTypeName}</TableCell>
-                        <TableCell>{service.unit.unitName}</TableCell>
-                        <TableCell>{formatPrice(service.price)}</TableCell>
-                        <TableCell>
-                          <Button
-                            onClick={() => handleOpenQuantityNote(service.id)}
-                            variant="outlined"
-                          >
-                            Chọn
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </Box>
-            </Scrollbar>
-          </DialogContent>
-        </Dialog>
-        {order.status === 1 || order.status === 2 || order.status === 5 ? (
-          <Button onClick={handleOpenAddService} variant="outlined">
-            THÊM DỊCH VỤ
-          </Button>
-        ) : null}
-        <Dialog
-          open={openQuantityNoteCombo}
-          onClose={handleCloseQuantityNoteCombo}
-          fullWidth
-          PaperProps={{
-            style: {
-              maxWidth: "30%",
-              maxHeight: "90%",
-            },
-          }}
-        >
-          <DialogTitle>
-            {selectedComboId !== null &&
-              combo.find((combo) => combo.id === selectedComboId)?.comboName}
-          </DialogTitle>
-          <DialogContent>
-            <TextField
-              style={{ marginTop: 10 }}
-              label="Số lượng"
-              fullWidth
-              variant="outlined"
-              value={quantityCombo}
-              onChange={(e) => setQuantityCombo(e.target.value)}
-            />
-            <br />
-            <br />
-            <TextareaAutosize
-              className="form-control"
-              placeholder="Ghi chú"
-              name="note"
-              cols={100}
-              style={{ height: 150 }}
-              variant="outlined"
-              value={noteCombo}
-              onChange={(e) => setNoteCombo(e.target.value)}
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleConfirmCombo} variant="outlined">
-              XÁC NHẬN
-            </Button>
-          </DialogActions>
-        </Dialog>
-        <Dialog
-          open={openAddCombo}
-          onClose={handleCloseAddCombo}
-          fullWidth
-          PaperProps={{
-            style: {
-              maxWidth: "60%",
-              maxHeight: "90%",
-            },
-          }}
-        >
-          <DialogTitle>COMBO DỊCH VỤ</DialogTitle>
-          <DialogContent>
-            <div>
-              <OutlinedInput
-                fullWidth
-                defaultValue=""
-                placeholder="Tìm kiếm combo"
-                startAdornment={
-                  <InputAdornment position="start">
-                    <SvgIcon color="action" fontSize="small">
-                      <MagnifyingGlassIcon />
-                    </SvgIcon>
-                  </InputAdornment>
-                }
-                sx={{ maxWidth: 500 }}
-              />
-            </div>
-            <br />
-            <Scrollbar>
-              <Box sx={{ minWidth: 800 }}>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Tên combo</TableCell>
-                      <TableCell>Dịch vụ trong combo</TableCell>
-                      <TableCell>Giá</TableCell>
-                      <TableCell>Mô tả</TableCell>
-                      <TableCell>Thao tác</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {combo.map((combo) => (
-                      <TableRow key={combo.id}>
-                        <TableCell>{combo.comboName}</TableCell>
-                        <TableCell>
-                          <ul>
-                            {combo.comboServiceList.map((comboService) => (
-                              <li key={comboService.id}>
-                                <p> {comboService.service.serviceName}</p>
-                              </li>
-                            ))}
-                          </ul>
-                        </TableCell>
-                        <TableCell>{formatPrice(combo.price)}</TableCell>
-                        <TableCell>{combo.note}</TableCell>
-                        <TableCell>
-                          <Button
-                            onClick={() => handleOpenQuantityNoteCombo(combo.id)}
-                            variant="outlined"
-                          >
-                            Chọn
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </Box>
-            </Scrollbar>
-          </DialogContent>
-        </Dialog>
-      </div>
-      <TabContext value={activeTab}>
-        <Box
-          style={{
-            border: "1px solid #ccc",
-            padding: "20px",
-            boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
-            width: 1150,
-            marginLeft: 140, // Add the box shadow
-          }}
-        >
-          {/* <h3 style={{ display: "flex", justifyContent: "center" }}>DỊCH VỤ</h3>
-          <hr /> */}
-          <Scrollbar>
-            <Box sx={{ minWidth: 800 }}>
-              <Tabs value={String(activeTab)} onChange={handleChange} centered>
-                <Tab label="DỊCH VỤ" value="1" />
-                <Tab label="COMBO DỊCH VỤ" value="2" />
-              </Tabs>
-            </Box>
-            <TabPanel value="1">
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Tên dịch vụ</TableCell>
-                    <TableCell>Phòng</TableCell>
-                    <TableCell>Số lượng</TableCell>
-                    <TableCell>Thành tiền</TableCell>
-                    <TableCell>
-                      {order.status === 1 || order.status === 5 ? <>Thao tác</> : null}
-                    </TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {serviceUsed.length > 0 ? (
-                    serviceUsed.map((serviceUsed, index) => (
-                      <TableRow key={index}>
-                        <TableCell>{serviceUsed.service.serviceName}</TableCell>
-                        <TableCell>{serviceUsed.orderDetail.room.roomName}</TableCell>
-                        <TableCell>{serviceUsed.quantity}</TableCell>
-                        <TableCell>
-                          {formatPrice(serviceUsed.quantity * serviceUsed.service.price)}
-                        </TableCell>
-                        <TableCell>
-                          {order.status === 1 || order.status === 5 ? (
-                            <>
-                              <button
-                                onClick={() => handleDeleteServiceUsed(serviceUsed.id)}
-                                className="btn btn-danger m-xl-2"
-                              >
-                                <SvgIcon fontSize="small">
-                                  <TrashIcon />
-                                </SvgIcon>
-                              </button>
-                            </>
-                          ) : null}
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={5} align="center">
-                        <div>
-                          <span style={{ fontFamily: "monospace", fontSize: 20 }}>
-                            Không có dữ liệu.
-                          </span>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-              <h6
-                style={{
-                  marginTop: 20,
-                  display: "flex",
-                  justifyContent: "flex-end",
-                  color: "red",
-                }}
-              >
-                Tổng tiền: {formatPrice(calculateTotalAmount())}
-              </h6>
-            </TabPanel>
-            <TabPanel value="2">
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Tên combo</TableCell>
-                    <TableCell>Phòng</TableCell>
-                    <TableCell>Số lượng</TableCell>
-                    <TableCell>Thành tiền</TableCell>
-                    <TableCell>
-                      {order.status === 1 || order.status === 5 ? <>Thao tác</> : null}
-                    </TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {comboUsed.length > 0 ? (
-                    comboUsed.map((comboUsed, index) => (
-                      <TableRow key={index}>
-                        <TableCell>{comboUsed.combo.comboName}</TableCell>
-                        <TableCell>{comboUsed.orderDetail.room.roomName}</TableCell>
-                        <TableCell>{comboUsed.quantity}</TableCell>
-                        <TableCell>
-                          {formatPrice(comboUsed.quantity * comboUsed.combo.price)}
-                        </TableCell>
-                        <TableCell>
-                          {order.status === 1 || order.status === 5 ? (
-                            <>
-                              <button
-                                onClick={() => handleDeleteComboUsed(comboUsed.id)}
-                                className="btn btn-danger m-xl-2"
-                              >
-                                <SvgIcon fontSize="small">
-                                  <TrashIcon />
-                                </SvgIcon>
-                              </button>
-                            </>
-                          ) : null}
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={5} align="center">
-                        <div>
-                          <span style={{ fontFamily: "monospace", fontSize: 20 }}>
-                            Không có dữ liệu.
-                          </span>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-              <h6
-                style={{
-                  marginTop: 20,
-                  display: "flex",
-                  justifyContent: "flex-end",
-                  color: "red",
-                }}
-              >
-                Tổng tiền: {formatPrice(calculateTotalAmountCombo())}
-              </h6>
-            </TabPanel>
-          </Scrollbar>
-        </Box>
-      </TabContext>
+
       <Box
         style={{
           border: "1px solid #ccc",
@@ -3004,6 +2615,399 @@ function BookRoom() {
             </div>
           </DialogContent>
         </Dialog>
+        <div
+          style={{
+            marginBottom: 20,
+            marginTop: 20,
+            height: 50,
+            display: "flex",
+            justifyContent: "flex-end",
+          }}
+        >
+          <Dialog
+            open={openQuantityNote}
+            onClose={handleCloseQuantityNote}
+            fullWidth
+            PaperProps={{
+              style: {
+                maxWidth: "30%",
+                maxHeight: "90%",
+              },
+            }}
+          >
+            <DialogTitle>
+              {selectedServiceId !== null &&
+                service.find((service) => service.id === selectedServiceId)?.serviceName}
+            </DialogTitle>
+            <DialogContent>
+              <TextField
+                style={{ marginTop: 10 }}
+                label="Số lượng"
+                fullWidth
+                variant="outlined"
+                value={quantity}
+                onChange={(e) => setQuantity(e.target.value)}
+              />
+              <br />
+              <br />
+              <TextareaAutosize
+                className="form-control"
+                placeholder="Ghi chú"
+                name="note"
+                cols={100}
+                style={{ height: 150 }}
+                variant="outlined"
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+              />
+            </DialogContent>
+            <DialogActions>
+              <button onClick={handleConfirm} className="btn btn-outline-primary">
+                XÁC NHẬN
+              </button>
+            </DialogActions>
+          </Dialog>
+          <Dialog
+            open={openAddService}
+            onClose={handleCloseAddService}
+            fullWidth
+            PaperProps={{
+              style: {
+                maxWidth: "60%",
+                maxHeight: "90%",
+              },
+            }}
+          >
+            <DialogTitle>CÁC LOẠI DỊCH VỤ</DialogTitle>
+            <DialogContent>
+              <div>
+                <OutlinedInput
+                  fullWidth
+                  defaultValue=""
+                  placeholder="Tìm kiếm dịch vụ"
+                  startAdornment={
+                    <InputAdornment position="start">
+                      <SvgIcon color="action" fontSize="small">
+                        <MagnifyingGlassIcon />
+                      </SvgIcon>
+                    </InputAdornment>
+                  }
+                  sx={{ maxWidth: 500 }}
+                />
+                <Button
+                  onClick={handleOpenAddCombo}
+                  style={{ marginLeft: 310, height: 50 }}
+                  variant="outlined"
+                  color="info"
+                >
+                  COMBO DỊCH VỤ
+                </Button>
+              </div>
+              <br />
+              <Scrollbar>
+                <Box sx={{ minWidth: 800 }}>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Tên dịch vụ</TableCell>
+                        <TableCell>Loại dịch vụ</TableCell>
+                        <TableCell>Đơn vị tính</TableCell>
+                        <TableCell>Giá</TableCell>
+                        <TableCell>Thao tác</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {service.map((service) => (
+                        <TableRow key={service.id}>
+                          <TableCell>{service.serviceName}</TableCell>
+                          <TableCell>{service.serviceType.serviceTypeName}</TableCell>
+                          <TableCell>{service.unit.unitName}</TableCell>
+                          <TableCell>{formatPrice(service.price)}</TableCell>
+                          <TableCell>
+                            <Button
+                              onClick={() => handleOpenQuantityNote(service.id)}
+                              variant="outlined"
+                            >
+                              Chọn
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </Box>
+              </Scrollbar>
+            </DialogContent>
+          </Dialog>
+          {order.status === 1 || order.status === 2 || order.status === 5 ? (
+            <Button onClick={handleOpenAddService} variant="outlined">
+              THÊM DỊCH VỤ
+            </Button>
+          ) : null}
+          <Dialog
+            open={openQuantityNoteCombo}
+            onClose={handleCloseQuantityNoteCombo}
+            fullWidth
+            PaperProps={{
+              style: {
+                maxWidth: "30%",
+                maxHeight: "90%",
+              },
+            }}
+          >
+            <DialogTitle>
+              {selectedComboId !== null &&
+                combo.find((combo) => combo.id === selectedComboId)?.comboName}
+            </DialogTitle>
+            <DialogContent>
+              <TextField
+                style={{ marginTop: 10 }}
+                label="Số lượng"
+                fullWidth
+                variant="outlined"
+                value={quantityCombo}
+                onChange={(e) => setQuantityCombo(e.target.value)}
+              />
+              <br />
+              <br />
+              <TextareaAutosize
+                className="form-control"
+                placeholder="Ghi chú"
+                name="note"
+                cols={100}
+                style={{ height: 150 }}
+                variant="outlined"
+                value={noteCombo}
+                onChange={(e) => setNoteCombo(e.target.value)}
+              />
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleConfirmCombo} variant="outlined">
+                XÁC NHẬN
+              </Button>
+            </DialogActions>
+          </Dialog>
+          <Dialog
+            open={openAddCombo}
+            onClose={handleCloseAddCombo}
+            fullWidth
+            PaperProps={{
+              style: {
+                maxWidth: "60%",
+                maxHeight: "90%",
+              },
+            }}
+          >
+            <DialogTitle>COMBO DỊCH VỤ</DialogTitle>
+            <DialogContent>
+              <div>
+                <OutlinedInput
+                  fullWidth
+                  defaultValue=""
+                  placeholder="Tìm kiếm combo"
+                  startAdornment={
+                    <InputAdornment position="start">
+                      <SvgIcon color="action" fontSize="small">
+                        <MagnifyingGlassIcon />
+                      </SvgIcon>
+                    </InputAdornment>
+                  }
+                  sx={{ maxWidth: 500 }}
+                />
+              </div>
+              <br />
+              <Scrollbar>
+                <Box sx={{ minWidth: 800 }}>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Tên combo</TableCell>
+                        <TableCell>Dịch vụ trong combo</TableCell>
+                        <TableCell>Giá</TableCell>
+                        <TableCell>Mô tả</TableCell>
+                        <TableCell>Thao tác</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {combo.map((combo) => (
+                        <TableRow key={combo.id}>
+                          <TableCell>{combo.comboName}</TableCell>
+                          <TableCell>
+                            <ul>
+                              {combo.comboServiceList.map((comboService) => (
+                                <li key={comboService.id}>
+                                  <p> {comboService.service.serviceName}</p>
+                                </li>
+                              ))}
+                            </ul>
+                          </TableCell>
+                          <TableCell>{formatPrice(combo.price)}</TableCell>
+                          <TableCell>{combo.note}</TableCell>
+                          <TableCell>
+                            <Button
+                              onClick={() => handleOpenQuantityNoteCombo(combo.id)}
+                              variant="outlined"
+                            >
+                              Chọn
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </Box>
+              </Scrollbar>
+            </DialogContent>
+          </Dialog>
+        </div>
+        <TabContext value={activeTab}>
+          <Box
+            style={{
+              border: "1px solid #ccc",
+              padding: "20px",
+              boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
+              width: 1150,
+              marginLeft: 140, // Add the box shadow
+            }}
+          >
+            {/* <h3 style={{ display: "flex", justifyContent: "center" }}>DỊCH VỤ</h3>
+          <hr /> */}
+            <Scrollbar>
+              <Box sx={{ minWidth: 800 }}>
+                <Tabs value={String(activeTab)} onChange={handleChange} centered>
+                  <Tab label="DỊCH VỤ" value="1" />
+                  <Tab label="COMBO DỊCH VỤ" value="2" />
+                </Tabs>
+              </Box>
+              <TabPanel value="1">
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Tên dịch vụ</TableCell>
+                      <TableCell>Phòng</TableCell>
+                      <TableCell>Số lượng</TableCell>
+                      <TableCell>Thành tiền</TableCell>
+                      <TableCell>
+                        {order.status === 1 || order.status === 5 ? <>Thao tác</> : null}
+                      </TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {serviceUsed.length > 0 ? (
+                      serviceUsed.map((serviceUsed, index) => (
+                        <TableRow key={index}>
+                          <TableCell>{serviceUsed.service.serviceName}</TableCell>
+                          <TableCell>{serviceUsed.orderDetail.room.roomName}</TableCell>
+                          <TableCell>{serviceUsed.quantity}</TableCell>
+                          <TableCell>
+                            {formatPrice(serviceUsed.quantity * serviceUsed.service.price)}
+                          </TableCell>
+                          <TableCell>
+                            {order.status === 1 || order.status === 5 ? (
+                              <>
+                                <button
+                                  onClick={() => handleDeleteServiceUsed(serviceUsed.id)}
+                                  className="btn btn-danger m-xl-2"
+                                >
+                                  <SvgIcon fontSize="small">
+                                    <TrashIcon />
+                                  </SvgIcon>
+                                </button>
+                              </>
+                            ) : null}
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={5} align="center">
+                          <div>
+                            <span style={{ fontFamily: "monospace", fontSize: 20 }}>
+                              Không có dữ liệu.
+                            </span>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+                <h6
+                  style={{
+                    marginTop: 20,
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    color: "red",
+                  }}
+                >
+                  Tổng tiền: {formatPrice(calculateTotalAmount())}
+                </h6>
+              </TabPanel>
+              <TabPanel value="2">
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Tên combo</TableCell>
+                      <TableCell>Phòng</TableCell>
+                      <TableCell>Số lượng</TableCell>
+                      <TableCell>Thành tiền</TableCell>
+                      <TableCell>
+                        {order.status === 1 || order.status === 5 ? <>Thao tác</> : null}
+                      </TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {comboUsed.length > 0 ? (
+                      comboUsed.map((comboUsed, index) => (
+                        <TableRow key={index}>
+                          <TableCell>{comboUsed.combo.comboName}</TableCell>
+                          <TableCell>{comboUsed.orderDetail.room.roomName}</TableCell>
+                          <TableCell>{comboUsed.quantity}</TableCell>
+                          <TableCell>
+                            {formatPrice(comboUsed.quantity * comboUsed.combo.price)}
+                          </TableCell>
+                          <TableCell>
+                            {order.status === 1 || order.status === 5 ? (
+                              <>
+                                <button
+                                  onClick={() => handleDeleteComboUsed(comboUsed.id)}
+                                  className="btn btn-danger m-xl-2"
+                                >
+                                  <SvgIcon fontSize="small">
+                                    <TrashIcon />
+                                  </SvgIcon>
+                                </button>
+                              </>
+                            ) : null}
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={5} align="center">
+                          <div>
+                            <span style={{ fontFamily: "monospace", fontSize: 20 }}>
+                              Không có dữ liệu.
+                            </span>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+                <h6
+                  style={{
+                    marginTop: 20,
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    color: "red",
+                  }}
+                >
+                  Tổng tiền: {formatPrice(calculateTotalAmountCombo())}
+                </h6>
+              </TabPanel>
+            </Scrollbar>
+          </Box>
+        </TabContext>
         <div
           style={{
             marginTop: 20,

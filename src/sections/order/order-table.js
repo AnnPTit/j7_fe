@@ -29,6 +29,16 @@ export const OrderTable = (props) => {
     router.push(`/orders?id=${id}`);
   };
 
+  const getTypeOrderColor = (method) => {
+    if (method === true) {
+      return { color: "primary", text: "Tại quầy" };
+    } else if (method === false) {
+      return { color: "warning", text: "Online" };
+    } else {
+      return { color: "default", text: "Unknown" };
+    }
+  };
+
   const getStatusButtonColor = (status) => {
     switch (status) {
       case 0:
@@ -74,6 +84,8 @@ export const OrderTable = (props) => {
             <TableBody>
               {items.map((order, index) => {
                 const created = moment(order.createAt).format("DD/MM/YYYY - HH:mm:ss");
+                const typeOfOrderData = getTypeOrderColor(order.typeOfOrder);
+                const typeOfOrderText = typeOfOrderData.text;
                 const statusData = getStatusButtonColor(order.status);
                 const statusText = statusData.text;
 
@@ -90,7 +102,11 @@ export const OrderTable = (props) => {
                       </div>
                     </TableCell>
                     <TableCell>{order.orderCode}</TableCell>
-                    <TableCell>{order.typeOfOrder == 1 ? "Tại quầy" : "Online"}</TableCell>
+                    <TableCell>
+                      <SeverityPill variant="contained" color={typeOfOrderData.color}>
+                        {typeOfOrderText}
+                      </SeverityPill>
+                    </TableCell>
                     <TableCell>
                       {order.account && order.account.fullname ? order.account.fullname : "NaN"}
                     </TableCell>
@@ -98,7 +114,9 @@ export const OrderTable = (props) => {
                       {" "}
                       {order.customer && order.customer.fullname ? order.customer.fullname : "NaN"}
                     </TableCell>
-                    <TableCell style={{ color: "red" }}>{formatPrice(order.totalMoney)}</TableCell>
+                    <TableCell>
+                      <SeverityPill color="error">{formatPrice(order.totalMoney)}</SeverityPill>
+                    </TableCell>
                     <TableCell>{order.note}</TableCell>
                     <TableCell>{created}</TableCell>
                     <TableCell>

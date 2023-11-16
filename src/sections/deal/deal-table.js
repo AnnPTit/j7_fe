@@ -19,7 +19,7 @@ export const DealTable = (props) => {
     if (method === true) {
       return { color: "primary", text: "Tiền mặt" };
     } else if (method === false) {
-      return { color: "error", text: "Chuyển khoản" };
+      return { color: "warning", text: "Chuyển khoản" };
     } else {
       return { color: "default", text: "Unknown" };
     }
@@ -71,8 +71,8 @@ export const DealTable = (props) => {
                     </TableCell>
                     <TableCell>{payment.order.orderCode}</TableCell>
                     <TableCell>{payment.order.customer.fullname}</TableCell>
-                    <TableCell style={{ color: "red" }}>
-                      {formatPrice(payment.totalMoney)}
+                    <TableCell>
+                      <SeverityPill color="error">{formatPrice(payment.totalMoney)}</SeverityPill>
                     </TableCell>
                     <TableCell>{created}</TableCell>
                     <TableCell>
