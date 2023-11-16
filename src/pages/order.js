@@ -141,6 +141,7 @@ const Page = () => {
                   onChange={handleFromDateChange}
                   renderInput={(params) => (
                     <TextField
+                      style={{ marginRight: 20, marginLeft: 20 }}
                       {...params}
                       inputProps={{
                         value: formatDate(valueFrom), // Format the value here

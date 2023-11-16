@@ -117,7 +117,9 @@ export const BookRoomTable = (props) => {
                       </div>
                     </TableCell>
                     <TableCell>{order.orderCode}</TableCell>
-                    <TableCell style={{ color: "red" }}>{formatPrice(order.totalMoney)}</TableCell>
+                    <TableCell>
+                      <SeverityPill color="error">{formatPrice(order.totalMoney)}</SeverityPill>
+                    </TableCell>
                     <TableCell>{created}</TableCell>
                     <TableCell>
                       <SeverityPill variant="contained" color={statusData.color}>

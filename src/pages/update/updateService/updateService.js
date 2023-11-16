@@ -182,7 +182,6 @@ function UpdateService() {
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
         const response = await axios.get(`http://localhost:2003/api/admin/service/detail/${id}`);
         console.log("Service", response.data);
-
         if (response.data) {
           setServiceUpdate(response.data);
         }
@@ -190,10 +189,9 @@ function UpdateService() {
         console.log(error);
       }
     }
-
     // Gọi hàm fetchData ngay lập tức
     fetchData();
-  }, []);
+  }, [id]);
 
   function handleChangePrice(value) {
     setServiceUpdate((prev) => ({

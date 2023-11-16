@@ -43,7 +43,7 @@ import RadioGroup from "@mui/material/RadioGroup";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import FormControl from "@mui/material/FormControl";
 import FormLabel from "@mui/material/FormLabel";
-import { parse, format, subYears } from "date-fns";
+import { parse, format, subYears, addDays, addHours, setHours, setMinutes } from "date-fns";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { RoomSearch } from "src/sections/room/room-search";
@@ -71,6 +71,7 @@ function BookRoom() {
   const [customer, setCustomer] = useState([]);
   const [customerOrder, setCustomerOrder] = useState([]);
   const [customerOrderDetail, setCustomerOrderDetail] = useState([]);
+  const [customerInfoOrder, setCustomerInfoOrder] = useState([]);
   const [floor, setFloor] = useState([]);
   const [typeRoom, setTypeRoom] = useState([]);
   const [floorChose, setFloorChose] = useState("");
@@ -96,8 +97,10 @@ function BookRoom() {
   const [valueTo, setValueTo] = useState(null);
   const [valueFrom, setValueFrom] = useState(new Date());
   const [numberOfPeople, setNumberOfPeople] = useState(0);
-  const [valueTimeTo, setValueTimeTo] = useState(null);
-  const [valueTimeFrom, setValueTimeFrom] = useState(new Date());
+  const defaultCheckInTime = setMinutes(setHours(new Date(), 14), 0);
+  const defaultCheckOutTime = setMinutes(setHours(new Date(), 12), 0);
+  const [valueTimeFrom, setValueTimeFrom] = useState(defaultCheckInTime);
+  const [valueTimeTo, setValueTimeTo] = useState(defaultCheckOutTime);
   const [totalAmount, setTotalAmount] = useState(0);
   const [noteOrder, setNoteOrder] = useState("");
   const [noteReturnRoom, setNoteReturnRoom] = useState("");
@@ -182,6 +185,8 @@ function BookRoom() {
     dateTo: new Date(),
   });
 
+  const maxDate = addDays(valueFrom, 30); // Tính ngày tối đa là 30 ngày sau ngày bắt đầu
+
   const handleFromDateChange = (newValue) => {
     setValueFrom(newValue);
     if (newValue > valueTo) {
@@ -194,9 +199,14 @@ function BookRoom() {
   };
 
   const handleToDateChange = (newValue) => {
-    setValueTo(newValue);
-    if (newValue < valueFrom) {
-      setValueFrom(newValue);
+    // setValueTo(newValue);
+    if (newValue > valueFrom) {
+      setValueTo(newValue);
+    } else {
+      toast.warning("Ngày checkout lớn hơn ngày hiện tại!", {
+        position: toast.POSITION.BOTTOM_CENTER,
+      });
+      return;
     }
 
     const timeDiff = Math.abs(newValue - valueFrom);
@@ -214,21 +224,18 @@ function BookRoom() {
     return `${day}/${month}/${year}`;
   };
 
-  const handleDateTimeFromChange = (newTime) => {
-    setValueTimeFrom(newTime);
-    if (newTime > valueTimeTo) {
-      setValueTimeTo(newTime);
-    }
-  };
-
-  const handleDateTimeToChange = (newTime) => {
-    setValueTimeTo(newTime);
+  const formatTime = (date) => {
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
   // Kết thúc xử lí ngày đặt phòng
 
   // Format giá tiền
   const formatPrice = (price) => {
     return price.toLocaleString("vi-VN") + " VND";
+  };
+
+  const formatPriceCustomerGiven = (price) => {
+    return price.toLocaleString("vi-VN");
   };
 
   // Chuyển sang chi tiết
@@ -292,6 +299,7 @@ function BookRoom() {
   };
 
   const handleCloseAcceptOrder = () => {
+    setSelectedCustomerAccept("");
     setNoteOrder("");
     setOpenAcceptOrder(false);
   };
@@ -368,9 +376,7 @@ function BookRoom() {
 
   const handleCloseDateDialog = () => {
     setValueFrom(new Date());
-    setValueTimeFrom(new Date());
     setValueTo(null);
-    setValueTimeTo(null);
     setNumberOfDays(0);
     setNumberOfPeople();
     setOpenDateDialog(false);
@@ -554,6 +560,7 @@ function BookRoom() {
   const sumOrderDetail = totalCostForOrderDetail + vatOrderDetail;
   const moneyReturnCustomerOneRoom = givenCustomerOneRoom - sumOrderDetail;
   const vatAmount = totalAmount * 0.1;
+  const totalMoney = totalAmount + vatAmount;
   const sumAmount = totalAmount + vatAmount - order.deposit;
   const moneyReturnCustomer = givenCustomer - sumAmount;
 
@@ -703,16 +710,18 @@ function BookRoom() {
       return;
     }
 
-    // {orderDetailData.map((orderDetailData) => {
-    //   if (orderDetailData.informationCustomerList.length == 0) {
-    //     toast.error("Có phòng chưa có khách ở!", {
-    //       position: toast.POSITION.BOTTOM_CENTER,
-    //     });
-    //     return;
-    //   }
-    // })}
+    const hasOrderDetailWithoutCustomer = orderDetailData.some(
+      (orderDetail) => orderDetail.informationCustomerList.length === 0
+    );
 
-    if (infoCustomer.length == 0) {
+    if (hasOrderDetailWithoutCustomer) {
+      toast.error("Có phòng chưa có khách ở!", {
+        position: toast.POSITION.BOTTOM_CENTER,
+      });
+      return;
+    }
+
+    if (customerInfoOrder.length == 0) {
       toast.error("Phòng chưa có khách ở!", {
         position: toast.POSITION.BOTTOM_CENTER,
       });
@@ -730,7 +739,7 @@ function BookRoom() {
 
       await axios.put(`http://localhost:2003/api/order/update-accept/${id}`, {
         customerId: selectedCustomerAccept,
-        totalMoney: sumAmount,
+        totalMoney: totalMoney,
         vat: vatAmount,
         note: noteOrder,
       });
@@ -863,7 +872,7 @@ function BookRoom() {
     toast.success("Lưu thành công!", {
       position: toast.POSITION.BOTTOM_CENTER,
     });
-    router.push(`/room-service?id=${id}`);
+    // router.push(`/room-service?id=${id}`);
     console.log(response.data);
   };
 
@@ -966,6 +975,11 @@ function BookRoom() {
 
     if (!quantity) {
       toast.error("Vui lòng không để trống số lượng!", {
+        position: toast.POSITION.BOTTOM_CENTER,
+      });
+      return;
+    } else if (quantity > 10) {
+      toast.error("Vui lòng chỉ thêm tối đa 10.", {
         position: toast.POSITION.BOTTOM_CENTER,
       });
       return;
@@ -1131,6 +1145,14 @@ function BookRoom() {
         `http://localhost:2003/api/information-customer/load/${selectedOrderDetails}`
       );
       setCustomerInfo(responseInfo.data);
+      const responseInfoCustomer = await axios.get(
+        "http://localhost:2003/api/information-customer/load"
+      );
+      setInfoCustomer(responseInfoCustomer.data);
+      const responseInfoCustomerOrder = await axios.get(
+        `http://localhost:2003/api/information-customer/load/order/${id}`
+      );
+      setCustomerInfoOrder(responseInfoCustomerOrder.data);
       const responseCustomerOrder = await axios.get(
         `http://localhost:2003/api/admin/customer/getAllByOrderId/${id}`
       );
@@ -1246,6 +1268,10 @@ function BookRoom() {
       setCustomerInfo(response.data);
       const responseInfo = await axios.get("http://localhost:2003/api/information-customer/load");
       setInfoCustomer(responseInfo.data);
+      const responseInfoCustomerOrder = await axios.get(
+        `http://localhost:2003/api/information-customer/load/order/${id}`
+      );
+      setCustomerInfoOrder(responseInfoCustomerOrder.data);
       const responseCustomer = await axios.get(
         `http://localhost:2003/api/admin/customer/getAllByOrderId/${id}`
       );
@@ -1451,6 +1477,13 @@ function BookRoom() {
         const response10 = await axios.get(
           `http://localhost:2003/api/admin/customer/getAllByOrderDetailId/${selectedOrderDetails}`
         );
+        const response11 = await axios.get(
+          `http://localhost:2003/api/information-customer/load/order/${id}`
+        );
+        const responseOrderDetail = await axios.get(
+          `http://localhost:2003/api/order-detail/loadOrderDetailByOrderId/${id}`
+        );
+        setOrderDetailData(responseOrderDetail.data);
         setFloor(response.data);
         setTypeRoom(response2.data);
         setServiceType(response3.data);
@@ -1460,13 +1493,14 @@ function BookRoom() {
         setComboUsedTotalPrice(response7.data);
         setInfoCustomer(response9.data);
         setCustomerOrderDetail(response10.data);
+        setCustomerInfoOrder(response11.data);
       } catch (error) {
         console.log(error);
       }
     };
     // Gọi hàm fetchData ngay lập tức
     fetchData();
-  }, [searchCustomer]);
+  }, [searchCustomer, selectedOrderDetails, id]);
 
   // Load hóa đơn chi tiết theo id hóa đơn
   useEffect(() => {
@@ -1597,7 +1631,7 @@ function BookRoom() {
           "http://localhost:2003/api/admin/room/loadAndSearchBookRoom"
         );
         setRooms(responseRoom.data);
-        router.push(`/room-service?id=${id}`);
+        // router.push(`/room-service?id=${id}`);
         toast.success("Thêm phòng thành công!", {
           position: toast.POSITION.BOTTOM_CENTER,
         });
@@ -1773,6 +1807,7 @@ function BookRoom() {
                 onChange={handleDateFromChange}
                 renderInput={(params) => (
                   <TextField
+                    style={{ marginRight: 20 }}
                     {...params}
                     inputProps={{
                       value: formatDate(valueDateFrom),
@@ -1912,8 +1947,8 @@ function BookRoom() {
                 style={{ marginRight: 25 }}
                 {...params}
                 inputProps={{
-                  value: formatDate(valueFrom), // Format the value here
-                  readOnly: true, // Prevent manual input
+                  value: formatDate(valueFrom),
+                  readOnly: true,
                 }}
               />
             )}
@@ -1922,12 +1957,11 @@ function BookRoom() {
             disabled
             label="Giờ check-in"
             value={valueTimeFrom}
-            onChange={handleDateTimeFromChange}
             renderInput={(params) => (
               <TextField
                 {...params}
                 inputProps={{
-                  value: valueTimeFrom ? valueTimeFrom.toLocaleTimeString() : "",
+                  value: formatTime(valueTimeFrom),
                   readOnly: true,
                 }}
               />
@@ -1939,6 +1973,7 @@ function BookRoom() {
             disablePast
             label="Đến ngày"
             minDate={dataForm.dateFrom}
+            maxDate={maxDate}
             value={valueTo}
             onChange={handleToDateChange}
             renderInput={(params) => (
@@ -1946,21 +1981,21 @@ function BookRoom() {
                 style={{ marginRight: 25 }}
                 {...params}
                 inputProps={{
-                  value: formatDate(valueTo), // Format the value here
-                  readOnly: true, // Prevent manual input
+                  value: formatDate(valueTo),
+                  readOnly: true,
                 }}
               />
             )}
           />
           <TimePicker
+            disabled
             label="Giờ check-out"
             value={valueTimeTo}
-            onChange={handleDateTimeToChange}
             renderInput={(params) => (
               <TextField
                 {...params}
                 inputProps={{
-                  value: valueTimeTo ? valueTimeTo.toLocaleTimeString() : "",
+                  value: formatTime(valueTimeTo),
                   readOnly: true,
                 }}
               />
@@ -2286,399 +2321,7 @@ function BookRoom() {
         </DialogActions>
         <br />
       </Dialog>
-      <div
-        style={{
-          marginBottom: 20,
-          marginTop: 20,
-          height: 50,
-          display: "flex",
-          justifyContent: "flex-end",
-        }}
-      >
-        <Dialog
-          open={openQuantityNote}
-          onClose={handleCloseQuantityNote}
-          fullWidth
-          PaperProps={{
-            style: {
-              maxWidth: "30%",
-              maxHeight: "90%",
-            },
-          }}
-        >
-          <DialogTitle>
-            {selectedServiceId !== null &&
-              service.find((service) => service.id === selectedServiceId)?.serviceName}
-          </DialogTitle>
-          <DialogContent>
-            <TextField
-              style={{ marginTop: 10 }}
-              label="Số lượng"
-              fullWidth
-              variant="outlined"
-              value={quantity}
-              onChange={(e) => setQuantity(e.target.value)}
-            />
-            <br />
-            <br />
-            <TextareaAutosize
-              className="form-control"
-              placeholder="Ghi chú"
-              name="note"
-              cols={100}
-              style={{ height: 150 }}
-              variant="outlined"
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-            />
-          </DialogContent>
-          <DialogActions>
-            <button onClick={handleConfirm} className="btn btn-outline-primary">
-              XÁC NHẬN
-            </button>
-          </DialogActions>
-        </Dialog>
-        <Dialog
-          open={openAddService}
-          onClose={handleCloseAddService}
-          fullWidth
-          PaperProps={{
-            style: {
-              maxWidth: "60%",
-              maxHeight: "90%",
-            },
-          }}
-        >
-          <DialogTitle>CÁC LOẠI DỊCH VỤ</DialogTitle>
-          <DialogContent>
-            <div>
-              <OutlinedInput
-                fullWidth
-                defaultValue=""
-                placeholder="Tìm kiếm dịch vụ"
-                startAdornment={
-                  <InputAdornment position="start">
-                    <SvgIcon color="action" fontSize="small">
-                      <MagnifyingGlassIcon />
-                    </SvgIcon>
-                  </InputAdornment>
-                }
-                sx={{ maxWidth: 500 }}
-              />
-              <Button
-                onClick={handleOpenAddCombo}
-                style={{ marginLeft: 310, height: 50 }}
-                variant="outlined"
-                color="info"
-              >
-                COMBO DỊCH VỤ
-              </Button>
-            </div>
-            <br />
-            <Scrollbar>
-              <Box sx={{ minWidth: 800 }}>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Tên dịch vụ</TableCell>
-                      <TableCell>Loại dịch vụ</TableCell>
-                      <TableCell>Đơn vị tính</TableCell>
-                      <TableCell>Giá</TableCell>
-                      <TableCell>Thao tác</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {service.map((service) => (
-                      <TableRow key={service.id}>
-                        <TableCell>{service.serviceName}</TableCell>
-                        <TableCell>{service.serviceType.serviceTypeName}</TableCell>
-                        <TableCell>{service.unit.unitName}</TableCell>
-                        <TableCell>{formatPrice(service.price)}</TableCell>
-                        <TableCell>
-                          <Button
-                            onClick={() => handleOpenQuantityNote(service.id)}
-                            variant="outlined"
-                          >
-                            Chọn
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </Box>
-            </Scrollbar>
-          </DialogContent>
-        </Dialog>
-        {order.status === 1 || order.status === 2 || order.status === 5 ? (
-          <Button onClick={handleOpenAddService} variant="outlined">
-            THÊM DỊCH VỤ
-          </Button>
-        ) : null}
-        <Dialog
-          open={openQuantityNoteCombo}
-          onClose={handleCloseQuantityNoteCombo}
-          fullWidth
-          PaperProps={{
-            style: {
-              maxWidth: "30%",
-              maxHeight: "90%",
-            },
-          }}
-        >
-          <DialogTitle>
-            {selectedComboId !== null &&
-              combo.find((combo) => combo.id === selectedComboId)?.comboName}
-          </DialogTitle>
-          <DialogContent>
-            <TextField
-              style={{ marginTop: 10 }}
-              label="Số lượng"
-              fullWidth
-              variant="outlined"
-              value={quantityCombo}
-              onChange={(e) => setQuantityCombo(e.target.value)}
-            />
-            <br />
-            <br />
-            <TextareaAutosize
-              className="form-control"
-              placeholder="Ghi chú"
-              name="note"
-              cols={100}
-              style={{ height: 150 }}
-              variant="outlined"
-              value={noteCombo}
-              onChange={(e) => setNoteCombo(e.target.value)}
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleConfirmCombo} variant="outlined">
-              XÁC NHẬN
-            </Button>
-          </DialogActions>
-        </Dialog>
-        <Dialog
-          open={openAddCombo}
-          onClose={handleCloseAddCombo}
-          fullWidth
-          PaperProps={{
-            style: {
-              maxWidth: "60%",
-              maxHeight: "90%",
-            },
-          }}
-        >
-          <DialogTitle>COMBO DỊCH VỤ</DialogTitle>
-          <DialogContent>
-            <div>
-              <OutlinedInput
-                fullWidth
-                defaultValue=""
-                placeholder="Tìm kiếm combo"
-                startAdornment={
-                  <InputAdornment position="start">
-                    <SvgIcon color="action" fontSize="small">
-                      <MagnifyingGlassIcon />
-                    </SvgIcon>
-                  </InputAdornment>
-                }
-                sx={{ maxWidth: 500 }}
-              />
-            </div>
-            <br />
-            <Scrollbar>
-              <Box sx={{ minWidth: 800 }}>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Tên combo</TableCell>
-                      <TableCell>Dịch vụ trong combo</TableCell>
-                      <TableCell>Giá</TableCell>
-                      <TableCell>Mô tả</TableCell>
-                      <TableCell>Thao tác</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {combo.map((combo) => (
-                      <TableRow key={combo.id}>
-                        <TableCell>{combo.comboName}</TableCell>
-                        <TableCell>
-                          <ul>
-                            {combo.comboServiceList.map((comboService) => (
-                              <li key={comboService.id}>
-                                <p> {comboService.service.serviceName}</p>
-                              </li>
-                            ))}
-                          </ul>
-                        </TableCell>
-                        <TableCell>{formatPrice(combo.price)}</TableCell>
-                        <TableCell>{combo.note}</TableCell>
-                        <TableCell>
-                          <Button
-                            onClick={() => handleOpenQuantityNoteCombo(combo.id)}
-                            variant="outlined"
-                          >
-                            Chọn
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </Box>
-            </Scrollbar>
-          </DialogContent>
-        </Dialog>
-      </div>
-      <TabContext value={activeTab}>
-        <Box
-          style={{
-            border: "1px solid #ccc",
-            padding: "20px",
-            boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
-            width: 1150,
-            marginLeft: 140, // Add the box shadow
-          }}
-        >
-          {/* <h3 style={{ display: "flex", justifyContent: "center" }}>DỊCH VỤ</h3>
-          <hr /> */}
-          <Scrollbar>
-            <Box sx={{ minWidth: 800 }}>
-              <Tabs value={String(activeTab)} onChange={handleChange} centered>
-                <Tab label="DỊCH VỤ" value="1" />
-                <Tab label="COMBO DỊCH VỤ" value="2" />
-              </Tabs>
-            </Box>
-            <TabPanel value="1">
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Tên dịch vụ</TableCell>
-                    <TableCell>Phòng</TableCell>
-                    <TableCell>Số lượng</TableCell>
-                    <TableCell>Thành tiền</TableCell>
-                    <TableCell>
-                      {order.status === 1 || order.status === 5 ? <>Thao tác</> : null}
-                    </TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {serviceUsed.length > 0 ? (
-                    serviceUsed.map((serviceUsed, index) => (
-                      <TableRow key={index}>
-                        <TableCell>{serviceUsed.service.serviceName}</TableCell>
-                        <TableCell>{serviceUsed.orderDetail.room.roomName}</TableCell>
-                        <TableCell>{serviceUsed.quantity}</TableCell>
-                        <TableCell>
-                          {formatPrice(serviceUsed.quantity * serviceUsed.service.price)}
-                        </TableCell>
-                        <TableCell>
-                          {order.status === 1 || order.status === 5 ? (
-                            <>
-                              <button
-                                onClick={() => handleDeleteServiceUsed(serviceUsed.id)}
-                                className="btn btn-danger m-xl-2"
-                              >
-                                <SvgIcon fontSize="small">
-                                  <TrashIcon />
-                                </SvgIcon>
-                              </button>
-                            </>
-                          ) : null}
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={5} align="center">
-                        <div>
-                          <span style={{ fontFamily: "monospace", fontSize: 20 }}>
-                            Không có dữ liệu.
-                          </span>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-              <h6
-                style={{
-                  marginTop: 20,
-                  display: "flex",
-                  justifyContent: "flex-end",
-                  color: "red",
-                }}
-              >
-                Tổng tiền: {formatPrice(calculateTotalAmount())}
-              </h6>
-            </TabPanel>
-            <TabPanel value="2">
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Tên combo</TableCell>
-                    <TableCell>Phòng</TableCell>
-                    <TableCell>Số lượng</TableCell>
-                    <TableCell>Thành tiền</TableCell>
-                    <TableCell>
-                      {order.status === 1 || order.status === 5 ? <>Thao tác</> : null}
-                    </TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {comboUsed.length > 0 ? (
-                    comboUsed.map((comboUsed, index) => (
-                      <TableRow key={index}>
-                        <TableCell>{comboUsed.combo.comboName}</TableCell>
-                        <TableCell>{comboUsed.orderDetail.room.roomName}</TableCell>
-                        <TableCell>{comboUsed.quantity}</TableCell>
-                        <TableCell>
-                          {formatPrice(comboUsed.quantity * comboUsed.combo.price)}
-                        </TableCell>
-                        <TableCell>
-                          {order.status === 1 || order.status === 5 ? (
-                            <>
-                              <button
-                                onClick={() => handleDeleteComboUsed(comboUsed.id)}
-                                className="btn btn-danger m-xl-2"
-                              >
-                                <SvgIcon fontSize="small">
-                                  <TrashIcon />
-                                </SvgIcon>
-                              </button>
-                            </>
-                          ) : null}
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={5} align="center">
-                        <div>
-                          <span style={{ fontFamily: "monospace", fontSize: 20 }}>
-                            Không có dữ liệu.
-                          </span>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-              <h6
-                style={{
-                  marginTop: 20,
-                  display: "flex",
-                  justifyContent: "flex-end",
-                  color: "red",
-                }}
-              >
-                Tổng tiền: {formatPrice(calculateTotalAmountCombo())}
-              </h6>
-            </TabPanel>
-          </Scrollbar>
-        </Box>
-      </TabContext>
+
       <Box
         style={{
           border: "1px solid #ccc",
@@ -2972,6 +2615,399 @@ function BookRoom() {
         </Dialog>
         <div
           style={{
+            marginBottom: 20,
+            marginTop: 20,
+            height: 50,
+            display: "flex",
+            justifyContent: "flex-end",
+          }}
+        >
+          <Dialog
+            open={openQuantityNote}
+            onClose={handleCloseQuantityNote}
+            fullWidth
+            PaperProps={{
+              style: {
+                maxWidth: "30%",
+                maxHeight: "90%",
+              },
+            }}
+          >
+            <DialogTitle>
+              {selectedServiceId !== null &&
+                service.find((service) => service.id === selectedServiceId)?.serviceName}
+            </DialogTitle>
+            <DialogContent>
+              <TextField
+                style={{ marginTop: 10 }}
+                label="Số lượng"
+                fullWidth
+                variant="outlined"
+                value={quantity}
+                onChange={(e) => setQuantity(e.target.value)}
+              />
+              <br />
+              <br />
+              <TextareaAutosize
+                className="form-control"
+                placeholder="Ghi chú"
+                name="note"
+                cols={100}
+                style={{ height: 150 }}
+                variant="outlined"
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+              />
+            </DialogContent>
+            <DialogActions>
+              <button onClick={handleConfirm} className="btn btn-outline-primary">
+                XÁC NHẬN
+              </button>
+            </DialogActions>
+          </Dialog>
+          <Dialog
+            open={openAddService}
+            onClose={handleCloseAddService}
+            fullWidth
+            PaperProps={{
+              style: {
+                maxWidth: "60%",
+                maxHeight: "90%",
+              },
+            }}
+          >
+            <DialogTitle>CÁC LOẠI DỊCH VỤ</DialogTitle>
+            <DialogContent>
+              <div>
+                <OutlinedInput
+                  fullWidth
+                  defaultValue=""
+                  placeholder="Tìm kiếm dịch vụ"
+                  startAdornment={
+                    <InputAdornment position="start">
+                      <SvgIcon color="action" fontSize="small">
+                        <MagnifyingGlassIcon />
+                      </SvgIcon>
+                    </InputAdornment>
+                  }
+                  sx={{ maxWidth: 500 }}
+                />
+                <Button
+                  onClick={handleOpenAddCombo}
+                  style={{ marginLeft: 310, height: 50 }}
+                  variant="outlined"
+                  color="info"
+                >
+                  COMBO DỊCH VỤ
+                </Button>
+              </div>
+              <br />
+              <Scrollbar>
+                <Box sx={{ minWidth: 800 }}>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Tên dịch vụ</TableCell>
+                        <TableCell>Loại dịch vụ</TableCell>
+                        <TableCell>Đơn vị tính</TableCell>
+                        <TableCell>Giá</TableCell>
+                        <TableCell>Thao tác</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {service.map((service) => (
+                        <TableRow key={service.id}>
+                          <TableCell>{service.serviceName}</TableCell>
+                          <TableCell>{service.serviceType.serviceTypeName}</TableCell>
+                          <TableCell>{service.unit.unitName}</TableCell>
+                          <TableCell>{formatPrice(service.price)}</TableCell>
+                          <TableCell>
+                            <Button
+                              onClick={() => handleOpenQuantityNote(service.id)}
+                              variant="outlined"
+                            >
+                              Chọn
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </Box>
+              </Scrollbar>
+            </DialogContent>
+          </Dialog>
+          {order.status === 1 || order.status === 2 || order.status === 5 ? (
+            <Button onClick={handleOpenAddService} variant="outlined">
+              THÊM DỊCH VỤ
+            </Button>
+          ) : null}
+          <Dialog
+            open={openQuantityNoteCombo}
+            onClose={handleCloseQuantityNoteCombo}
+            fullWidth
+            PaperProps={{
+              style: {
+                maxWidth: "30%",
+                maxHeight: "90%",
+              },
+            }}
+          >
+            <DialogTitle>
+              {selectedComboId !== null &&
+                combo.find((combo) => combo.id === selectedComboId)?.comboName}
+            </DialogTitle>
+            <DialogContent>
+              <TextField
+                style={{ marginTop: 10 }}
+                label="Số lượng"
+                fullWidth
+                variant="outlined"
+                value={quantityCombo}
+                onChange={(e) => setQuantityCombo(e.target.value)}
+              />
+              <br />
+              <br />
+              <TextareaAutosize
+                className="form-control"
+                placeholder="Ghi chú"
+                name="note"
+                cols={100}
+                style={{ height: 150 }}
+                variant="outlined"
+                value={noteCombo}
+                onChange={(e) => setNoteCombo(e.target.value)}
+              />
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleConfirmCombo} variant="outlined">
+                XÁC NHẬN
+              </Button>
+            </DialogActions>
+          </Dialog>
+          <Dialog
+            open={openAddCombo}
+            onClose={handleCloseAddCombo}
+            fullWidth
+            PaperProps={{
+              style: {
+                maxWidth: "60%",
+                maxHeight: "90%",
+              },
+            }}
+          >
+            <DialogTitle>COMBO DỊCH VỤ</DialogTitle>
+            <DialogContent>
+              <div>
+                <OutlinedInput
+                  fullWidth
+                  defaultValue=""
+                  placeholder="Tìm kiếm combo"
+                  startAdornment={
+                    <InputAdornment position="start">
+                      <SvgIcon color="action" fontSize="small">
+                        <MagnifyingGlassIcon />
+                      </SvgIcon>
+                    </InputAdornment>
+                  }
+                  sx={{ maxWidth: 500 }}
+                />
+              </div>
+              <br />
+              <Scrollbar>
+                <Box sx={{ minWidth: 800 }}>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Tên combo</TableCell>
+                        <TableCell>Dịch vụ trong combo</TableCell>
+                        <TableCell>Giá</TableCell>
+                        <TableCell>Mô tả</TableCell>
+                        <TableCell>Thao tác</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {combo.map((combo) => (
+                        <TableRow key={combo.id}>
+                          <TableCell>{combo.comboName}</TableCell>
+                          <TableCell>
+                            <ul>
+                              {combo.comboServiceList.map((comboService) => (
+                                <li key={comboService.id}>
+                                  <p> {comboService.service.serviceName}</p>
+                                </li>
+                              ))}
+                            </ul>
+                          </TableCell>
+                          <TableCell>{formatPrice(combo.price)}</TableCell>
+                          <TableCell>{combo.note}</TableCell>
+                          <TableCell>
+                            <Button
+                              onClick={() => handleOpenQuantityNoteCombo(combo.id)}
+                              variant="outlined"
+                            >
+                              Chọn
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </Box>
+              </Scrollbar>
+            </DialogContent>
+          </Dialog>
+        </div>
+        <TabContext value={activeTab}>
+          <Box
+            style={{
+              border: "1px solid #ccc",
+              padding: "20px",
+              boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
+              width: 1150,
+              marginLeft: 140, // Add the box shadow
+            }}
+          >
+            {/* <h3 style={{ display: "flex", justifyContent: "center" }}>DỊCH VỤ</h3>
+          <hr /> */}
+            <Scrollbar>
+              <Box sx={{ minWidth: 800 }}>
+                <Tabs value={String(activeTab)} onChange={handleChange} centered>
+                  <Tab label="DỊCH VỤ" value="1" />
+                  <Tab label="COMBO DỊCH VỤ" value="2" />
+                </Tabs>
+              </Box>
+              <TabPanel value="1">
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Tên dịch vụ</TableCell>
+                      <TableCell>Phòng</TableCell>
+                      <TableCell>Số lượng</TableCell>
+                      <TableCell>Thành tiền</TableCell>
+                      <TableCell>
+                        {order.status === 1 || order.status === 5 ? <>Thao tác</> : null}
+                      </TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {serviceUsed.length > 0 ? (
+                      serviceUsed.map((serviceUsed, index) => (
+                        <TableRow key={index}>
+                          <TableCell>{serviceUsed.service.serviceName}</TableCell>
+                          <TableCell>{serviceUsed.orderDetail.room.roomName}</TableCell>
+                          <TableCell>{serviceUsed.quantity}</TableCell>
+                          <TableCell>
+                            {formatPrice(serviceUsed.quantity * serviceUsed.service.price)}
+                          </TableCell>
+                          <TableCell>
+                            {order.status === 1 || order.status === 5 ? (
+                              <>
+                                <button
+                                  onClick={() => handleDeleteServiceUsed(serviceUsed.id)}
+                                  className="btn btn-danger m-xl-2"
+                                >
+                                  <SvgIcon fontSize="small">
+                                    <TrashIcon />
+                                  </SvgIcon>
+                                </button>
+                              </>
+                            ) : null}
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={5} align="center">
+                          <div>
+                            <span style={{ fontFamily: "monospace", fontSize: 20 }}>
+                              Không có dữ liệu.
+                            </span>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+                <h6
+                  style={{
+                    marginTop: 20,
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    color: "red",
+                  }}
+                >
+                  Tổng tiền: {formatPrice(calculateTotalAmount())}
+                </h6>
+              </TabPanel>
+              <TabPanel value="2">
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Tên combo</TableCell>
+                      <TableCell>Phòng</TableCell>
+                      <TableCell>Số lượng</TableCell>
+                      <TableCell>Thành tiền</TableCell>
+                      <TableCell>
+                        {order.status === 1 || order.status === 5 ? <>Thao tác</> : null}
+                      </TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {comboUsed.length > 0 ? (
+                      comboUsed.map((comboUsed, index) => (
+                        <TableRow key={index}>
+                          <TableCell>{comboUsed.combo.comboName}</TableCell>
+                          <TableCell>{comboUsed.orderDetail.room.roomName}</TableCell>
+                          <TableCell>{comboUsed.quantity}</TableCell>
+                          <TableCell>
+                            {formatPrice(comboUsed.quantity * comboUsed.combo.price)}
+                          </TableCell>
+                          <TableCell>
+                            {order.status === 1 || order.status === 5 ? (
+                              <>
+                                <button
+                                  onClick={() => handleDeleteComboUsed(comboUsed.id)}
+                                  className="btn btn-danger m-xl-2"
+                                >
+                                  <SvgIcon fontSize="small">
+                                    <TrashIcon />
+                                  </SvgIcon>
+                                </button>
+                              </>
+                            ) : null}
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={5} align="center">
+                          <div>
+                            <span style={{ fontFamily: "monospace", fontSize: 20 }}>
+                              Không có dữ liệu.
+                            </span>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+                <h6
+                  style={{
+                    marginTop: 20,
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    color: "red",
+                  }}
+                >
+                  Tổng tiền: {formatPrice(calculateTotalAmountCombo())}
+                </h6>
+              </TabPanel>
+            </Scrollbar>
+          </Box>
+        </TabContext>
+        <div
+          style={{
             marginTop: 20,
             marginBottom: 30,
             display: "flex",
@@ -3042,7 +3078,7 @@ function BookRoom() {
                 <TextField
                   style={{ width: 520, marginRight: 30 }}
                   label="Số tiền"
-                  value={totalAmount}
+                  value={totalAmount ? formatPrice(totalAmount) : "0 VND"}
                   fullWidth
                   variant="outlined"
                 />
@@ -3051,7 +3087,7 @@ function BookRoom() {
                 <TextField
                   style={{ width: 550 }}
                   label="VAT"
-                  value={vatAmount}
+                  value={vatAmount ? formatPrice(vatAmount) : "0 VND"}
                   fullWidth
                   variant="outlined"
                 />
@@ -3061,14 +3097,14 @@ function BookRoom() {
                 <TextField
                   style={{ width: 520, marginRight: 30 }}
                   label="Tổng tiền"
-                  value={sumAmount}
+                  value={sumAmount ? formatPrice(sumAmount) : "0 VND"}
                   fullWidth
                   variant="outlined"
                 />
                 <TextField
                   style={{ width: 550 }}
                   label="Tiền cọc"
-                  value={order.deposit}
+                  value={order.deposit ? formatPrice(order.deposit) : "0 VND"}
                   fullWidth
                   variant="outlined"
                 />
@@ -3078,7 +3114,7 @@ function BookRoom() {
                 <TextField
                   style={{ width: 520, marginRight: 30 }}
                   label="Khách hàng trả"
-                  value={givenCustomer}
+                  value={givenCustomer ? formatPriceCustomerGiven(givenCustomer) : ""}
                   onChange={(e) => setGivenCustomer(e.target.value)}
                   fullWidth
                   variant="outlined"
@@ -3086,16 +3122,15 @@ function BookRoom() {
                 <TextField
                   style={{ width: 550 }}
                   label="Phụ thu"
-                  value={order.surcharge}
+                  value={order.surcharge ? formatPrice(order.surcharge) : "0 VND"}
                   fullWidth
                   variant="outlined"
                 />
               </div>
               <br />
               <TextField
-                disabled
                 label="Tiền trả lại"
-                value={givenCustomer - sumAmount}
+                value={givenCustomer - sumAmount ? formatPrice(givenCustomer - sumAmount) : "0 VND"}
                 fullWidth
                 variant="outlined"
               />

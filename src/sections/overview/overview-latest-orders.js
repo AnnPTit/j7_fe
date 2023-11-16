@@ -38,6 +38,10 @@ const getStatusButtonColor = (status) => {
       return { color: "secondary", text: "Xác nhận thông tin" };
     case 5:
       return { color: "info", text: "Thanh toán tiền cọc" };
+    case 6:
+      return { color: "error", text: "Từ chối" };
+    case 7:
+      return { color: "error", text: "Hết hạn" };
     default:
       return { color: "default", text: "Unknown" };
   }
@@ -54,10 +58,10 @@ export const OverviewLatestOrders = (props) => {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>Order</TableCell>
-                <TableCell>Customer</TableCell>
-                <TableCell sortDirection="desc">Date</TableCell>
-                <TableCell>Status</TableCell>
+                <TableCell>Hóa đơn</TableCell>
+                <TableCell>Khách hàng</TableCell>
+                <TableCell sortDirection="desc">Ngày tạo</TableCell>
+                <TableCell>Trạng thái</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>

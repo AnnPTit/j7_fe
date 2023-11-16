@@ -53,7 +53,7 @@ const Page = () => {
 
   const item = {
     title: "Thêm mới",
-    path: "input/inputRoom/inputRoom",
+    path: "room/add",
     icon: (
       <SvgIcon fontSize="small">
         <PlusIcon />

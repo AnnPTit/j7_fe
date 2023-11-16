@@ -26,12 +26,13 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { Drawer } from "antd";
 import { DatePicker, TimePicker } from "@mui/x-date-pickers";
-import { parse, format, subYears } from "date-fns";
+import { parse, format, subYears, differenceInYears } from "date-fns";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import FormControl from "@mui/material/FormControl";
 import FormLabel from "@mui/material/FormLabel";
 import Radio from "@mui/material/Radio";
 import RadioGroup from "@mui/material/RadioGroup";
+import Swal from "sweetalert2";
 const numeral = require("numeral");
 
 export const BookRoomTable = (props) => {
@@ -69,7 +70,6 @@ export const BookRoomTable = (props) => {
         `http://localhost:2003/api/order/detail-info/${orderId}`
       );
       setOrder(responseOrder.data);
-      console.log("222222222", responseOrder.data);
       setGender(responseOrder.data.customer.gender);
       const formattedDate = formatDate(responseOrder.data.customer.birthday);
       setBirthday(formattedDate);
@@ -106,6 +106,12 @@ export const BookRoomTable = (props) => {
     return price.toLocaleString({ style: "currency", currency: "VND" }).replace(/\D00(?=\D*$)/, "");
   };
 
+  const formatPhoneNumber = (phoneNumber) => {
+    const digits = phoneNumber.replace(/\D/g, '');
+    const formattedNumber = digits.replace(/(\d{4})(\d{3})(\d{3})/, '$1-$2-$3');
+    return formattedNumber;
+  };
+
   const getStatusButtonColor = (status) => {
     switch (status) {
       case 0:
@@ -122,6 +128,8 @@ export const BookRoomTable = (props) => {
         return { color: "info", text: "Thanh toán tiền cọc" };
       case 6:
         return { color: "error", text: "Từ chối" };
+      case 7:
+        return { color: "error", text: "Hết hạn" };
       default:
         return { color: "default", text: "Unknown" };
     }
@@ -130,13 +138,15 @@ export const BookRoomTable = (props) => {
   // Hủy hóa đơn
   const handleCancelOrder = async (id) => {
     try {
-      // Make an API call to update the order status to "Đã xác nhận" (status: 2)
-      await axios.put(`http://localhost:2003/api/order/delete/${id}`);
-      setOrder({ ...order, status: 0 });
-      toast.success("Hủy thành công!", {
-        position: toast.POSITION.TOP_RIGHT,
-      });
-      // router.push(`/orders?id=${id}`);
+      console.log(id);
+      const response = await axios.post(`http://localhost:2003/api/home/order/cancel/${orderId}/6`);
+      if (response.data.status === 1) {
+        toast.success(response.data.message);
+      }
+      if (response.data.status === 0) {
+        toast.error(response.data.message);
+      }
+      window.location.href = `/book-room-online`;
     } catch (error) {
       console.log(error);
     }
@@ -174,6 +184,16 @@ export const BookRoomTable = (props) => {
         position: toast.POSITION.TOP_RIGHT,
       });
       return;
+    } else {
+      const currentDate = new Date();
+      const birthday2 = parse(birthday, "dd/MM/yyyy", new Date());
+      const age = differenceInYears(currentDate, birthday2);
+      if (age < 18) {
+        toast.error("Bạn chưa đủ 18 tuổi !", {
+          position: toast.POSITION.TOP_RIGHT,
+        });
+        return;
+      }
     }
     if (gender === null) {
       toast.error("Giới tính không được để trống !", {
@@ -210,17 +230,24 @@ export const BookRoomTable = (props) => {
         return;
       }
       axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
-      await axios.post(`http://localhost:2003/api/order/confirm-order`, payload);
-      toast.success("Xác nhận thành công !", {
-        position: toast.POSITION.TOP_RIGHT,
-      });
-      window.location.href = "/book-room-online";
-      // router.push(`/orders?id=${id}`);
+      const response = await axios.post(`http://localhost:2003/api/order/confirm-order`, payload);
+      if (response.data.message !== null) {
+        toast.error(response.data.message, {
+          position: toast.POSITION.TOP_RIGHT,
+        });
+      } else {
+        toast.success("Xác nhận thành công !", {
+          position: toast.POSITION.TOP_RIGHT,
+        });
+        window.location.href = "/book-room-online";
+      }
     } catch (error) {
       console.log(error);
-      toast.error("Căn cước công dân không được trùng nhau !");
+      toast.error("Có lỗi xảy ra !");
     }
   };
+
+  const refuseOrder = async () => {};
 
   const handleRedirect = () => {
     router.push(`/room-service?id=${orderId}`);
@@ -237,10 +264,55 @@ export const BookRoomTable = (props) => {
                 value={numeral(order.deposit).format("0,0 ") + "  đ"}
                 label="Tiền cọc"
               />
-              <Button style={{ marginRight: 20 }} variant="outlined" color="error">
+              <Button
+                style={{ marginRight: 20 }}
+                variant="outlined"
+                color="error"
+                // onClick={() => handleCancelOrder(orderId)}
+                onClick={() => {
+                  Swal.fire({
+                    title: "Bạn có chắc chắn muốn hủy ? ",
+                    text: "",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#3085d6",
+                    cancelButtonColor: "#d33",
+                    confirmButtonText: "Yes, Add it!",
+                  }).then(async (result) => {
+                    if (result.isConfirmed) {
+                      const isSubmitSuccess = await handleCancelOrder(orderId);
+                      if (isSubmitSuccess) {
+                        Swal.fire("Thêm thành công !", "success");
+                        toast.success("Thêm Thành Công !");
+                      }
+                    }
+                  });
+                }}
+              >
                 Hủy xác nhận
               </Button>
-              <Button variant="outlined" onClick={handleSubmit}>
+              <Button variant="outlined"
+              //  onClick={handleSubmit}
+              onClick={() => {
+                Swal.fire({
+                  title: "Bạn có chắc chắn xác nhận ? ",
+                  text: "",
+                  icon: "warning",
+                  showCancelButton: true,
+                  confirmButtonColor: "#3085d6",
+                  cancelButtonColor: "#d33",
+                  confirmButtonText: "Yes, Add it!",
+                }).then(async (result) => {
+                  if (result.isConfirmed) {
+                    const isSubmitSuccess = await handleSubmit();
+                    if (isSubmitSuccess) {
+                      Swal.fire("Thêm thành công !", "success");
+                      toast.success("Thêm Thành Công !");
+                    }
+                  }
+                });
+              }}
+               >
                 Xác nhận
               </Button>
             </div>
@@ -345,7 +417,7 @@ export const BookRoomTable = (props) => {
                     </TableCell>
                     <TableCell>{order.orderCode}</TableCell>
                     <TableCell>{order.customer.fullname}</TableCell>
-                    <TableCell>{order.customer.phoneNumber}</TableCell>
+                    <TableCell>{formatPhoneNumber(order.customer.phoneNumber)}</TableCell>
                     <TableCell>{order.customer.email}</TableCell>
                     <TableCell>{created}</TableCell>
                     <TableCell>
