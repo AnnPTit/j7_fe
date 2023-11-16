@@ -114,7 +114,7 @@ function UpdateServiceType() {
 
     // Gọi hàm fetchData ngay lập tức
     fetchData();
-  }, []);
+  }, [id]);
   return (
     <div className={cx("wrapper")}>
       <h1>Cập nhật Loại Dịch Vụ</h1>
