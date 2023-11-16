@@ -32,6 +32,7 @@ import FormControl from "@mui/material/FormControl";
 import FormLabel from "@mui/material/FormLabel";
 import Radio from "@mui/material/Radio";
 import RadioGroup from "@mui/material/RadioGroup";
+import Swal from "sweetalert2";
 const numeral = require("numeral");
 
 export const BookRoomTable = (props) => {
@@ -267,11 +268,51 @@ export const BookRoomTable = (props) => {
                 style={{ marginRight: 20 }}
                 variant="outlined"
                 color="error"
-                onClick={() => handleCancelOrder(orderId)}
+                // onClick={() => handleCancelOrder(orderId)}
+                onClick={() => {
+                  Swal.fire({
+                    title: "Bạn có chắc chắn muốn hủy ? ",
+                    text: "",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#3085d6",
+                    cancelButtonColor: "#d33",
+                    confirmButtonText: "Yes, Add it!",
+                  }).then(async (result) => {
+                    if (result.isConfirmed) {
+                      const isSubmitSuccess = await handleCancelOrder(orderId);
+                      if (isSubmitSuccess) {
+                        Swal.fire("Thêm thành công !", "success");
+                        toast.success("Thêm Thành Công !");
+                      }
+                    }
+                  });
+                }}
               >
                 Hủy xác nhận
               </Button>
-              <Button variant="outlined" onClick={handleSubmit}>
+              <Button variant="outlined"
+              //  onClick={handleSubmit}
+              onClick={() => {
+                Swal.fire({
+                  title: "Bạn có chắc chắn xác nhận ? ",
+                  text: "",
+                  icon: "warning",
+                  showCancelButton: true,
+                  confirmButtonColor: "#3085d6",
+                  cancelButtonColor: "#d33",
+                  confirmButtonText: "Yes, Add it!",
+                }).then(async (result) => {
+                  if (result.isConfirmed) {
+                    const isSubmitSuccess = await handleSubmit();
+                    if (isSubmitSuccess) {
+                      Swal.fire("Thêm thành công !", "success");
+                      toast.success("Thêm Thành Công !");
+                    }
+                  }
+                });
+              }}
+               >
                 Xác nhận
               </Button>
             </div>
