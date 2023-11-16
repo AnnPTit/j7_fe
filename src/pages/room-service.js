@@ -43,7 +43,7 @@ import RadioGroup from "@mui/material/RadioGroup";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import FormControl from "@mui/material/FormControl";
 import FormLabel from "@mui/material/FormLabel";
-import { parse, format, subYears, addDays } from "date-fns";
+import { parse, format, subYears, addDays, addHours, setHours, setMinutes } from "date-fns";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { RoomSearch } from "src/sections/room/room-search";
@@ -97,8 +97,10 @@ function BookRoom() {
   const [valueTo, setValueTo] = useState(null);
   const [valueFrom, setValueFrom] = useState(new Date());
   const [numberOfPeople, setNumberOfPeople] = useState(0);
-  const [valueTimeTo, setValueTimeTo] = useState(null);
-  const [valueTimeFrom, setValueTimeFrom] = useState(new Date());
+  const defaultCheckInTime = setMinutes(setHours(new Date(), 14), 0);
+  const defaultCheckOutTime = setMinutes(setHours(new Date(), 12), 0);
+  const [valueTimeFrom, setValueTimeFrom] = useState(defaultCheckInTime);
+  const [valueTimeTo, setValueTimeTo] = useState(defaultCheckOutTime);
   const [totalAmount, setTotalAmount] = useState(0);
   const [noteOrder, setNoteOrder] = useState("");
   const [noteReturnRoom, setNoteReturnRoom] = useState("");
@@ -197,9 +199,14 @@ function BookRoom() {
   };
 
   const handleToDateChange = (newValue) => {
-    setValueTo(newValue);
-    if (newValue < valueFrom) {
-      setValueFrom(newValue);
+    // setValueTo(newValue);
+    if (newValue > valueFrom) {
+      setValueTo(newValue);
+    } else {
+      toast.warning("Ngày checkout lớn hơn ngày hiện tại!", {
+        position: toast.POSITION.BOTTOM_CENTER,
+      });
+      return;
     }
 
     const timeDiff = Math.abs(newValue - valueFrom);
@@ -217,15 +224,8 @@ function BookRoom() {
     return `${day}/${month}/${year}`;
   };
 
-  const handleDateTimeFromChange = (newTime) => {
-    setValueTimeFrom(newTime);
-    if (newTime > valueTimeTo) {
-      setValueTimeTo(newTime);
-    }
-  };
-
-  const handleDateTimeToChange = (newTime) => {
-    setValueTimeTo(newTime);
+  const formatTime = (date) => {
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
   // Kết thúc xử lí ngày đặt phòng
 
@@ -376,9 +376,7 @@ function BookRoom() {
 
   const handleCloseDateDialog = () => {
     setValueFrom(new Date());
-    setValueTimeFrom(new Date());
     setValueTo(null);
-    setValueTimeTo(null);
     setNumberOfDays(0);
     setNumberOfPeople();
     setOpenDateDialog(false);
@@ -562,6 +560,7 @@ function BookRoom() {
   const sumOrderDetail = totalCostForOrderDetail + vatOrderDetail;
   const moneyReturnCustomerOneRoom = givenCustomerOneRoom - sumOrderDetail;
   const vatAmount = totalAmount * 0.1;
+  const totalMoney = totalAmount + vatAmount;
   const sumAmount = totalAmount + vatAmount - order.deposit;
   const moneyReturnCustomer = givenCustomer - sumAmount;
 
@@ -740,7 +739,7 @@ function BookRoom() {
 
       await axios.put(`http://localhost:2003/api/order/update-accept/${id}`, {
         customerId: selectedCustomerAccept,
-        totalMoney: sumAmount,
+        totalMoney: totalMoney,
         vat: vatAmount,
         note: noteOrder,
       });
@@ -1948,8 +1947,8 @@ function BookRoom() {
                 style={{ marginRight: 25 }}
                 {...params}
                 inputProps={{
-                  value: formatDate(valueFrom), // Format the value here
-                  readOnly: true, // Prevent manual input
+                  value: formatDate(valueFrom),
+                  readOnly: true,
                 }}
               />
             )}
@@ -1958,12 +1957,11 @@ function BookRoom() {
             disabled
             label="Giờ check-in"
             value={valueTimeFrom}
-            onChange={handleDateTimeFromChange}
             renderInput={(params) => (
               <TextField
                 {...params}
                 inputProps={{
-                  value: valueTimeFrom ? valueTimeFrom.toLocaleTimeString() : "",
+                  value: formatTime(valueTimeFrom),
                   readOnly: true,
                 }}
               />
@@ -1983,21 +1981,21 @@ function BookRoom() {
                 style={{ marginRight: 25 }}
                 {...params}
                 inputProps={{
-                  value: formatDate(valueTo), // Format the value here
-                  readOnly: true, // Prevent manual input
+                  value: formatDate(valueTo),
+                  readOnly: true,
                 }}
               />
             )}
           />
           <TimePicker
+            disabled
             label="Giờ check-out"
             value={valueTimeTo}
-            onChange={handleDateTimeToChange}
             renderInput={(params) => (
               <TextField
                 {...params}
                 inputProps={{
-                  value: valueTimeTo ? valueTimeTo.toLocaleTimeString() : "",
+                  value: formatTime(valueTimeTo),
                   readOnly: true,
                 }}
               />
