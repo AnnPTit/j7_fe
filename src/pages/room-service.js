@@ -24,6 +24,9 @@ import {
   Select,
   InputLabel,
   Grid,
+  Typography,
+  Slider,
+  Divider,
 } from "@mui/material";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
@@ -225,7 +228,7 @@ function BookRoom() {
   };
 
   const formatTime = (date) => {
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
   // Kết thúc xử lí ngày đặt phòng
 
@@ -728,6 +731,17 @@ function BookRoom() {
       return;
     }
 
+    const selectedOrderDetail = orderDetailData.find(
+      (detail) => detail.id === selectedOrderDetails
+    );
+
+    if (customerInfo.length !== selectedOrderDetail.customerQuantity) {
+      toast.error("Có phòng chưa đủ số người ở!", {
+        position: toast.POSITION.BOTTOM_CENTER,
+      });
+      return;
+    }
+
     try {
       const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
       // Kiểm tra xem accessToken có tồn tại không
@@ -739,7 +753,7 @@ function BookRoom() {
 
       await axios.put(`http://localhost:2003/api/order/update-accept/${id}`, {
         customerId: selectedCustomerAccept,
-        totalMoney: totalMoney,
+        totalMoney: sumAmount,
         vat: vatAmount,
         note: noteOrder,
       });
@@ -843,7 +857,7 @@ function BookRoom() {
       axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
       // Make an API call to update the order status to "Đã xác nhận" (status: 2)
       await axios.put(`http://localhost:2003/api/order/delete/${id}`, {
-        note: noteOrder,
+        note: noteCancelRoom,
         deleted: fullname,
       });
       setOrder({ ...order, status: 0 });
@@ -1035,12 +1049,19 @@ function BookRoom() {
     }
 
     if (
+      cccd == null ||
       !cccd.trim() ||
+      customerName == null ||
       !customerName.trim() ||
+      birthday == null ||
       !birthday.trim() ||
+      phoneNumber == null ||
       !phoneNumber.trim() ||
+      email == null ||
       !email.trim() ||
+      nationality == null ||
       !nationality.trim() ||
+      address == null ||
       !address.trim()
     ) {
       toast.error("Vui lòng điền đầy đủ thông tin khách hàng!", {
@@ -1956,6 +1977,7 @@ function BookRoom() {
           <TimePicker
             disabled
             label="Giờ check-in"
+            onChange={handleFromDateChange}
             value={valueTimeFrom}
             renderInput={(params) => (
               <TextField
@@ -1991,6 +2013,7 @@ function BookRoom() {
             disabled
             label="Giờ check-out"
             value={valueTimeTo}
+            onChange={handleToDateChange}
             renderInput={(params) => (
               <TextField
                 {...params}
@@ -2067,11 +2090,18 @@ function BookRoom() {
         <Button style={{ marginLeft: 180 }} onClick={handleRedirectOrders} variant="outlined">
           CHI TIẾT
         </Button>
-        {order.status === 1 || order.status === 5 ? (
-          <Button onClick={handleOpenSearchRoom} variant="outlined">
-            TÌM PHÒNG
-          </Button>
-        ) : null}
+        <div style={{ marginBottom: 20, height: 50, display: "flex" }}>
+          {order.status === 1 || order.status === 5 ? (
+            <Button style={{ marginRight: 20 }} onClick={handleOpenSearchRoom} variant="outlined">
+              TÌM PHÒNG
+            </Button>
+          ) : null}
+          {order.status === 1 || order.status === 2 || order.status === 5 ? (
+            <Button onClick={handleOpenAddService} variant="outlined">
+              THÊM DỊCH VỤ
+            </Button>
+          ) : null}
+        </div>
       </div>
 
       <Box
@@ -2222,9 +2252,208 @@ function BookRoom() {
             <h6
               style={{ marginTop: 20, display: "flex", justifyContent: "flex-end", color: "red" }}
             >
-              Tổng tiền: {formatPrice(calculateTotalAmountPriceRoom())}
+              Tổng tiền phòng: {formatPrice(calculateTotalAmountPriceRoom())}
             </h6>
           </Box>
+          {selectedOrderDetails && (
+            <Box>
+              <Typography variant="h6" gutterBottom component="div">
+                Khách hàng
+              </Typography>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>CCCD</TableCell>
+                    <TableCell>Tên khách hàng</TableCell>
+                    <TableCell>Giới tính</TableCell>
+                    <TableCell>Ngày sinh</TableCell>
+                    <TableCell>Số điện thoại</TableCell>
+                    <TableCell>Email</TableCell>
+                    <TableCell>
+                      {order.status === 1 || order.status === 5 ? <>Thao tác</> : null}
+                    </TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {customerInfo.length > 0 ? (
+                    customerInfo.map((customer) => (
+                      <TableRow key={customer.id}>
+                        <TableCell>{customer.citizenId}</TableCell>
+                        <TableCell>{customer.fullname}</TableCell>
+                        <TableCell>{customer.gender == 1 ? "Nam" : "Nữ"}</TableCell>
+                        <TableCell>{format(new Date(customer.birthday), "dd/MM/yyyy")}</TableCell>
+                        <TableCell>{customer.phoneNumber}</TableCell>
+                        <TableCell>{customer.email}</TableCell>
+                        <TableCell>
+                          {order.status === 1 || order.status === 5 ? (
+                            <>
+                              <button
+                                onClick={() => handleDelete(customer.id)}
+                                className="btn btn-danger m-xl-2"
+                              >
+                                <SvgIcon fontSize="small">
+                                  <TrashIcon />
+                                </SvgIcon>
+                              </button>
+                            </>
+                          ) : null}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={6} align="center">
+                        <div>
+                          <span style={{ fontFamily: "monospace", fontSize: 20 }}>
+                            Không có dữ liệu.
+                          </span>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+              <hr />
+              <TabContext value={activeTab}>
+                <Box>
+                  <Scrollbar>
+                    <Box sx={{ minWidth: 800 }}>
+                      <Tabs value={String(activeTab)} onChange={handleChange} centered>
+                        <Tab label="DỊCH VỤ" value="1" />
+                        <Tab label="COMBO DỊCH VỤ" value="2" />
+                      </Tabs>
+                    </Box>
+                    <TabPanel value="1">
+                      <Table>
+                        <TableHead>
+                          <TableRow>
+                            <TableCell>Tên dịch vụ</TableCell>
+                            <TableCell>Phòng</TableCell>
+                            <TableCell>Số lượng</TableCell>
+                            <TableCell>Thành tiền</TableCell>
+                            <TableCell>
+                              {order.status === 1 || order.status === 5 ? <>Thao tác</> : null}
+                            </TableCell>
+                          </TableRow>
+                        </TableHead>
+                        <TableBody>
+                          {serviceUsed.length > 0 ? (
+                            serviceUsed.map((serviceUsed, index) => (
+                              <TableRow key={index}>
+                                <TableCell>{serviceUsed.service.serviceName}</TableCell>
+                                <TableCell>{serviceUsed.orderDetail.room.roomName}</TableCell>
+                                <TableCell>{serviceUsed.quantity}</TableCell>
+                                <TableCell>
+                                  {formatPrice(serviceUsed.quantity * serviceUsed.service.price)}
+                                </TableCell>
+                                <TableCell>
+                                  {order.status === 1 || order.status === 5 ? (
+                                    <>
+                                      <button
+                                        onClick={() => handleDeleteServiceUsed(serviceUsed.id)}
+                                        className="btn btn-danger m-xl-2"
+                                      >
+                                        <SvgIcon fontSize="small">
+                                          <TrashIcon />
+                                        </SvgIcon>
+                                      </button>
+                                    </>
+                                  ) : null}
+                                </TableCell>
+                              </TableRow>
+                            ))
+                          ) : (
+                            <TableRow>
+                              <TableCell colSpan={5} align="center">
+                                <div>
+                                  <span style={{ fontFamily: "monospace", fontSize: 20 }}>
+                                    Không có dữ liệu.
+                                  </span>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          )}
+                        </TableBody>
+                      </Table>
+                      <h6
+                        style={{
+                          marginTop: 20,
+                          display: "flex",
+                          justifyContent: "flex-end",
+                          color: "red",
+                        }}
+                      >
+                        Tổng tiền dịch vụ: {formatPrice(calculateTotalAmount())}
+                      </h6>
+                    </TabPanel>
+                    <TabPanel value="2">
+                      <Table>
+                        <TableHead>
+                          <TableRow>
+                            <TableCell>Tên combo</TableCell>
+                            <TableCell>Phòng</TableCell>
+                            <TableCell>Số lượng</TableCell>
+                            <TableCell>Thành tiền</TableCell>
+                            <TableCell>
+                              {order.status === 1 || order.status === 5 ? <>Thao tác</> : null}
+                            </TableCell>
+                          </TableRow>
+                        </TableHead>
+                        <TableBody>
+                          {comboUsed.length > 0 ? (
+                            comboUsed.map((comboUsed, index) => (
+                              <TableRow key={index}>
+                                <TableCell>{comboUsed.combo.comboName}</TableCell>
+                                <TableCell>{comboUsed.orderDetail.room.roomName}</TableCell>
+                                <TableCell>{comboUsed.quantity}</TableCell>
+                                <TableCell>
+                                  {formatPrice(comboUsed.quantity * comboUsed.combo.price)}
+                                </TableCell>
+                                <TableCell>
+                                  {order.status === 1 || order.status === 5 ? (
+                                    <>
+                                      <button
+                                        onClick={() => handleDeleteComboUsed(comboUsed.id)}
+                                        className="btn btn-danger m-xl-2"
+                                      >
+                                        <SvgIcon fontSize="small">
+                                          <TrashIcon />
+                                        </SvgIcon>
+                                      </button>
+                                    </>
+                                  ) : null}
+                                </TableCell>
+                              </TableRow>
+                            ))
+                          ) : (
+                            <TableRow>
+                              <TableCell colSpan={5} align="center">
+                                <div>
+                                  <span style={{ fontFamily: "monospace", fontSize: 20 }}>
+                                    Không có dữ liệu.
+                                  </span>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          )}
+                        </TableBody>
+                      </Table>
+                      <h6
+                        style={{
+                          marginTop: 20,
+                          display: "flex",
+                          justifyContent: "flex-end",
+                          color: "red",
+                        }}
+                      >
+                        Tổng tiền combo: {formatPrice(calculateTotalAmountCombo())}
+                      </h6>
+                    </TabPanel>
+                  </Scrollbar>
+                </Box>
+              </TabContext>
+            </Box>
+          )}
         </Scrollbar>
       </Box>
       <Dialog open={openReturnOneRoom} onClose={handleCloseReturnOneRoom} maxWidth="md">
@@ -2321,8 +2550,7 @@ function BookRoom() {
         </DialogActions>
         <br />
       </Dialog>
-
-      <Box
+      {/* <Box
         style={{
           border: "1px solid #ccc",
           padding: "20px",
@@ -2391,7 +2619,7 @@ function BookRoom() {
             </Table>
           </Box>
         </Scrollbar>
-      </Box>
+      </Box> */}
       <div className="row">
         <Box
           style={{
@@ -2615,9 +2843,7 @@ function BookRoom() {
         </Dialog>
         <div
           style={{
-            marginBottom: 20,
-            marginTop: 20,
-            height: 50,
+            height: 30,
             display: "flex",
             justifyContent: "flex-end",
           }}
@@ -2737,11 +2963,6 @@ function BookRoom() {
               </Scrollbar>
             </DialogContent>
           </Dialog>
-          {order.status === 1 || order.status === 2 || order.status === 5 ? (
-            <Button onClick={handleOpenAddService} variant="outlined">
-              THÊM DỊCH VỤ
-            </Button>
-          ) : null}
           <Dialog
             open={openQuantityNoteCombo}
             onClose={handleCloseQuantityNoteCombo}
@@ -2858,157 +3079,8 @@ function BookRoom() {
             </DialogContent>
           </Dialog>
         </div>
-        <TabContext value={activeTab}>
-          <Box
-            style={{
-              border: "1px solid #ccc",
-              padding: "20px",
-              boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
-              width: 1150,
-              marginLeft: 140, // Add the box shadow
-            }}
-          >
-            {/* <h3 style={{ display: "flex", justifyContent: "center" }}>DỊCH VỤ</h3>
-          <hr /> */}
-            <Scrollbar>
-              <Box sx={{ minWidth: 800 }}>
-                <Tabs value={String(activeTab)} onChange={handleChange} centered>
-                  <Tab label="DỊCH VỤ" value="1" />
-                  <Tab label="COMBO DỊCH VỤ" value="2" />
-                </Tabs>
-              </Box>
-              <TabPanel value="1">
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Tên dịch vụ</TableCell>
-                      <TableCell>Phòng</TableCell>
-                      <TableCell>Số lượng</TableCell>
-                      <TableCell>Thành tiền</TableCell>
-                      <TableCell>
-                        {order.status === 1 || order.status === 5 ? <>Thao tác</> : null}
-                      </TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {serviceUsed.length > 0 ? (
-                      serviceUsed.map((serviceUsed, index) => (
-                        <TableRow key={index}>
-                          <TableCell>{serviceUsed.service.serviceName}</TableCell>
-                          <TableCell>{serviceUsed.orderDetail.room.roomName}</TableCell>
-                          <TableCell>{serviceUsed.quantity}</TableCell>
-                          <TableCell>
-                            {formatPrice(serviceUsed.quantity * serviceUsed.service.price)}
-                          </TableCell>
-                          <TableCell>
-                            {order.status === 1 || order.status === 5 ? (
-                              <>
-                                <button
-                                  onClick={() => handleDeleteServiceUsed(serviceUsed.id)}
-                                  className="btn btn-danger m-xl-2"
-                                >
-                                  <SvgIcon fontSize="small">
-                                    <TrashIcon />
-                                  </SvgIcon>
-                                </button>
-                              </>
-                            ) : null}
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    ) : (
-                      <TableRow>
-                        <TableCell colSpan={5} align="center">
-                          <div>
-                            <span style={{ fontFamily: "monospace", fontSize: 20 }}>
-                              Không có dữ liệu.
-                            </span>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-                <h6
-                  style={{
-                    marginTop: 20,
-                    display: "flex",
-                    justifyContent: "flex-end",
-                    color: "red",
-                  }}
-                >
-                  Tổng tiền: {formatPrice(calculateTotalAmount())}
-                </h6>
-              </TabPanel>
-              <TabPanel value="2">
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Tên combo</TableCell>
-                      <TableCell>Phòng</TableCell>
-                      <TableCell>Số lượng</TableCell>
-                      <TableCell>Thành tiền</TableCell>
-                      <TableCell>
-                        {order.status === 1 || order.status === 5 ? <>Thao tác</> : null}
-                      </TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {comboUsed.length > 0 ? (
-                      comboUsed.map((comboUsed, index) => (
-                        <TableRow key={index}>
-                          <TableCell>{comboUsed.combo.comboName}</TableCell>
-                          <TableCell>{comboUsed.orderDetail.room.roomName}</TableCell>
-                          <TableCell>{comboUsed.quantity}</TableCell>
-                          <TableCell>
-                            {formatPrice(comboUsed.quantity * comboUsed.combo.price)}
-                          </TableCell>
-                          <TableCell>
-                            {order.status === 1 || order.status === 5 ? (
-                              <>
-                                <button
-                                  onClick={() => handleDeleteComboUsed(comboUsed.id)}
-                                  className="btn btn-danger m-xl-2"
-                                >
-                                  <SvgIcon fontSize="small">
-                                    <TrashIcon />
-                                  </SvgIcon>
-                                </button>
-                              </>
-                            ) : null}
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    ) : (
-                      <TableRow>
-                        <TableCell colSpan={5} align="center">
-                          <div>
-                            <span style={{ fontFamily: "monospace", fontSize: 20 }}>
-                              Không có dữ liệu.
-                            </span>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-                <h6
-                  style={{
-                    marginTop: 20,
-                    display: "flex",
-                    justifyContent: "flex-end",
-                    color: "red",
-                  }}
-                >
-                  Tổng tiền: {formatPrice(calculateTotalAmountCombo())}
-                </h6>
-              </TabPanel>
-            </Scrollbar>
-          </Box>
-        </TabContext>
         <div
           style={{
-            marginTop: 20,
             marginBottom: 30,
             display: "flex",
             justifyContent: "flex-end",
