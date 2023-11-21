@@ -512,13 +512,19 @@ function UpdateRoom() {
         id="tags-outlined"
         options={facility}
         getOptionLabel={(facility) => facility?.facilityName}
-        value={roomFacilities
-          .filter((facilityId) => facilityId !== undefined) // Filter out undefined values
-          .map((facilityId) => facility.find((item) => item.id === facilityId.facility.id)) || selectedFacilities} 
+        value={[
+          ...roomFacilities
+            .filter((facilityId) => facilityId !== undefined)
+            .map((facilityId) => facility.find((item) => item.id === facilityId.facility.id)),
+          ...selectedFacilities,
+        ]}
         onChange={(event, newValue) => {
           setSelectedFacilities(newValue);
         }}
-        filterSelectedOptions
+        filterOptions={(options, { inputValue }) => {
+          const selectedIds = selectedFacilities.map((facility) => facility.id);
+          return options.filter((option) => !selectedIds.includes(option.id));
+        }}
         renderInput={(params) => (
           <TextField
             {...params}
@@ -527,7 +533,6 @@ function UpdateRoom() {
           />
         )}
       />
-
       <br />
       <button
         className={(cx("input-btn"), "btn btn-primary")}

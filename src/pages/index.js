@@ -172,8 +172,8 @@ const Page = () => {
             <Grid xs={12} md={12} lg={8}>
               <OverviewLatestOrders
                 orders={order.slice(0, 7).map((order) => ({
-                  id: order.id,
                   ref: order.orderCode,
+                  id: order.typeOfOrder,
                   amount: order.totalMoney,
                   customer: {
                     name: order.customer.fullname,

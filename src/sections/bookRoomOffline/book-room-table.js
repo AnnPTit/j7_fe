@@ -11,6 +11,12 @@ import {
   TableHead,
   TableRow,
   SvgIcon,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  TextareaAutosize,
+  DialogActions,
+  Button,
 } from "@mui/material";
 import { Scrollbar } from "src/components/scrollbar";
 import TrashIcon from "@heroicons/react/24/solid/TrashIcon";
@@ -18,7 +24,8 @@ import PencilSquareIcon from "@heroicons/react/24/solid/PencilSquareIcon";
 import EyeIcon from "@heroicons/react/24/solid/EyeIcon";
 import { SeverityPill } from "src/components/severity-pill";
 import Link from "next/link";
-import { useState } from "react";
+import React from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/router";
 
@@ -34,6 +41,20 @@ export const BookRoomTable = (props) => {
     // customer: {},
     // account: {},
   });
+  const [selectedOrderId, setSelectedOrderId] = useState(null);
+
+  const [openCancelRoom, setOpenCancelRoom] = React.useState(false);
+  const [noteCancelRoom, setNoteCancelRoom] = useState("");
+
+  const handleOpenCancelOrder = (orderId) => {
+    setSelectedOrderId(orderId);
+    setOpenCancelRoom(true);
+  };
+
+  const handleCloseCancelOrder = () => {
+    setNoteCancelRoom("");
+    setOpenCancelRoom(false);
+  };
 
   const formatPrice = (price) => {
     if (typeof price !== "number" || isNaN(price)) {
@@ -58,13 +79,31 @@ export const BookRoomTable = (props) => {
     }
   };
 
-  // Hủy hóa đơn
-  const handleCancelOrder = async (orderId) => {
-    try {
-      const payload = {
-        deleted: fullname,
-      };
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
+        // Kiểm tra xem accessToken có tồn tại không
+        if (!accessToken) {
+          alert("Bạn chưa đăng nhập");
+          return;
+        }
+        axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
+        const response = await axios.get(
+          "http://localhost:2003/api/order/loadBookRoomOffline"
+        );
+        setOrder(response.data);
+      } catch (error) {
+        console.log(error);
+      }
+    }
 
+    fetchData();
+  }, []);
+
+  // Hủy hóa đơn
+  const handleCancelOrder = async () => {
+    try {
       const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
       // Kiểm tra xem accessToken có tồn tại không
       if (!accessToken) {
@@ -72,11 +111,13 @@ export const BookRoomTable = (props) => {
         return;
       }
       axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
-
-      // Gửi payload về máy chủ để thực hiện hủy hóa đơn
-      await axios.put(`http://localhost:2003/api/order/delete/${orderId}`, payload);
-
+      const orderId = selectedOrderId;
+      await axios.put(`http://localhost:2003/api/order/delete/${orderId}`, {
+        note: noteCancelRoom,
+        deleted: fullname,
+      });
       setOrder({ ...order, status: 0 });
+      handleCloseCancelOrder();
       toast.success("Hủy thành công!", {
         position: toast.POSITION.BOTTOM_CENTER,
       });
@@ -89,6 +130,26 @@ export const BookRoomTable = (props) => {
   return (
     <Card sx={{ marginTop: 5, marginBottom: 3 }}>
       <ToastContainer />
+      <Dialog open={openCancelRoom} onClose={handleCloseCancelOrder} maxWidth="md">
+        <DialogTitle>Xác nhận khách hàng hủy phòng</DialogTitle>
+        <DialogContent>
+          <TextareaAutosize
+            className="form-control"
+            placeholder="Ghi chú"
+            name="note"
+            cols={100}
+            style={{ height: 150 }}
+            variant="outlined"
+            value={noteCancelRoom}
+            onChange={(e) => setNoteCancelRoom(e.target.value)}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button variant="outlined" onClick={handleCancelOrder}>
+            Xác nhận
+          </Button>
+        </DialogActions>
+      </Dialog>
       <Scrollbar>
         <Box sx={{ minWidth: 800 }}>
           <Table>
@@ -135,7 +196,7 @@ export const BookRoomTable = (props) => {
                             </SvgIcon>
                           </Link>
                           <button
-                            onClick={() => handleCancelOrder(order.id)}
+                            onClick={() => handleOpenCancelOrder(order.id)}
                             className="btn btn-danger m-xl-2"
                           >
                             <SvgIcon fontSize="small">
