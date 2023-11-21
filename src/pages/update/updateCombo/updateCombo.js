@@ -206,7 +206,7 @@ function Updatecombo() {
     }
     // Gọi hàm fetchData ngay lập tức
     fetchData();
-  }, []);
+  }, [id]);
   function handleChangePrice(value) {
     setComboUpdate((prev) => ({
       ...prev,
