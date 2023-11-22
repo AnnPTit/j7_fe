@@ -32,7 +32,7 @@ const Page = () => {
     onSubmit: async (values, helpers) => {
       try {
         await auth.signIn(values.email, values.password);
-        router.push("/");
+        router.push("/room-plan");
       } catch (err) {
         helpers.setStatus({ success: false });
         helpers.setErrors({ submit: err.message });
@@ -44,11 +44,6 @@ const Page = () => {
   const handleMethodChange = useCallback((event, value) => {
     setMethod(value);
   }, []);
-
-  const handleSkip = useCallback(() => {
-    auth.skip();
-    router.push("/");
-  }, [auth, router]);
 
   return (
     <>
@@ -123,9 +118,6 @@ const Page = () => {
                 )}
                 <Button fullWidth size="large" sx={{ mt: 3 }} type="submit" variant="contained">
                   Continue
-                </Button>
-                <Button fullWidth size="large" sx={{ mt: 3 }} onClick={handleSkip}>
-                  Skip authentication
                 </Button>
               </form>
             )}

@@ -47,7 +47,7 @@ function RoomPlan() {
           return;
         }
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
-        const response = await axios.get("http://localhost:2003/api/admin/room/room-plan");
+        const response = await axios.get("http://localhost:2003/api/room/room-plan");
         console.log("Data: ", response.data);
         setRoom(response.data);
       } catch (error) {

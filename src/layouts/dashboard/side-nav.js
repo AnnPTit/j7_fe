@@ -24,6 +24,10 @@ export const SideNav = (props) => {
   const pathname = usePathname();
   const lgUp = useMediaQuery((theme) => theme.breakpoints.up("lg"));
 
+  const getUserRole = () => {
+    return localStorage.getItem('position');
+  };
+
   const content = (
     <Scrollbar
       sx={{
@@ -100,6 +104,24 @@ export const SideNav = (props) => {
           >
             {items.map((item) => {
               const active = item.path ? pathname === item.path : false;
+
+              const userRole = getUserRole();
+
+              if (userRole === 'ROLE_USER' && item.title === 'Thống kê') {
+                return null;
+              }
+
+              if (userRole === 'ROLE_USER' && item.title === '') {
+                return null;
+              }
+
+              if (userRole === 'ROLE_USER' && item.title === '.') {
+                return null;
+              }
+
+              if (userRole === 'ROLE_USER' && item.title === 'Đơn vị') {
+                return null;
+              }
 
               return (
                 <SideNavItem
