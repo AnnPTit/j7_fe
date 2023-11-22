@@ -33,15 +33,20 @@ export const TopNav = (props) => {
   const [hasNewNotifications, setHasNewNotifications] = useState(false);
 
   useEffect(() => {
+    const accessToken = localStorage.getItem("accessToken");
     const fetchRecentOrders = async () => {
       try {
+        const accessToken = localStorage.getItem("accessToken");
+        axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; 
         const response = await axios.get("http://localhost:2003/api/order/loadNotify");
         setRecentOrders(response.data);
       } catch (error) {
         console.error("Error fetching recent orders:", error);
       }
     };
+   if(accessToken!== undefined){
     fetchRecentOrders();
+   }
   }, [])
   
 

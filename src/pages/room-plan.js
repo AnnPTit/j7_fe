@@ -43,7 +43,7 @@ function RoomPlan() {
       try {
         const accessToken = localStorage.getItem("accessToken");
         if (!accessToken) {
-          alert("Bạn chưa đăng nhập");
+         console.log("Bạn chưa đăng nhập");
           return;
         }
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;

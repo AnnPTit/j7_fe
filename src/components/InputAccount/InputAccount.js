@@ -52,12 +52,10 @@ const handleSubmit = async (event) => {
     const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
     // Kiểm tra xem accessToken có tồn tại không
     if (!accessToken) {
-      alert("Bạn chưa đăng nhập");
+     console.log("Bạn chưa đăng nhập");
       return;
     }
-
     axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
-
     const response = await axios.post("http://localhost:2003/api/admin/account/save", payload); // Gọi API /api/service-type/save với payload và access token
     console.log(response); //
 
