@@ -164,7 +164,7 @@ export const AuthProvider = (props) => {
       .catch((error) => {
         console.error(error);
         window.location.href = "/auth/login";
-        alert("Account invalid !");
+        alert("Tài khoản hoặc mật khẩu không chính xác !");
       });
   };
 

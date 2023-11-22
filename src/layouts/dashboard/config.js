@@ -1,7 +1,6 @@
 import ChartBarIcon from "@heroicons/react/24/solid/ChartBarIcon";
 import ShoppingBagIcon from "@heroicons/react/24/solid/ShoppingBagIcon";
 import UsersIcon from "@heroicons/react/24/solid/UsersIcon";
-import XCircleIcon from "@heroicons/react/24/solid/XCircleIcon";
 import TVIcon from "@heroicons/react/24/solid/TVIcon";
 import WindowIcon from "@heroicons/react/24/solid/WindowIcon";
 import ScaleIcon from "@heroicons/react/24/solid/ScaleIcon";
