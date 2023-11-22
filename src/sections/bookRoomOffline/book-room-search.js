@@ -32,7 +32,7 @@ export const BookRoomSearch = ({ textSearch, setTextSearch }) => {
     try {
       const accessToken = localStorage.getItem("accessToken");
       if (!accessToken) {
-        alert("Bạn chưa đăng nhập");
+       console.log("Bạn chưa đăng nhập");
         return;
       }
       // Gửi yêu cầu POST đến server để đặt phòng
