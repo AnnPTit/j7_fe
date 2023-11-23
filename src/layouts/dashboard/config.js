@@ -278,14 +278,14 @@ export const items = [
   },
   ,
   {
-    title: "Chương trình giảm giá ",
+    title: "Bài viết ",
     path: "/blog",
     icon: (
       <SvgIcon fontSize="small">
         <ClipboardIcon />
       </SvgIcon>
     ),
-  }
+  },
   // {
   //   title: "Error",
   //   path: "/404",

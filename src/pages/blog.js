@@ -6,8 +6,8 @@ import PlusIcon from "@heroicons/react/24/solid/PlusIcon";
 import { Box, Container, Stack, SvgIcon } from "@mui/material";
 import { useSelection } from "src/hooks/use-selection";
 import { Layout as DashboardLayout } from "src/layouts/dashboard/layout";
-import { BlogSearch } from "src/sections/blog/blog-search"; 
-import { BlogTable } from "src/sections/blog/blog-table"; 
+import { BlogSearch } from "src/sections/blog/blog-search";
+import { BlogTable } from "src/sections/blog/blog-table";
 import { applyPagination } from "src/utils/apply-pagination";
 import MyPagination from "src/components/Pagination";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -41,12 +41,10 @@ const Page = () => {
   const [textSearch, setTextSearch] = useState("");
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
-
   const pathname = usePathname();
-
   const item = {
     title: "Thêm mới",
-    path: "room/add",
+    path: "blog/add",
     icon: (
       <SvgIcon fontSize="small">
         <PlusIcon />
@@ -65,7 +63,6 @@ const Page = () => {
     }
   };
 
-
   // Load
   useEffect(() => {
     const fetchData = async () => {
@@ -73,9 +70,7 @@ const Page = () => {
         const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
         console.log(accessToken);
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
-
         let Api = `http://localhost:2003/api/admin/blog/load?current_page=${pageNumber}`;
-
         if (textSearch !== "") {
           Api = Api + `&key=${textSearch}`;
         }
@@ -105,7 +100,7 @@ const Page = () => {
   return (
     <>
       <Head>
-        <title>Phòng | Armani Hotel</title>
+        <title>Bài viết | Armani Hotel</title>
       </Head>
       <Box
         component="main"
@@ -117,8 +112,7 @@ const Page = () => {
         <Container maxWidth="xl">
           <Stack spacing={3}>
             <Stack direction="row" justifyContent="space-between" spacing={4}>
-              <Stack spacing={0}>
-              </Stack>
+              <Stack spacing={0}></Stack>
               <div>
                 <SideNavItem
                   style={{ backgroundColor: "red" }}
@@ -134,17 +128,17 @@ const Page = () => {
               </div>
             </Stack>
             <BlogSearch textSearch={textSearch} setTextSearch={setTextSearch} />
-        
+
             <div style={{ minHeight: 500 }}>
               {" "}
-              {/* <BlogTable
+              <BlogTable
                 items={room}
                 selected={roomSelection.selected}
                 onDelete={handleDelete} // Thêm prop onDelete và truyền giá trị của handleDelete vào đây
                 setPageNumber={setPageNumber}
                 totalElements={totalElements}
                 pageNumber={pageNumber} // Thêm prop onDelete và truyền giá trị của handleDelete vào đây
-              /> */}
+              />
             </div>
           </Stack>
           <MyPagination
