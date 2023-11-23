@@ -45,9 +45,13 @@ export const BlogTable = (props) => {
             </TableHead>
             <TableBody>
               {items.map((room, index) => {
-                // const created = moment(room.createAt).format("DD/MM/YYYY - HH:mm:ss");
-                // const updated = moment(room.updateAt).format("DD/MM/YYYY - HH:mm:ss");
+                console.log(room.photoDTOS[0].url);
                 const hrefUpdate = `/update/updateRoom/updateRoom?id=${room.id}`;
+                const formatDate = (dateString) => {
+                  const options = { day: "numeric", month: "numeric", year: "numeric" };
+                  const formattedDate = new Date(dateString).toLocaleDateString(undefined, options);
+                  return formattedDate;
+                };
                 const alertDelete = () => {
                   Swal.fire({
                     title: "Are you sure?",
@@ -73,13 +77,12 @@ export const BlogTable = (props) => {
                         <span>{index + props.pageNumber * 5 + 1}</span>
                       </div>
                     </TableCell>
-                    <TableCell>{room.roomCode}</TableCell>
                     <TableCell>
                       <Stack alignItems="center" direction="row" spacing={2}>
-                        {room.photoList.length > 0 && ( // Check if photoList is not empty
+                        {room.photoDTOS.length > 0 && ( // Check if photoList is not empty
                           <img
-                            key={room.photoList[0].id} // Use key from the first photo
-                            src={`${room.photoList[0].url}`} // Use URL from the first photo
+                            key={room.photoDTOS[0]} // Use key from the first photo
+                            src={`${room.photoDTOS[0]}`} // Use URL from the first photo
                             width={200}
                             height={200}
                           />
@@ -89,16 +92,9 @@ export const BlogTable = (props) => {
                     <TableCell>{room.title}</TableCell>
                     <TableCell>{room.content}</TableCell>
                     <TableCell>{room.countLike}</TableCell>
-                    <TableCell>{room.note}</TableCell>
-                    <TableCell>
-                      {room.status === 1
-                        ? "Phòng trống"
-                        : room.status === 2
-                        ? "Phòng đã được đặt"
-                        : room.status === 3
-                        ? "Đang có người ở"
-                        : "Trạng thái khác"}
-                    </TableCell>
+                    <TableCell>{room.countView}</TableCell>
+                    <TableCell>{formatDate(room.createAt)}</TableCell>
+                    <TableCell>{room.createBy}</TableCell>
                     <TableCell>
                       <Link className="btn btn-primary m-xl-2" href={hrefUpdate}>
                         <SvgIcon fontSize="small">
