@@ -276,6 +276,16 @@ export const items = [
       </SvgIcon>
     ),
   },
+  ,
+  {
+    title: "Chương trình giảm giá ",
+    path: "/blog",
+    icon: (
+      <SvgIcon fontSize="small">
+        <ClipboardIcon />
+      </SvgIcon>
+    ),
+  }
   // {
   //   title: "Error",
   //   path: "/404",
