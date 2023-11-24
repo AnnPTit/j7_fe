@@ -48,13 +48,6 @@ export const TopNav = (props) => {
     fetchRecentOrders();
    }
   }, [])
-  
-
-  // useEffect(() => {
-  //   if (recentOrders.length > 0) {
-  //     setHasNewNotifications(true);
-  //   }
-  // }, [recentOrders]);
 
   return (
     <>

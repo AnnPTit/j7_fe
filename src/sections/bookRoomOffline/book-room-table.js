@@ -17,6 +17,7 @@ import {
   TextareaAutosize,
   DialogActions,
   Button,
+  TableSortLabel,
 } from "@mui/material";
 import { Scrollbar } from "src/components/scrollbar";
 import TrashIcon from "@heroicons/react/24/solid/TrashIcon";
@@ -45,6 +46,15 @@ export const BookRoomTable = (props) => {
 
   const [openCancelRoom, setOpenCancelRoom] = React.useState(false);
   const [noteCancelRoom, setNoteCancelRoom] = useState("");
+
+  const [orderBy, setOrderBy] = useState(""); // Column to be sorted
+  const [sort, setSort] = useState("asc");
+
+  const handleSort = (column) => {
+    const isAsc = orderBy === column && sort === "asc";
+    setSort(isAsc ? "desc" : "asc");
+    setOrderBy(column);
+  };
 
   const handleOpenCancelOrder = (orderId) => {
     setSelectedOrderId(orderId);
@@ -85,13 +95,11 @@ export const BookRoomTable = (props) => {
         const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
         // Kiểm tra xem accessToken có tồn tại không
         if (!accessToken) {
-         console.log("Bạn chưa đăng nhập");
+          console.log("Bạn chưa đăng nhập");
           return;
         }
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
-        const response = await axios.get(
-          "http://localhost:2003/api/order/loadBookRoomOffline"
-        );
+        const response = await axios.get("http://localhost:2003/api/order/loadBookRoomOffline");
         setOrder(response.data);
       } catch (error) {
         console.log(error);
@@ -107,7 +115,7 @@ export const BookRoomTable = (props) => {
       const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
       // Kiểm tra xem accessToken có tồn tại không
       if (!accessToken) {
-       console.log("Bạn chưa đăng nhập");
+        console.log("Bạn chưa đăng nhập");
         return;
       }
       axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
@@ -156,13 +164,47 @@ export const BookRoomTable = (props) => {
             <TableHead>
               <TableRow>
                 <TableCell padding="checkbox">STT</TableCell>
-                <TableCell>Mã hóa đơn</TableCell>
-                <TableCell>Tổng tiền</TableCell>
-                <TableCell>Ngày tạo</TableCell>
-                <TableCell>Trạng thái</TableCell>
+                <TableCell>
+                  <TableSortLabel
+                    active={orderBy === "orderCode"}
+                    direction={orderBy === "orderCode" ? sort : "asc"}
+                    onClick={() => handleSort("orderCode")}
+                  >
+                    Mã hóa đơn
+                  </TableSortLabel>
+                </TableCell>
+                <TableCell>
+                  <TableSortLabel
+                    active={orderBy === "totalMoney"}
+                    direction={orderBy === "totalMoney" ? sort : "asc"}
+                    onClick={() => handleSort("totalMoney")}
+                  >
+                    Tổng tiền
+                  </TableSortLabel>
+                </TableCell>
+
+                <TableCell>
+                  <TableSortLabel
+                    active={orderBy === "createAt"}
+                    direction={orderBy === "createAt" ? sort : "asc"}
+                    onClick={() => handleSort("createAt")}
+                  >
+                    Ngày tạo
+                  </TableSortLabel>
+                </TableCell>
+                <TableCell>
+                  <TableSortLabel
+                    active={orderBy === "status"}
+                    direction={orderBy === "status" ? sort : "asc"}
+                    onClick={() => handleSort("status")}
+                  >
+                    Trạng thái
+                  </TableSortLabel>
+                </TableCell>
                 <TableCell>Thao tác</TableCell>
               </TableRow>
             </TableHead>
+
             <TableBody>
               {items.map((order, index) => {
                 const created = moment(order.createAt).format("DD/MM/YYYY - HH:mm:ss");

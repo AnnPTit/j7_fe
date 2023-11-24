@@ -9,15 +9,19 @@ export const AccountPopover = (props) => {
   const { anchorEl, onClose, open } = props;
   const router = useRouter();
   const auth = useAuth();
-  
+
   const fullname = localStorage.getItem("fullName");
 
+  const handleProfile = () => {
+    onClose?.();
+    router.push("/profile");
+  };
 
   const handleSignOut = useCallback(() => {
     onClose?.();
     auth.signOut();
     router.push("/auth/login");
-    localStorage.removeItem("accessToken")
+    localStorage.removeItem("accessToken");
   }, [onClose, auth, router]);
 
   return (
@@ -39,7 +43,7 @@ export const AccountPopover = (props) => {
       >
         <Typography variant="overline">Tài khoản</Typography>
         <Typography color="text.secondary" variant="body2">
-          {fullname || "Loading..."} 
+          {fullname || "Loading..."}
         </Typography>
       </Box>
       <Divider />
@@ -53,7 +57,9 @@ export const AccountPopover = (props) => {
           },
         }}
       >
-        <MenuItem onClick={handleSignOut}>Sign out</MenuItem>
+        <MenuItem onClick={handleProfile}>Thông tin cá nhân</MenuItem>
+        <Divider />
+        <MenuItem onClick={handleSignOut}>Đăng xuất</MenuItem>
       </MenuList>
     </Popover>
   );
