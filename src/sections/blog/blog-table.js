@@ -1,6 +1,5 @@
 import { useEffect } from "react";
 import PropTypes from "prop-types";
-import moment from "moment";
 import Swal from "sweetalert2";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -20,34 +19,8 @@ import TrashIcon from "@heroicons/react/24/solid/TrashIcon";
 import PencilSquareIcon from "@heroicons/react/24/solid/PencilSquareIcon";
 import Link from "next/link";
 
-export const RoomTable = (props) => {
+export const BlogTable = (props) => {
   const { items = [], selected = [] } = props;
-
-  // useEffect(() => {
-  //   // Định nghĩa hàm fetchData bên trong useEffect
-  //   async function fetchData() {
-  //     try {
-  //       const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
-  //       // Kiểm tra xem accessToken có tồn tại không
-  //       if (!accessToken) {
-  //        console.log("Bạn chưa đăng nhập");
-  //         return;
-  //       }
-  //       axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
-  //       const response = await axios.get("http://localhost:2003/api/admin/floor/getList");
-  //       const response2 = await axios.get("http://localhost:2003/api/admin/type-room/getList");
-  //       console.log(response.data);
-  //       console.log(response2.data);
-  //       setFloor(response.data);
-  //       setTypeRoom(response2.data);
-  //     } catch (error) {
-  //       console.log(error);
-  //     }
-  //   }
-  //   // Gọi hàm fetchData ngay lập tức
-  //   fetchData();
-  // }, []);
-
   const handleDelete = (id) => {
     props.onDelete(id);
   };
@@ -60,21 +33,25 @@ export const RoomTable = (props) => {
             <TableHead>
               <TableRow>
                 <TableCell padding="checkbox">STT</TableCell>
-                <TableCell>Room Code</TableCell>
-                <TableCell>Image</TableCell>
-                <TableCell>Room Name</TableCell>
-                <TableCell>Type Room</TableCell>
-                <TableCell>Floor</TableCell>
-                <TableCell>Note</TableCell>
-                <TableCell>Status</TableCell>
-                <TableCell>Actions</TableCell>
+                <TableCell>Ảnh</TableCell>
+                <TableCell>Tiêu đề</TableCell>
+                <TableCell>Nội dung</TableCell>
+                <TableCell>Lượt thích</TableCell>
+                <TableCell>Lượt Xem</TableCell>
+                <TableCell>Ngày tạo</TableCell>
+                <TableCell>Người tạo</TableCell>
+                <TableCell>Hành động</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {items.map((room, index) => {
-                // const created = moment(room.createAt).format("DD/MM/YYYY - HH:mm:ss");
-                // const updated = moment(room.updateAt).format("DD/MM/YYYY - HH:mm:ss");
+                console.log(room.photoDTOS[0].url);
                 const hrefUpdate = `/update/updateRoom/updateRoom?id=${room.id}`;
+                const formatDate = (dateString) => {
+                  const options = { day: "numeric", month: "numeric", year: "numeric" };
+                  const formattedDate = new Date(dateString).toLocaleDateString(undefined, options);
+                  return formattedDate;
+                };
                 const alertDelete = () => {
                   Swal.fire({
                     title: "Are you sure?",
@@ -100,32 +77,24 @@ export const RoomTable = (props) => {
                         <span>{index + props.pageNumber * 5 + 1}</span>
                       </div>
                     </TableCell>
-                    <TableCell>{room.roomCode}</TableCell>
                     <TableCell>
                       <Stack alignItems="center" direction="row" spacing={2}>
-                        {room.photoList.length > 0 && ( // Check if photoList is not empty
+                        {room.photoDTOS.length > 0 && ( // Check if photoList is not empty
                           <img
-                            key={room.photoList[0].id} // Use key from the first photo
-                            src={`${room.photoList[0].url}`} // Use URL from the first photo
+                            key={room.photoDTOS[0]} // Use key from the first photo
+                            src={`${room.photoDTOS[0]}`} // Use URL from the first photo
                             width={200}
                             height={200}
                           />
                         )}
                       </Stack>
                     </TableCell>
-                    <TableCell>{room.roomName}</TableCell>
-                    <TableCell>{room.typeRoom.typeRoomName}</TableCell>
-                    <TableCell>{room.floor.floorName}</TableCell>
-                    <TableCell>{room.note}</TableCell>
-                    <TableCell>
-                      {room.status === 1
-                        ? "Phòng trống"
-                        : room.status === 2
-                        ? "Phòng đã được đặt"
-                        : room.status === 3
-                        ? "Đang có người ở"
-                        : "Trạng thái khác"}
-                    </TableCell>
+                    <TableCell>{room.title}</TableCell>
+                    <TableCell>{room.content}</TableCell>
+                    <TableCell>{room.countLike}</TableCell>
+                    <TableCell>{room.countView}</TableCell>
+                    <TableCell>{formatDate(room.createAt)}</TableCell>
+                    <TableCell>{room.createBy}</TableCell>
                     <TableCell>
                       <Link className="btn btn-primary m-xl-2" href={hrefUpdate}>
                         <SvgIcon fontSize="small">
@@ -150,7 +119,7 @@ export const RoomTable = (props) => {
   );
 };
 
-RoomTable.propTypes = {
+BlogTable.propTypes = {
   count: PropTypes.number,
   items: PropTypes.array,
   onDeselectAll: PropTypes.func,

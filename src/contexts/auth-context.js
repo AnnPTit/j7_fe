@@ -137,6 +137,7 @@ export const AuthProvider = (props) => {
         const accessToken = response.data.accessToken;
         const idAccount = response.data.idUser;
         const fullName = response.data.fullName;
+        const position = response.data.position;
         console.log(idAccount);
         console.log(fullName);
         console.log(accessToken);
@@ -148,6 +149,7 @@ export const AuthProvider = (props) => {
         localStorage.setItem("accessToken", accessToken); // Lưu access token vào localStorage
         localStorage.setItem("idAccount", idAccount);
         localStorage.setItem("fullName", fullName);
+        localStorage.setItem("position", position);
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
         const user = {
           email: email,
@@ -162,7 +164,7 @@ export const AuthProvider = (props) => {
       .catch((error) => {
         console.error(error);
         window.location.href = "/auth/login";
-        alert("Account invalid !");
+        alert("Tài khoản hoặc mật khẩu không chính xác !");
       });
   };
 

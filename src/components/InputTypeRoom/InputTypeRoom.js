@@ -39,7 +39,7 @@ const handleSubmit = async (event) => {
     console.log(accessToken);
     // Kiểm tra xem accessToken có tồn tại không
     if (!accessToken) {
-      alert("Bạn chưa đăng nhập");
+     console.log("Bạn chưa đăng nhập");
       return;
     }
 
