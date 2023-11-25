@@ -1,5 +1,5 @@
 import { Card, Button, Grid, OutlinedInput, SvgIcon } from "@mui/material";
-import PlusIcon from "@heroicons/react/24/solid/PlusIcon";
+import ForwardIcon from "@heroicons/react/24/solid/ForwardIcon";
 import React from "react";
 import { usePathname } from "next/navigation";
 import axios from "axios";
@@ -14,7 +14,7 @@ export const BookRoomSearch = ({ textSearch, setTextSearch }) => {
     path: "/room-service",
     icon: (
       <SvgIcon fontSize="small">
-        <PlusIcon />
+        <ForwardIcon />
       </SvgIcon>
     ),
   };
@@ -62,17 +62,17 @@ export const BookRoomSearch = ({ textSearch, setTextSearch }) => {
             className="btn btn-primary"
             style={{
               height: 55,
-              width: 170,
-              marginLeft: 600,
+              width: 220,
+              marginLeft: 560,
               backgroundColor: "darkblue",
               color: "white",
             }}
             onClick={createOrder}
           >
-            <SvgIcon fontSize="small">
-              <PlusIcon />
+            Tiến hành đặt phòng
+            <SvgIcon style={{ marginLeft: 20 }}>
+              <ForwardIcon/>
             </SvgIcon>
-            Đặt phòng
           </Button>
         </Grid>
       </Grid>

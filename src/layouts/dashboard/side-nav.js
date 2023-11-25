@@ -25,8 +25,10 @@ export const SideNav = (props) => {
   const lgUp = useMediaQuery((theme) => theme.breakpoints.up("lg"));
 
   const getUserRole = () => {
-    return localStorage.getItem('position');
+    return localStorage.getItem("position");
   };
+  
+  const userRole = getUserRole();
 
   const content = (
     <Scrollbar
@@ -76,7 +78,7 @@ export const SideNav = (props) => {
                 Armani Hotel
               </Typography>
               <Typography color="neutral.400" variant="body2">
-                Admin
+                {userRole === "ROLE_USER" ? "Nhân viên" : "Quản lý"}
               </Typography>
             </div>
             <SvgIcon fontSize="small" sx={{ color: "neutral.500" }}>
@@ -104,22 +106,16 @@ export const SideNav = (props) => {
           >
             {items.map((item) => {
               const active = item.path ? pathname === item.path : false;
-
-              const userRole = getUserRole();
-
-              if (userRole === 'ROLE_USER' && item.title === 'Thống kê') {
+              
+              if (userRole === "ROLE_USER" && item.title === "Thống kê") {
                 return null;
-              }
-
-              if (userRole === 'ROLE_USER' && item.title === '') {
+              } else if (userRole === "ROLE_USER" && item.title === "") {
                 return null;
-              }
-
-              if (userRole === 'ROLE_USER' && item.title === '.') {
+              } else if (userRole === "ROLE_USER" && item.title === ".") {
                 return null;
-              }
-
-              if (userRole === 'ROLE_USER' && item.title === 'Đơn vị') {
+              } else if (userRole === "ROLE_USER" && item.title === ",") {
+                return null;
+              } else if (userRole === "ROLE_USER" && item.title === "Đơn vị") {
                 return null;
               }
 
