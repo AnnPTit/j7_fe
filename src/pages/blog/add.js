@@ -5,12 +5,6 @@ import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import { useEffect, useState, useRef } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import PlusIcon from "@heroicons/react/24/solid/PlusIcon";
-import { Autocomplete, Chip, SvgIcon, TextField } from "@mui/material";
-import Modal from "react-bootstrap/Modal";
-import Button from "react-bootstrap/Button";
-import InputFloor from "src/components/InputFloor/InputFloor";
-import InputTypeRoom from "src/components/InputTypeRoom/InputTypeRoom";
 import Swal from "sweetalert2";
 import Card from "react-bootstrap/Card";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
@@ -18,103 +12,45 @@ import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 const cx = classNames.bind(style);
 
 function InputRoom() {
-  const [typeRoom, setTypeRoom] = useState([]);
-  const [floor, setFloor] = useState([]);
   const [newPhotos, setNewPhotos] = useState([]);
   const [previewImages, setPreviewImages] = useState([]);
-  const [facility, setFacility] = useState([]);
-  const [selectedFacilities, setSelectedFacilities] = useState([]);
-
-  const [showFloor, setShowFloor] = useState(false);
-  const [showTypeRoom, setShowTypeRoom] = useState(false);
-
-  const handleCloseFloor = () => setShowFloor(false);
-  const handleShowFloor = () => setShowFloor(true);
-  const handleCloseTypeRoom = () => setShowTypeRoom(false);
-  const handleShowTypeRoom = () => setShowTypeRoom(true);
   const fileInputRef = useRef(null);
 
   const handleSubmit = async (event) => {
     event.preventDefault(); // Ngăn chặn sự kiện submit mặc định
     // Lấy giá trị từ các trường nhập liệu
-    const roomCodeInpt = document.querySelector('input[name="roomCode"]');
-    const roomNameInpt = document.querySelector('input[name="roomName"]');
-    const noteInpt = document.querySelector('textarea[name="notee"]');
-    const floorIput = document.querySelector('select[name="floor"]');
-    const typeRoomIput = document.querySelector('select[name="typeRoom"]');
-
-    const roomCode = roomCodeInpt?.value;
-    const roomName = roomNameInpt?.value;
-    const note = noteInpt?.value;
-    const floor = floorIput?.value;
-    const typeRoom = typeRoomIput?.value;
-
-    let floorObj = {
-      id: floor,
-    };
-
-    let typeRoomObj = {
-      id: typeRoom,
-    };
-
-    // Tạo payload dữ liệu để gửi đến API
-    const payload = {
-      roomCode,
-      roomName,
-      note,
-      floor: floorObj,
-      typeRoom: typeRoomObj,
-      facilities: selectedFacilities.map((facility) => facility.id),
-    };
-    console.log("payload ", payload);
+    const tiltleInpt = document.querySelector('input[name="blogTitle"]');
+    const contentInpt = document.querySelector('textarea[name="blogContent"]');
+    const tiltle = tiltleInpt?.value;
+    const content = contentInpt?.value;
 
     const formData = new FormData(); // Create a new FormData object
 
-    formData.append("roomCode", roomCode);
-    formData.append("roomName", roomName);
-    formData.append("note", note);
-    formData.append("floor", floorObj.id);
-    formData.append("typeRoom", typeRoomObj.id);
-
+    formData.append("title", tiltle);
+    formData.append("content", content);
     // Append each file to the FormData object
     for (let i = 0; i < newPhotos.length; i++) {
       formData.append("photos", newPhotos[i]);
     }
-
-    // Append facility IDs to the FormData
-    for (let i = 0; i < selectedFacilities.length; i++) {
-      formData.append("facilities", selectedFacilities[i].id);
-    }
-
     try {
       const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
       // Kiểm tra xem accessToken có tồn tại không
       if (!accessToken) {
-       console.log("Bạn chưa đăng nhập");
+        console.log("Bạn chưa đăng nhập");
         return;
       }
-
       axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
-
-      if (selectedFacilities.length === 0) {
-        // Display an error message or take appropriate action
-        toast.error("Hãy chọn tiện nghi cho phòng.", {
-          position: toast.POSITION.BOTTOM_CENTER,
-        });
-        return;
-      }
-
-      const response = await axios.post("http://localhost:2003/api/admin/room/save", formData); // Gọi API /api/room-type/save với payload và access token
+      const response = await axios.post("http://localhost:2003/api/admin/blog/save", formData); // Gọi API /api/room-type/save với payload và access token
       toast.success("Thêm thành công!", {
         position: toast.POSITION.BOTTOM_CENTER,
       });
-      console.log(response); //
+      console.log(response);
       console.log("formData: ", formData);
 
       if (response.status === 200) {
         // Xử lý khi API thành công
         console.log("API call successful");
-        window.location.href = "/room";
+        window.location.href = "/blog";
         // Thực hiện các hành động khác sau khi API thành công
       } else {
         // Xử lý khi API gặp lỗi
@@ -149,32 +85,6 @@ function InputRoom() {
       }
     }
   };
-
-  useEffect(() => {
-    // Định nghĩa hàm fetchData bên trong useEffect
-    async function fetchData() {
-      try {
-        const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
-        // Kiểm tra xem accessToken có tồn tại không
-        if (!accessToken) {
-         console.log("Bạn chưa đăng nhập");
-          return;
-        }
-        axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
-        const response = await axios.get("http://localhost:2003/api/admin/type-room/getList");
-        const response2 = await axios.get("http://localhost:2003/api/admin/floor/getList");
-        const facility = await axios.get("http://localhost:2003/api/admin/facility/load");
-        setFacility(facility.data);
-        setTypeRoom(response.data);
-        setFloor(response2.data);
-      } catch (error) {
-        console.log(error);
-      }
-    }
-
-    // Gọi hàm fetchData ngay lập tức
-    fetchData();
-  }, []);
 
   const handleDeleteImage = (index) => {
     // Remove the image at the given index from both newPhotos and previewImages arrays
@@ -223,105 +133,29 @@ function InputRoom() {
       }}
     >
       <div className={cx("wrapper")}>
-        <h1 style={{ marginBottom: 50 }}>Thêm phòng</h1>
+        <h1 style={{ marginBottom: 50 }}>Thêm bài viết</h1>
         <div className="d-flex mb-4">
-          <div style={{ width: 490, marginRight: 23 }} className="form-floating">
-            <input
-              disabled
-              type="text"
-              className="form-control"
-              id="floatingPassword"
-              placeholder="Password"
-              name="roomCode"
-            />
-            <label htmlFor="floatingPassword">Mã phòng</label>
-          </div>
           <div style={{ width: 490 }} className="form-floating">
             <input
               type="text"
               className="form-control"
               id="floatingPassword"
               placeholder="Password"
-              name="roomName"
+              name="blogTitle"
             />
-            <label htmlFor="floatingPassword">Tên phòng</label>
+            <label htmlFor="floatingPassword">Tiêu đề</label>
           </div>
         </div>
-        <br></br>
-        <div className="d-flex mb-4">
-          <select
-            className="form-select"
-            style={{ height: 50, width: 380, marginRight: 10 }}
-            aria-label="Default select example"
-            name="typeRoom"
-          >
-            {typeRoom.map((typeRoom) => (
-              <option key={typeRoom.id} value={typeRoom.id}>
-                {typeRoom.typeRoomName}
-              </option>
-            ))}
-          </select>
-          <Button style={{ marginRight: 20 }} variant="primary" onClick={handleShowTypeRoom}>
-            <SvgIcon fontSize="small">
-              <PlusIcon />
-            </SvgIcon>
-          </Button>
-          <Modal
-            style={{ marginTop: 50 }}
-            show={showTypeRoom}
-            onHide={handleCloseTypeRoom}
-            backdrop="static"
-            keyboard={false}
-          >
-            <Modal.Header closeButton>
-              <Modal.Title>Loại phòng</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-              <InputTypeRoom />
-            </Modal.Body>
-          </Modal>
-          <select
-            className="form-select"
-            style={{ height: 50, width: 380, marginRight: 10 }}
-            aria-label="Default select example"
-            name="floor"
-          >
-            {floor.map((floor) => (
-              <option key={floor.id} value={floor.id}>
-                {floor.floorName}
-              </option>
-            ))}
-          </select>
-          <Button variant="primary" onClick={handleShowFloor}>
-            <SvgIcon fontSize="small">
-              <PlusIcon />
-            </SvgIcon>
-          </Button>
-        </div>
-        <Modal
-          style={{ marginTop: 50 }}
-          show={showFloor}
-          onHide={handleCloseFloor}
-          backdrop="static"
-          keyboard={false}
-        >
-          <Modal.Header closeButton>
-            <Modal.Title>Tầng</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <InputFloor />
-          </Modal.Body>
-        </Modal>
-        <br></br>
+
         <div className="form-floating">
           <textarea
             className="form-control"
             id="floatingTextarea"
             placeholder="Description"
-            name="notee"
+            name="blogContent"
             style={{ height: "150px" }}
           ></textarea>
-          <label htmlFor="floatingTextarea">Mô tả</label>
+          <label htmlFor="floatingTextarea">Nội dung</label>
         </div>
         <br></br>
         <hr />
@@ -344,12 +178,6 @@ function InputRoom() {
             >
               <CloudUploadIcon style={{ fontSize: "7rem" }} />
             </label>
-            {/* <input
-              id="photosInput"
-              type="button"
-              value="Choose Files"
-               // Trigger the hidden file input on button click
-            /> */}
           </div>
           <div className="d-flex flex-wrap mb-4">
             {previewImages &&
@@ -386,24 +214,7 @@ function InputRoom() {
         </div>
         <br></br>
         <hr />
-        <Autocomplete
-          multiple
-          id="tags-outlined"
-          options={facility}
-          getOptionLabel={(facility) => facility.facilityName}
-          value={selectedFacilities}
-          onChange={(event, newValue) => {
-            setSelectedFacilities(newValue);
-          }}
-          filterSelectedOptions
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              label="Tiện nghi"
-              placeholder="Chọn tiện nghi có sẵn trong phòng"
-            />
-          )}
-        />
+
         <br />
         <button
           className={(cx("input-btn"), "btn btn-primary")}

@@ -43,11 +43,11 @@ function RoomPlan() {
       try {
         const accessToken = localStorage.getItem("accessToken");
         if (!accessToken) {
-          alert("Bạn chưa đăng nhập");
+         console.log("Bạn chưa đăng nhập");
           return;
         }
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
-        const response = await axios.get("http://localhost:2003/api/admin/room/room-plan");
+        const response = await axios.get("http://localhost:2003/api/room/room-plan");
         console.log("Data: ", response.data);
         setRoom(response.data);
       } catch (error) {

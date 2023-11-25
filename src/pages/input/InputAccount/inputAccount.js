@@ -146,7 +146,7 @@ function InputAccount() {
       const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
       // Kiểm tra xem accessToken có tồn tại không
       if (!accessToken) {
-        alert("Bạn chưa đăng nhập");
+       console.log("Bạn chưa đăng nhập");
         return false;
       }
 

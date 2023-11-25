@@ -1,30 +1,30 @@
-import { useCallback, useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect } from "react";
 import axios from "axios";
 import Head from "next/head";
+
 import PlusIcon from "@heroicons/react/24/solid/PlusIcon";
-import { Box, Button, Container, Link, Stack, SvgIcon, Typography } from "@mui/material";
+import { Box, Container, Stack, SvgIcon } from "@mui/material";
 import { useSelection } from "src/hooks/use-selection";
 import { Layout as DashboardLayout } from "src/layouts/dashboard/layout";
-import { AccountTable } from "src/sections/account/account-table";
-import { AccountSearch } from "src/sections/account/account-search";
+import { BlogSearch } from "src/sections/blog/blog-search";
+import { BlogTable } from "src/sections/blog/blog-table";
 import { applyPagination } from "src/utils/apply-pagination";
 import MyPagination from "src/components/Pagination";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { SideNavItem } from "src/layouts/dashboard/side-nav-item";
 import { usePathname } from "next/navigation";
-import AccountFilter from "src/sections/account/account-filter";
 
-const useAccount = (data, page, rowsPerPage) => {
+const useRoom = (data, page, rowsPerPage) => {
   return useMemo(() => {
     console.log("data : ", data);
     return applyPagination(data, page, rowsPerPage);
   }, [data, page, rowsPerPage]);
 };
 
-const useAccountIds = (account) => {
+const useRoomIds = (room) => {
   return useMemo(() => {
-    return account.map((account) => account.id);
-  }, [account]);
+    return room.map((room) => room.id);
+  }, [room]);
 };
 
 const Page = () => {
@@ -32,25 +32,19 @@ const Page = () => {
   const [page, setPage] = useState(0);
   const [dataChange, setDataChange] = useState(false);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  const account = useAccount(data, page, rowsPerPage);
-  const accountIds = useAccountIds(account);
-  const accountSelection = useSelection(accountIds);
-
+  const room = useRoom(data, page, rowsPerPage);
+  const roomIds = useRoomIds(room);
+  const roomSelection = useSelection(roomIds);
   const [pageNumber, setPageNumber] = useState(0);
 
+  // Search
   const [textSearch, setTextSearch] = useState("");
-
-  const [position, setPosition] = useState([]);
-  const [positionChose, setPositionChose] = useState("");
-
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
-
   const pathname = usePathname();
-
   const item = {
-    title: "Add",
-    path: "input/InputAccount/inputAccount",
+    title: "Thêm mới",
+    path: "blog/add",
     icon: (
       <SvgIcon fontSize="small">
         <PlusIcon />
@@ -59,51 +53,15 @@ const Page = () => {
   };
   const active = item.path ? pathname === item.path : false;
 
-  // Delete
+  // Delete room
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:2003/api/admin/account/delete/${id}`);
-      console.log(id);
-      setDataChange(!dataChange);
+      // await axios.delete(`http://localhost:2003/api/admin/room/delete/${id}`);
+      // setDataChange(!dataChange);
     } catch (error) {
       console.log(error);
     }
   };
-
-    // ResetPassword
-    const handleResetPassword = async (id) => {
-      try {
-        await axios.put(`http://localhost:2003/api/admin/account/resetPassword/${id}`);
-        console.log(id);
-        setDataChange(!dataChange);
-      } catch (error) {
-        console.log(error);
-      }
-    };
-
-  // get data for filter
-  useEffect(() => {
-    // Định nghĩa hàm fetchData bên trong useEffect
-    async function fetchData() {
-      try {
-        const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
-        // Kiểm tra xem accessToken có tồn tại không
-        if (!accessToken) {
-         console.log("Bạn chưa đăng nhập");
-          return;
-        }
-        axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
-        const response = await axios.get("http://localhost:2003/api/position/getAll");
-        console.log(response.data);
-        setPosition(response.data);
-      } catch (error) {
-        console.log(error);
-      }
-    }
-    // Gọi hàm fetchData ngay lập tức
-    fetchData();
-  }, []);
-
 
   // Load
   useEffect(() => {
@@ -112,16 +70,10 @@ const Page = () => {
         const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
         console.log(accessToken);
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
-
-        let Api = `http://localhost:2003/api/admin/account/loadAndSearch?current_page=${pageNumber}`;
-
+        let Api = `http://localhost:2003/api/admin/blog/load?current_page=${pageNumber}`;
         if (textSearch !== "") {
           Api = Api + `&key=${textSearch}`;
         }
-        if (positionChose !== "") {
-          Api = Api + `&positionId=${positionChose}`;
-        }
-        console.warn(Api);
         const response = await axios.get(Api); // Thay đổi URL API của bạn tại đây
         console.log(response.data);
         setTotalPages(response.data.totalPages);
@@ -143,27 +95,24 @@ const Page = () => {
     };
 
     fetchData();
-  }, [pageNumber, dataChange, textSearch, positionChose]);
+  }, [pageNumber, dataChange, textSearch]);
 
   return (
     <>
       <Head>
-        <title>Nhân Viên |  Armani Hotel</title>
+        <title>Bài viết | Armani Hotel</title>
       </Head>
       <Box
         component="main"
         sx={{
           flexGrow: 1,
-          py: 8,
+          py: 3,
         }}
       >
         <Container maxWidth="xl">
           <Stack spacing={3}>
             <Stack direction="row" justifyContent="space-between" spacing={4}>
-              <Stack spacing={1}>
-                <Typography variant="h4">Nhân viên</Typography>
-                <Stack alignItems="center" direction="row" spacing={1}></Stack>
-              </Stack>
+              <Stack spacing={0}></Stack>
               <div>
                 <SideNavItem
                   style={{ backgroundColor: "red" }}
@@ -178,34 +127,20 @@ const Page = () => {
                 />
               </div>
             </Stack>
-            <AccountSearch textSearch={textSearch} setTextSearch={setTextSearch} />
-            <p
-              style={{
-                marginLeft: 20,
-              }}
-            >
-              {" "}
-              Lọc:
-            </p>
-            <AccountFilter
-              position={position}
-              positionChose={positionChose}
-              setPositionChose={setPositionChose}
-            />
+            <BlogSearch textSearch={textSearch} setTextSearch={setTextSearch} />
+
             <div style={{ minHeight: 500 }}>
               {" "}
-              <AccountTable
-                items={account}
-                selected={accountSelection.selected}
+              <BlogTable
+                items={room}
+                selected={roomSelection.selected}
                 onDelete={handleDelete} // Thêm prop onDelete và truyền giá trị của handleDelete vào đây
-                onResetPassword={handleResetPassword} 
                 setPageNumber={setPageNumber}
                 totalElements={totalElements}
-                pageNumber={pageNumber}
+                pageNumber={pageNumber} // Thêm prop onDelete và truyền giá trị của handleDelete vào đây
               />
             </div>
           </Stack>
-
           <MyPagination
             pageNumber={pageNumber}
             totalPages={totalPages}

@@ -66,7 +66,7 @@ export const BookRoomTable = (props) => {
     try {
       const accessToken = localStorage.getItem("accessToken");
       if (!accessToken) {
-        alert("Bạn chưa đăng nhập");
+       console.log("Bạn chưa đăng nhập");
         return;
       }
       axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
@@ -111,8 +111,8 @@ export const BookRoomTable = (props) => {
   };
 
   const formatPhoneNumber = (phoneNumber) => {
-    const digits = phoneNumber.replace(/\D/g, '');
-    const formattedNumber = digits.replace(/(\d{4})(\d{3})(\d{3})/, '$1-$2-$3');
+    const digits = phoneNumber.replace(/\D/g, "");
+    const formattedNumber = digits.replace(/(\d{4})(\d{3})(\d{3})/, "$1-$2-$3");
     return formattedNumber;
   };
 
@@ -238,7 +238,7 @@ export const BookRoomTable = (props) => {
     try {
       const accessToken = localStorage.getItem("accessToken");
       if (!accessToken) {
-        alert("Bạn chưa đăng nhập");
+       console.log("Bạn chưa đăng nhập");
         return;
       }
       axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
@@ -443,6 +443,11 @@ export const BookRoomTable = (props) => {
     }
   };
 
+  const isNewOrder = (order) => {
+    const isNewStatus = order.status === 1;
+    return isNewStatus;
+  };
+
   return (
     <Card sx={{ marginTop: 5, marginBottom: 3 }}>
       <ToastContainer></ToastContainer>
@@ -475,7 +480,22 @@ export const BookRoomTable = (props) => {
                         <span>{index + props.pageNumber * 5 + 1}</span>
                       </div>
                     </TableCell>
-                    <TableCell>{order.orderCode}</TableCell>
+                    <TableCell>
+                      {order.orderCode}
+                      {isNewOrder(order) && (
+                        <span
+                          style={{
+                            marginLeft: "10px",
+                            background: "red",
+                            color: "#fff",
+                            padding: "5px",
+                            borderRadius: "5px"
+                          }}
+                        >
+                          Mới
+                        </span>
+                      )}
+                    </TableCell>
                     <TableCell>{order.customer.fullname}</TableCell>
                     <TableCell>{formatPhoneNumber(order.customer.phoneNumber)}</TableCell>
                     <TableCell>{order.customer.email}</TableCell>

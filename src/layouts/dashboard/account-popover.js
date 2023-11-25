@@ -12,14 +12,24 @@ export const AccountPopover = (props) => {
   const router = useRouter();
   const auth = useAuth();
 
+
   const fullname = localStorage.getItem("fullName");
   const id = localStorage.getItem("idAccount");
   const hrefResetPassword = `/account/change-password?id=${id}`;
+
+
+
+  const handleProfile = () => {
+    onClose?.();
+    router.push("/profile");
+  };
+
 
   const handleSignOut = useCallback(() => {
     onClose?.();
     auth.signOut();
     router.push("/auth/login");
+    localStorage.removeItem("accessToken");
   }, [onClose, auth, router]);
 
   return (
@@ -55,6 +65,8 @@ export const AccountPopover = (props) => {
           },
         }}
       >
+        <MenuItem onClick={handleProfile}>Thông tin cá nhân</MenuItem>
+        <Divider />
         <MenuItem>
           <Link
             style={{
