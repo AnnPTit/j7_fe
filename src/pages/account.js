@@ -70,6 +70,17 @@ const Page = () => {
     }
   };
 
+    // ResetPassword
+    const handleResetPassword = async (id) => {
+      try {
+        await axios.put(`http://localhost:2003/api/admin/account/resetPassword/${id}`);
+        console.log(id);
+        setDataChange(!dataChange);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
   // get data for filter
   useEffect(() => {
     // Định nghĩa hàm fetchData bên trong useEffect
@@ -187,6 +198,7 @@ const Page = () => {
                 items={account}
                 selected={accountSelection.selected}
                 onDelete={handleDelete} // Thêm prop onDelete và truyền giá trị của handleDelete vào đây
+                onResetPassword={handleResetPassword} 
                 setPageNumber={setPageNumber}
                 totalElements={totalElements}
                 pageNumber={pageNumber}

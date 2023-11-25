@@ -5,6 +5,7 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import RotateLeftIcon from "@mui/icons-material/RotateLeft";
 import {
   Input,
   Box,
@@ -22,13 +23,14 @@ import Bars4Icon from "@heroicons/react/24/solid/Bars4Icon";
 import PencilSquareIcon from "@heroicons/react/24/solid/PencilSquareIcon";
 
 export const AccountTable = (props) => {
-  const {
-    items = [],
-    selected = [],
-  } = props;
+  const { items = [], selected = [] } = props;
 
   const handleDelete = (id) => {
     props.onDelete(id);
+  };
+
+  const handleResetPassword = (id) => {
+    props.onResetPassword(id);
   };
 
   return (
@@ -74,6 +76,23 @@ export const AccountTable = (props) => {
                     }
                   });
                 };
+                const alertResetPassword = () => {
+                  Swal.fire({
+                    title: "Are you sure?",
+                    text: "You won't be able to revert this!",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#3085d6",
+                    cancelButtonColor: "#d33",
+                    confirmButtonText: "Yes, delete it!",
+                  }).then((result) => {
+                    if (result.isConfirmed) {
+                      Swal.fire("Reset Password!", "Your data has been reset.", "success");
+                      handleResetPassword(account.id);
+                      toast.success("Reset Successfully!");
+                    }
+                  });
+                };
                 return (
                   <TableRow hover key={account.id} selected={isSelected}>
                     <TableCell padding="checkbox">
@@ -84,12 +103,16 @@ export const AccountTable = (props) => {
                     <TableCell>{account.accountCode}</TableCell>
                     <TableCell>{account.fullname}</TableCell>
                     <TableCell>{account.gender ? "Nam" : "Nữ"}</TableCell>
-                    <TableCell>{birthday}</TableCell>
+                    <TableCell>{account.birthday}</TableCell>
                     <TableCell>{account.phoneNumber}</TableCell>
                     <TableCell>{account.citizenId}</TableCell>
-                    <TableCell>{account.provinces} - {account.districts} - {account.wards}</TableCell>
+                    <TableCell>
+                      {account.provinces} - {account.districts} - {account.wards}
+                    </TableCell>
                     <TableCell>{account.email}</TableCell>
-                    <TableCell>{account.position.positionName === "ROLE_ADMIN" ? "Quản lý" : "Nhân Viên"}</TableCell>
+                    <TableCell>
+                      {account.position.positionName === "ROLE_ADMIN" ? "Quản lý" : "Nhân Viên"}
+                    </TableCell>
                     <TableCell>
                       <a className="btn btn-primary m-xl-2" href={hrefUpdate}>
                         <SvgIcon fontSize="small">
@@ -100,6 +123,9 @@ export const AccountTable = (props) => {
                         <SvgIcon fontSize="small">
                           <TrashIcon />
                         </SvgIcon>
+                      </button>
+                      <button className="btn btn-success m-xl-2" onClick={alertResetPassword}>
+                      <RotateLeftIcon />
                       </button>
                       <ToastContainer />
                     </TableCell>
