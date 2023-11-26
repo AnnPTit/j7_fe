@@ -46,7 +46,6 @@ export const Unit = (props) => {
               <TableRow>
                 <TableCell padding="checkbox">STT</TableCell>
                 <TableCell>Tên Đơn Vị</TableCell>
-                <TableCell>Trạng Thái </TableCell>
                 <TableCell>Hành động</TableCell>
               </TableRow>
             </TableHead>
@@ -86,7 +85,6 @@ export const Unit = (props) => {
                       </div>
                     </TableCell>
                     <TableCell>{unit.unitName}</TableCell>
-                    <TableCell>{unit.status == 1 ? "Active" : "Unactive"}</TableCell>
                     <TableCell>
                       <button className="btn btn-primary" onClick={() => handleEdit(unit.id)}>
                         <SvgIcon>

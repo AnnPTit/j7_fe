@@ -731,17 +731,6 @@ function BookRoom() {
       return;
     }
 
-    const selectedOrderDetail = orderDetailData.find(
-      (detail) => detail.id === selectedOrderDetails
-    );
-
-    if (customerInfo.length !== selectedOrderDetail.customerQuantity) {
-      toast.error("Có phòng chưa đủ số người ở!", {
-        position: toast.POSITION.BOTTOM_CENTER,
-      });
-      return;
-    }
-
     try {
       const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
       // Kiểm tra xem accessToken có tồn tại không
