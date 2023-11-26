@@ -28,7 +28,7 @@ function UpdateRoom() {
     roomCode: "",
     roomName: "",
     note: "",
-    createAt: "",
+    // createAt: "",
     floor: {},
     typeRoom: {},
   });
@@ -38,32 +38,6 @@ function UpdateRoom() {
 
   const handleSubmit = async (event, id, roomUpdate, selectedImages) => {
     event.preventDefault(); // Ngăn chặn sự kiện submit mặc định
-    const floorIput = document.querySelector('select[name="floor"]');
-    const typeRoomIput = document.querySelector('select[name="typeRoom"]');
-    const floor = floorIput?.value;
-    const typeRoom = typeRoomIput?.value;
-
-    let floorObj = {
-      id: floor,
-    };
-
-    let typeRoomObj = {
-      id: typeRoom,
-    };
-
-    // Tạo payload dữ liệu để gửi đến API
-    const payload = {
-      ...roomUpdate,
-      id: id,
-      roomCode: roomUpdate.roomCode,
-      roomName: roomUpdate.roomName,
-      note: roomUpdate.note,
-      floor: floorObj,
-      typeRoom: typeRoomObj,
-      facilities: selectedFacilities.map((facility) => facility.id),
-    };
-    console.log("payload ", payload);
-
     const formData = new FormData();
 
     // Append room information to formData
@@ -79,21 +53,15 @@ function UpdateRoom() {
       formData.append("photos", image);
     });
 
-    Object.entries(payload).forEach(([key, value]) => {
-      if (key === "roomFacilityList") {
-        value.forEach((facilityId) => {
-          formData.append("roomFacilityList", facilityId);
-        });
-      } else {
-        formData.append(key, value);
-      }
+    selectedFacilities.forEach((facility) => {
+      formData.append("facilities", facility.id);
     });
 
     try {
       const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
       // Kiểm tra xem accessToken có tồn tại không
       if (!accessToken) {
-        alert("Bạn chưa đăng nhập");
+        console.log("Bạn chưa đăng nhập");
         return false;
       }
 
@@ -101,7 +69,7 @@ function UpdateRoom() {
       const response = await axios.put(
         `http://localhost:2003/api/admin/room/update/${id}`,
         formData
-      ); // Gọi API /api/room-type/save với payload và access token
+      );
       toast.success("Cập nhật thành công!", {
         position: toast.POSITION.BOTTOM_CENTER,
       });
@@ -219,7 +187,7 @@ function UpdateRoom() {
         const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
         // Kiểm tra xem accessToken có tồn tại không
         if (!accessToken) {
-          alert("Bạn chưa đăng nhập");
+          console.log("Bạn chưa đăng nhập");
           return;
         }
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
@@ -242,7 +210,7 @@ function UpdateRoom() {
       try {
         const accessToken = localStorage.getItem("accessToken");
         if (!accessToken) {
-          alert("Bạn chưa đăng nhập");
+          console.log("Bạn chưa đăng nhập");
           return;
         }
 
@@ -264,7 +232,7 @@ function UpdateRoom() {
       try {
         const accessToken = localStorage.getItem("accessToken");
         if (!accessToken) {
-          alert("Bạn chưa đăng nhập");
+          console.log("Bạn chưa đăng nhập");
           return;
         }
 
@@ -286,7 +254,7 @@ function UpdateRoom() {
         const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
         // Kiểm tra xem accessToken có tồn tại không
         if (!accessToken) {
-          alert("Bạn chưa đăng nhập");
+          console.log("Bạn chưa đăng nhập");
           return;
         }
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
@@ -304,7 +272,7 @@ function UpdateRoom() {
     try {
       const accessToken = localStorage.getItem("accessToken");
       if (!accessToken) {
-        alert("Bạn chưa đăng nhập");
+        console.log("Bạn chưa đăng nhập");
         return;
       }
 
@@ -512,13 +480,38 @@ function UpdateRoom() {
         id="tags-outlined"
         options={facility}
         getOptionLabel={(facility) => facility?.facilityName}
-        value={roomFacilities
-          .filter((facilityId) => facilityId !== undefined) // Filter out undefined values
-          .map((facilityId) => facility.find((item) => item.id === facilityId.facility.id)) || selectedFacilities} 
+        value={Array.from(
+          new Set([
+            ...roomFacilities
+              .filter((facilityId) => facilityId !== undefined)
+              .map((facilityId) => facility.find((item) => item.id === facilityId.facility.id)),
+            ...selectedFacilities,
+          ])
+        )}
         onChange={(event, newValue) => {
           setSelectedFacilities(newValue);
         }}
-        filterSelectedOptions
+        onClose={() => {
+          setSelectedFacilities((prevSelectedFacilities) => {
+            const existingFacilityIds = prevSelectedFacilities.map((facility) => facility.id);
+            const uniqueNewFacilities = roomFacilities
+              .filter(
+                (facilityId) =>
+                  facilityId !== undefined && !existingFacilityIds.includes(facilityId.facility.id)
+              )
+              .map((facilityId) => facility.find((item) => item.id === facilityId.facility.id));
+            return [...prevSelectedFacilities, ...uniqueNewFacilities];
+          });
+        }}
+        filterOptions={(options, { inputValue }) => {
+          const selectedIds = selectedFacilities.map((facility) => facility.id);
+          const existingFacilityIds = roomFacilities.map((facilityId) => facilityId.facility.id);
+
+          return options.filter(
+            (option) => !selectedIds.includes(option.id) && !existingFacilityIds.includes(option.id)
+          );
+        }}
+        isOptionEqualToValue={(option, value) => option.id === value.id}
         renderInput={(params) => (
           <TextField
             {...params}
@@ -527,7 +520,6 @@ function UpdateRoom() {
           />
         )}
       />
-
       <br />
       <button
         className={(cx("input-btn"), "btn btn-primary")}

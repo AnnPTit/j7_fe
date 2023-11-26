@@ -33,6 +33,8 @@ import FormLabel from "@mui/material/FormLabel";
 import Radio from "@mui/material/Radio";
 import RadioGroup from "@mui/material/RadioGroup";
 import Swal from "sweetalert2";
+import Dialog from "@mui/material/Dialog";
+import DialogContent from "@mui/material/DialogContent";
 const numeral = require("numeral");
 
 export const BookRoomTable = (props) => {
@@ -51,6 +53,8 @@ export const BookRoomTable = (props) => {
   const [customerId, setCustomerId] = useState("");
   const [orderId, setOrderId] = useState("");
   const [orderStatus, setOrderStatus] = useState(0);
+  const [openDetail, setOpenDetail] = React.useState(false);
+  const [refuseReason, setRefuseReason] = React.useState("");
 
   const [open, setOpen] = useState(false);
   const showDrawer = async (orderId) => {
@@ -62,7 +66,7 @@ export const BookRoomTable = (props) => {
     try {
       const accessToken = localStorage.getItem("accessToken");
       if (!accessToken) {
-        alert("Bạn chưa đăng nhập");
+       console.log("Bạn chưa đăng nhập");
         return;
       }
       axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
@@ -107,10 +111,18 @@ export const BookRoomTable = (props) => {
   };
 
   const formatPhoneNumber = (phoneNumber) => {
-    const digits = phoneNumber.replace(/\D/g, '');
-    const formattedNumber = digits.replace(/(\d{4})(\d{3})(\d{3})/, '$1-$2-$3');
+    const digits = phoneNumber.replace(/\D/g, "");
+    const formattedNumber = digits.replace(/(\d{4})(\d{3})(\d{3})/, "$1-$2-$3");
     return formattedNumber;
   };
+
+  const handleCloseDetail = () => {
+    setOpenDetail(false);
+  };  
+  
+  const handleOpenDetail = () => {
+    setOpenDetail(true);
+  };   
 
   const getStatusButtonColor = (status) => {
     switch (status) {
@@ -139,7 +151,7 @@ export const BookRoomTable = (props) => {
   const handleCancelOrder = async (id) => {
     try {
       console.log(id);
-      const response = await axios.post(`http://localhost:2003/api/home/order/cancel/${orderId}/6`);
+      const response = await axios.post(`http://localhost:2003/api/home/order/cancel/${orderId}/6?refuseReason=${refuseReason}`);
       if (response.data.status === 1) {
         toast.success(response.data.message);
       }
@@ -226,7 +238,7 @@ export const BookRoomTable = (props) => {
     try {
       const accessToken = localStorage.getItem("accessToken");
       if (!accessToken) {
-        alert("Bạn chưa đăng nhập");
+       console.log("Bạn chưa đăng nhập");
         return;
       }
       axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
@@ -258,6 +270,52 @@ export const BookRoomTable = (props) => {
       case 1:
         return (
           <React.Fragment>
+            <Dialog open={openDetail} onClose={handleCloseDetail} maxWidth="lg">
+          <DialogContent>
+            <Table>
+              <TableHead>
+                <TableRow>
+                <TextField
+                style={{ marginTop: 10 }}
+                label="Lý do từ chối "
+                fullWidth
+                variant="outlined"
+                value={refuseReason}
+                onChange={(e) => setRefuseReason(e.target.value)}
+              />
+                </TableRow>
+              </TableHead>
+              <Button
+                style={{   marginTop: 40 , }}
+                variant="outlined"
+                color="error"
+                // onClick={() => handleCancelOrder(orderId)}
+                onClick={() => {
+                  handleCloseDetail()
+                  Swal.fire({
+                    title: "Bạn có chắc chắn muốn hủy ? ",
+                    text: "",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#3085d6",
+                    cancelButtonColor: "#d33",
+                    confirmButtonText: "Đúng, hủy!",
+                  }).then(async (result) => {
+                    if (result.isConfirmed) {
+                      const isSubmitSuccess = await handleCancelOrder(orderId);
+                      if (isSubmitSuccess) {
+                        Swal.fire("Thêm thành công !", "success");
+                        toast.success("Thêm Thành Công !");
+                      }
+                    }
+                  });
+                }}
+              >
+                Hủy xác nhận
+              </Button>
+            </Table>
+          </DialogContent>
+        </Dialog>
             <div style={{ display: "flex", justifyContent: "flex-end" }}>
               <TextField
                 style={{ marginRight: 20 }}
@@ -270,23 +328,25 @@ export const BookRoomTable = (props) => {
                 color="error"
                 // onClick={() => handleCancelOrder(orderId)}
                 onClick={() => {
-                  Swal.fire({
-                    title: "Bạn có chắc chắn muốn hủy ? ",
-                    text: "",
-                    icon: "warning",
-                    showCancelButton: true,
-                    confirmButtonColor: "#3085d6",
-                    cancelButtonColor: "#d33",
-                    confirmButtonText: "Yes, Add it!",
-                  }).then(async (result) => {
-                    if (result.isConfirmed) {
-                      const isSubmitSuccess = await handleCancelOrder(orderId);
-                      if (isSubmitSuccess) {
-                        Swal.fire("Thêm thành công !", "success");
-                        toast.success("Thêm Thành Công !");
-                      }
-                    }
-                  });
+                  handleOpenDetail()
+                  // Swal.fire({
+                  //   title: "Bạn có chắc chắn muốn hủy ? ",
+                  //   text: "",
+                  //   icon: "warning",
+                  //   showCancelButton: true,
+                  //   confirmButtonColor: "#3085d6",
+                  //   cancelButtonColor: "#d33",
+                  //   confirmButtonText: "Đúng, hủy!",
+                  // }).then(async (result) => {
+                  //   if (result.isConfirmed) {
+                  //     const isSubmitSuccess = await handleCancelOrder(orderId);
+                  //     // if (isSubmitSuccess) {
+                  //     //   Swal.fire("Thêm thành công !", "success");
+                  //     //   toast.success("Thêm Thành Công !");
+                  //     // }
+                  //   }
+                  // });
+
                 }}
               >
                 Hủy xác nhận
@@ -383,6 +443,11 @@ export const BookRoomTable = (props) => {
     }
   };
 
+  const isNewOrder = (order) => {
+    const isNewStatus = order.status === 1;
+    return isNewStatus;
+  };
+
   return (
     <Card sx={{ marginTop: 5, marginBottom: 3 }}>
       <ToastContainer></ToastContainer>
@@ -415,7 +480,22 @@ export const BookRoomTable = (props) => {
                         <span>{index + props.pageNumber * 5 + 1}</span>
                       </div>
                     </TableCell>
-                    <TableCell>{order.orderCode}</TableCell>
+                    <TableCell>
+                      {order.orderCode}
+                      {isNewOrder(order) && (
+                        <span
+                          style={{
+                            marginLeft: "10px",
+                            background: "red",
+                            color: "#fff",
+                            padding: "5px",
+                            borderRadius: "5px"
+                          }}
+                        >
+                          Mới
+                        </span>
+                      )}
+                    </TableCell>
                     <TableCell>{order.customer.fullname}</TableCell>
                     <TableCell>{formatPhoneNumber(order.customer.phoneNumber)}</TableCell>
                     <TableCell>{order.customer.email}</TableCell>

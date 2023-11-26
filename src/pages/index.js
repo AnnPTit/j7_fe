@@ -39,7 +39,7 @@ const Page = () => {
         const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
         // Kiểm tra xem accessToken có tồn tại không
         if (!accessToken) {
-          alert("Bạn chưa đăng nhập");
+         console.log("Bạn chưa đăng nhập");
           return;
         }
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
@@ -71,7 +71,6 @@ const Page = () => {
         console.log(error);
       }
     }
-
     fetchData();
   }, []);
 
@@ -172,8 +171,8 @@ const Page = () => {
             <Grid xs={12} md={12} lg={8}>
               <OverviewLatestOrders
                 orders={order.slice(0, 7).map((order) => ({
-                  id: order.id,
                   ref: order.orderCode,
+                  id: order.typeOfOrder,
                   amount: order.totalMoney,
                   customer: {
                     name: order.customer.fullname,

@@ -24,6 +24,16 @@ const statusMap = {
   refunded: "error",
 };
 
+const getTypeOrderColor = (method) => {
+  if (method === true) {
+    return { color: "primary", text: "Tại quầy" };
+  } else if (method === false) {
+    return { color: "warning", text: "Online" };
+  } else {
+    return { color: "default", text: "Unknown" };
+  }
+};
+
 const getStatusButtonColor = (status) => {
   switch (status) {
     case 0:
@@ -59,19 +69,27 @@ export const OverviewLatestOrders = (props) => {
             <TableHead>
               <TableRow>
                 <TableCell>Hóa đơn</TableCell>
+                <TableCell>Loại hóa đơn</TableCell>
                 <TableCell>Khách hàng</TableCell>
                 <TableCell sortDirection="desc">Ngày tạo</TableCell>
                 <TableCell>Trạng thái</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {orders.map((order) => {
+              {orders.map((order, index) => {
+                const typeOfOrderData = getTypeOrderColor(order.id);
+                const typeOfOrderText = typeOfOrderData.text;
                 const statusData = getStatusButtonColor(order.status);
                 const statusText = statusData.text;
 
                 return (
-                  <TableRow hover key={order.id}>
+                  <TableRow hover key={index}>
                     <TableCell>{order.ref}</TableCell>
+                    <TableCell>
+                      <SeverityPill variant="contained" color={typeOfOrderData.color}>
+                        {typeOfOrderText}
+                      </SeverityPill>
+                    </TableCell>
                     <TableCell>{order.customer.name}</TableCell>
                     <TableCell>
                       {order && order.createdAt && format(new Date(order.createdAt), "dd/MM/yyyy")}
