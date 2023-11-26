@@ -103,8 +103,6 @@ function InputAccount() {
     console.log(e.target.value);
   };
 
-
-
   const handleSubmit = async (event) => {
     event.preventDefault(); // Ngăn chặn sự kiện submit mặc định
     // Lấy giá trị từ các trường nhập liệu
@@ -180,9 +178,8 @@ function InputAccount() {
           alert("Bạn không có quyền truy cập vào trang này");
           window.location.href = "/auth/login"; // Chuyển hướng đến trang đăng nhập
         } else if (error.response.status === 400) {
-          
           console.log(error.response.data);
-          toast.error( error.response.data);
+          toast.error(error.response.data);
           const isFullnameError = error.response.data.fullname === undefined;
           const isEmailError = error.response.data.email === undefined;
           const isPhoneNumberError = error.response.data.phoneNumber === undefined;
@@ -191,8 +188,6 @@ function InputAccount() {
           const isProvinceError = error.response.data.provinces === undefined;
           const isDistrictError = error.response.data.districts === undefined;
           const isWardError = error.response.data.wards === undefined;
-  
-          
 
           if (
             !isFullnameError &&
@@ -261,7 +256,7 @@ function InputAccount() {
             //   // API trả về lỗi cho trường email
             //   toast.error("Email này đã tồn tại!");
             // }
-        
+
             // if (error.response.data.citizenId) {
             //   // API trả về lỗi cho trường số căn cước công dân
             //   toast.error("Số căn cước công dân này đã tồn tại!");
@@ -278,15 +273,15 @@ function InputAccount() {
       }
     }
   };
-    // QR Code
-    const [delay, setDelay] = useState(100);
-    const [result, setResult] = useState("No result");
-    const [cameraEnabled, setCameraEnabled] = useState(false);
-  
-    const [citizenId, setCitizenId] = useState("");
-    const [fullname, setFullname] = useState("");
-    const [birthday, setBirthday] = useState(null);
-    const [gender, setGender] = useState("true");
+  // QR Code
+  const [delay, setDelay] = useState(100);
+  const [result, setResult] = useState("No result");
+  const [cameraEnabled, setCameraEnabled] = useState(false);
+
+  const [citizenId, setCitizenId] = useState("");
+  const [fullname, setFullname] = useState("");
+  const [birthday, setBirthday] = useState(null);
+  const [gender, setGender] = useState("true");
 
   const handleScan = (data) => {
     if (data && data.text) {
@@ -415,11 +410,9 @@ function InputAccount() {
         <label htmlFor="floatingPassword">Họ tên</label>
       </div>
       <br></br>
-      <div className="form-floating mb-3">
-        <FormControl style={{ width: 600, display: "flex", justifyContent: "center" }}>
+      <div className="form-floating sm-1">
           <FormLabel
-            style={{ display: "flex", justifyContent: "center" }}
-            id="demo-row-radio-buttons-group-label"
+          class="form-label"
           >
             Giới tính
           </FormLabel>
@@ -434,7 +427,7 @@ function InputAccount() {
             <FormControlLabel value="true" control={<Radio />} label="Nam" />
             <FormControlLabel value="false" control={<Radio />} label="Nữ" />
           </RadioGroup>
-        </FormControl>
+
       </div>
       <br></br>
       <DatePicker
@@ -453,8 +446,8 @@ function InputAccount() {
           />
         )}
       />
-
-      <br></br>
+      <br/>
+      <br/>
       <div className="form-floating mb-3">
         <input
           type="text"
@@ -488,25 +481,21 @@ function InputAccount() {
         />
         <label htmlFor="floatingPassword">Căn cước công dân</label>
       </div>
-
-      <p>Tỉnh/Thành Phố</p>
-      <select
-        className="form-select"
-        name="provinces"
-        value={selectedProvince}
-        onChange={handleProvinceChange}
-      >
-        <option value="">Chọn tỉnh thành</option>
-        {provinces.map((province) => (
-          <option key={province.province_id} value={province.province_id}>
-            {province.province_name}
-          </option>
-        ))}
-      </select>
-
+      <br/>
+        <select
+          className="form-select"
+          name="provinces"
+          value={selectedProvince}
+          onChange={handleProvinceChange}
+        >
+          <option value="">Chọn tỉnh thành</option>
+          {provinces.map((province) => (
+            <option key={province.province_id} value={province.province_id}>
+              {province.province_name}
+            </option>
+          ))}
+        </select>
       <br />
-
-      <p>Quận/Huyện</p>
       <select
         className="form-select"
         name="districts"
@@ -521,8 +510,6 @@ function InputAccount() {
         ))}
       </select>
       <br />
-
-      <p>Phường/Xã</p>
       <select
         className="form-select"
         name="wards"
