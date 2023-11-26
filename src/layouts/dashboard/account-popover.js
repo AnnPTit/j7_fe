@@ -4,18 +4,26 @@ import PropTypes from "prop-types";
 import { Box, Divider, MenuItem, MenuList, Popover, Typography } from "@mui/material";
 import { useAuth } from "src/hooks/use-auth";
 import axios from "axios";
+import Link from "next/link";
+// import ChangePassword from "./ChangePasswordModal";
 
 export const AccountPopover = (props) => {
   const { anchorEl, onClose, open } = props;
   const router = useRouter();
   const auth = useAuth();
 
+
   const fullname = localStorage.getItem("fullName");
+  const id = localStorage.getItem("idAccount");
+  const hrefResetPassword = `/account/change-password?id=${id}`;
+
+
 
   const handleProfile = () => {
     onClose?.();
     router.push("/profile");
   };
+
 
   const handleSignOut = useCallback(() => {
     onClose?.();
@@ -59,6 +67,17 @@ export const AccountPopover = (props) => {
       >
         <MenuItem onClick={handleProfile}>Thông tin cá nhân</MenuItem>
         <Divider />
+        <MenuItem>
+          <Link
+            style={{
+              textDecoration: "none",
+              color: "black",
+            }}
+            href={hrefResetPassword}
+          >
+            Đổi mật khẩu
+          </Link>
+        </MenuItem>
         <MenuItem onClick={handleSignOut}>Đăng xuất</MenuItem>
       </MenuList>
     </Popover>
