@@ -46,7 +46,7 @@ export const BlogTable = (props) => {
             <TableBody>
               {items.map((room, index) => {
                 console.log(room.photoDTOS[0].url);
-                const hrefUpdate = `/update/updateRoom/updateRoom?id=${room.id}`;
+                const hrefUpdate = `/blog/update?id=${room.id}`;
                 const formatDate = (dateString) => {
                   const options = { day: "numeric", month: "numeric", year: "numeric" };
                   const formattedDate = new Date(dateString).toLocaleDateString(undefined, options);
