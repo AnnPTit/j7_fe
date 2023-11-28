@@ -56,8 +56,8 @@ const Page = () => {
   // Delete room
   const handleDelete = async (id) => {
     try {
-      // await axios.delete(`http://localhost:2003/api/admin/room/delete/${id}`);
-      // setDataChange(!dataChange);
+      await axios.delete(`http://localhost:2003/api/admin/blog/delete/${id}`);
+      setDataChange(!dataChange);
     } catch (error) {
       console.log(error);
     }
@@ -70,10 +70,11 @@ const Page = () => {
         const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
         console.log(accessToken);
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
-        let Api = `http://localhost:2003/api/admin/blog/load?current_page=${pageNumber}`;
+        let Api = `http://localhost:2003/api/admin/blog/loadAndSearch?current_page=${pageNumber}`;
         if (textSearch !== "") {
           Api = Api + `&key=${textSearch}`;
         }
+        
         const response = await axios.get(Api); // Thay đổi URL API của bạn tại đây
         console.log(response.data);
         setTotalPages(response.data.totalPages);
