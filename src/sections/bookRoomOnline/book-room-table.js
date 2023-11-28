@@ -55,6 +55,7 @@ export const BookRoomTable = (props) => {
   const [orderStatus, setOrderStatus] = useState(0);
   const [openDetail, setOpenDetail] = React.useState(false);
   const [refuseReason, setRefuseReason] = React.useState("");
+  const [isNewCustom, SetIsNewCustom] = React.useState(true);
 
   const [open, setOpen] = useState(false);
   const showDrawer = async (orderId) => {
@@ -78,6 +79,9 @@ export const BookRoomTable = (props) => {
       const formattedDate = formatDate(responseOrder.data.customer.birthday);
       setBirthday(formattedDate);
       setCitizenId(responseOrder.data.customer.citizenId);
+      if (responseOrder.data.customer.citizenId) {
+        SetIsNewCustom(false);
+      }
       setName(responseOrder.data.customer.fullname);
       setEmail(responseOrder.data.customer.email);
       setPhone(responseOrder.data.customer.phoneNumber);
@@ -241,6 +245,7 @@ export const BookRoomTable = (props) => {
       nation,
       orderId: orderId,
       customerId: customerId,
+      isNewCustomer: isNewCustom,
     };
 
     try {
