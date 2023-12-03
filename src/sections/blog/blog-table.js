@@ -45,8 +45,14 @@ export const BlogTable = (props) => {
             </TableHead>
             <TableBody>
               {items.map((room, index) => {
-
-                console.log(room.photoDTOS[0].url);
+                if (
+                  room.photoDTOS !== null &&
+                  room.photoDTOS !== undefined &&
+                  room.photoDTOS.length > 0
+                ) {
+                  // Access the url property of the first element in photoDTOS array
+                  console.log(room.photoDTOS[0].url);
+                }
                 const hrefUpdate = `/blog/update?id=${room.id}`;
 
                 const formatDate = (dateString) => {
