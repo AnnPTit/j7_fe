@@ -55,6 +55,8 @@ import PriceRangeSlider from "src/sections/room/price-slider";
 import { SeverityPill } from "src/components/severity-pill";
 import QrCodeScannerIcon from "@mui/icons-material/QrCodeScanner";
 import { CustomerSearch } from "src/sections/bookRoomOffline/customer-search";
+import { sum } from "lodash";
+import { el } from "date-fns/locale";
 function BookRoom() {
   const router = useRouter(); // Sử dụng useRouter để truy cập router của Next.js
   const { id } = router.query;
@@ -119,6 +121,14 @@ function BookRoom() {
   const [selectedCustomerAccept, setSelectedCustomerAccept] = useState("");
   const [selectedCustomerReturn, setSelectedCustomerReturn] = useState("");
   const [searchCustomer, setSearchCustomer] = useState("");
+  const [sumAmountValue, setSumAmountValue] = useState(0);
+
+  // CTGG
+  const [reduceValue, setReduceValue] = useState(0);
+  const [discountProgram, setDiscountProgram] = useState([]);
+  const [selectedDiscount, setSelectedDiscount] = useState({});
+  const [discountPercent, setDiscountPercent] = useState(0);
+  const [discountMonney, setDiscountMonney] = useState(0);
 
   // Dialogs
   const [openSeacrhRoom, setOpenSeacrhRoom] = React.useState(false);
@@ -565,6 +575,9 @@ function BookRoom() {
   const vatAmount = totalAmount * 0.1;
   const totalMoney = totalAmount + vatAmount;
   const sumAmount = totalAmount + vatAmount - order.deposit;
+  useEffect(() => {
+    setSumAmountValue(sumAmount);
+  }, [sumAmount]);
   const moneyReturnCustomer = givenCustomer - sumAmount;
 
   useEffect(() => {
@@ -697,6 +710,27 @@ function BookRoom() {
     }
   };
 
+  const handleChoseDiscount = (event) => {
+    const discont = event.target.value;
+    if (discont) {
+      setSelectedDiscount(discont);
+      setDiscountPercent(discont.reduceValue);
+      const total = calculateTotal();
+      const totalAfterDiscount = (total * discont.reduceValue) / 100;
+      setDiscountMonney(totalAfterDiscount);
+      console.log(totalAfterDiscount);
+      console.log(sumAmount - totalAfterDiscount);
+      setSumAmountValue(sumAmount - totalAfterDiscount);
+    } else {
+      setSelectedDiscount(null);
+      setDiscountPercent(null);
+      const total = calculateTotal();
+      setDiscountMonney(null);
+      setSumAmountValue(sumAmount);
+    }
+    console.log(sumAmountValue);
+  };
+
   // Xác nhận phòng
   const handleConfirmOrder = async () => {
     if (orderDetailData.length == 0) {
@@ -746,14 +780,14 @@ function BookRoom() {
       const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
       // Kiểm tra xem accessToken có tồn tại không
       if (!accessToken) {
-       console.log("Bạn chưa đăng nhập");
+        console.log("Bạn chưa đăng nhập");
         return;
       }
       axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
 
       await axios.put(`http://localhost:2003/api/order/update-accept/${id}`, {
         customerId: selectedCustomerAccept,
-        totalMoney: sumAmount,
+        totalMoney: sumAmountValue,
         vat: vatAmount,
         note: noteOrder,
       });
@@ -811,7 +845,7 @@ function BookRoom() {
 
   //Trả phòng
   const handleReturnRoom = async () => {
-    if (!givenCustomer || givenCustomer < sumAmount) {
+    if (!givenCustomer || givenCustomer < sumAmountValue) {
       // Xử lý khi tiền khách trả không hợp lệ, ví dụ: hiển thị thông báo lỗi
       toast.error("Số tiền khách trả không hợp lệ!", {
         position: toast.POSITION.BOTTOM_CENTER,
@@ -822,17 +856,19 @@ function BookRoom() {
       const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
       // Kiểm tra xem accessToken có tồn tại không
       if (!accessToken) {
-       console.log("Bạn chưa đăng nhập");
+        console.log("Bạn chưa đăng nhập");
         return;
       }
       axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
 
       await axios.put(`http://localhost:2003/api/order/update-return/${id}`, {
-        totalMoney: sumAmount,
+        totalMoney: sumAmountValue,
         vat: vatAmount,
         moneyGivenByCustomer: givenCustomer,
         excessMoney: moneyReturnCustomer,
         note: noteReturnRoom,
+        discountProgram: selectedDiscount.id,
+        discountMonney: discountMonney,
       });
       setOrder({ ...order, status: 3 });
       handleCloseReturnRoom();
@@ -851,7 +887,7 @@ function BookRoom() {
       const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
       // Kiểm tra xem accessToken có tồn tại không
       if (!accessToken) {
-       console.log("Bạn chưa đăng nhập");
+        console.log("Bạn chưa đăng nhập");
         return;
       }
       axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
@@ -875,13 +911,13 @@ function BookRoom() {
     const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
     // Kiểm tra xem accessToken có tồn tại không
     if (!accessToken) {
-     console.log("Bạn chưa đăng nhập");
+      console.log("Bạn chưa đăng nhập");
       return;
     }
     axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
     // const updatedTotalMoney = calculateTotal(); // Lấy giá trị tạm tính
     const response = await axios.put(`http://localhost:2003/api/order/update/${id}`, {
-      totalMoney: sumAmount,
+      totalMoney: sumAmountValue,
     });
     toast.success("Lưu thành công!", {
       position: toast.POSITION.BOTTOM_CENTER,
@@ -932,7 +968,7 @@ function BookRoom() {
       const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
       // Kiểm tra xem accessToken có tồn tại không
       if (!accessToken) {
-       console.log("Bạn chưa đăng nhập");
+        console.log("Bạn chưa đăng nhập");
         return;
       }
       axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
@@ -1008,7 +1044,7 @@ function BookRoom() {
       const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
       // Kiểm tra xem accessToken có tồn tại không
       if (!accessToken) {
-       console.log("Bạn chưa đăng nhập");
+        console.log("Bạn chưa đăng nhập");
         return;
       }
       axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
@@ -1039,6 +1075,27 @@ function BookRoom() {
     }
   };
 
+  // Load commbox discount -> Load theo tổng tiền
+  useEffect(() => {
+    const fetchDiscount = async () => {
+      try {
+        const total = calculateTotal();
+        const response = await axios.get(
+          `http://localhost:2003/api/order/discount-program?totalMoney=${total}`
+        );
+        console.log(response.data);
+        setDiscountProgram(response.data);
+      } catch (error) {
+        console.error("Error loading combo used:", error);
+      }
+    };
+    fetchDiscount();
+  }, [
+    sumOrderDetail,
+    calculateTotalAmountPriceRoom(),
+    calculateTotalService(),
+    calculateTotalCombo(),
+  ]);
   // Thêm khách hàng cho từng phòng
   const handleAddCustomerToRooms = async () => {
     if (!selectedOrderDetails) {
@@ -1148,7 +1205,7 @@ function BookRoom() {
       const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
       // Kiểm tra xem accessToken có tồn tại không
       if (!accessToken) {
-       console.log("Bạn chưa đăng nhập");
+        console.log("Bạn chưa đăng nhập");
         return;
       }
       axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
@@ -1272,7 +1329,7 @@ function BookRoom() {
       const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
       // Kiểm tra xem accessToken có tồn tại không
       if (!accessToken) {
-       console.log("Bạn chưa đăng nhập");
+        console.log("Bạn chưa đăng nhập");
         return;
       }
       axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
@@ -1311,7 +1368,7 @@ function BookRoom() {
       const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
       // Kiểm tra xem accessToken có tồn tại không
       if (!accessToken) {
-       console.log("Bạn chưa đăng nhập");
+        console.log("Bạn chưa đăng nhập");
         return;
       }
 
@@ -1338,7 +1395,7 @@ function BookRoom() {
       const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
       // Kiểm tra xem accessToken có tồn tại không
       if (!accessToken) {
-       console.log("Bạn chưa đăng nhập");
+        console.log("Bạn chưa đăng nhập");
         return;
       }
       axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
@@ -1367,7 +1424,7 @@ function BookRoom() {
       const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
       // Kiểm tra xem accessToken có tồn tại không
       if (!accessToken) {
-       console.log("Bạn chưa đăng nhập");
+        console.log("Bạn chưa đăng nhập");
         return;
       }
       axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
@@ -1411,7 +1468,7 @@ function BookRoom() {
         const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
         // Kiểm tra xem accessToken có tồn tại không
         if (!accessToken) {
-         console.log("Bạn chưa đăng nhập");
+          console.log("Bạn chưa đăng nhập");
           return;
         }
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
@@ -1434,7 +1491,7 @@ function BookRoom() {
         const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
         // Kiểm tra xem accessToken có tồn tại không
         if (!accessToken) {
-         console.log("Bạn chưa đăng nhập");
+          console.log("Bạn chưa đăng nhập");
           return;
         }
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
@@ -1455,7 +1512,7 @@ function BookRoom() {
         const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
         // Kiểm tra xem accessToken có tồn tại không
         if (!accessToken) {
-         console.log("Bạn chưa đăng nhập");
+          console.log("Bạn chưa đăng nhập");
           return;
         }
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
@@ -1477,7 +1534,7 @@ function BookRoom() {
         const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
         // Kiểm tra xem accessToken có tồn tại không
         if (!accessToken) {
-         console.log("Bạn chưa đăng nhập");
+          console.log("Bạn chưa đăng nhập");
           return;
         }
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
@@ -1529,7 +1586,7 @@ function BookRoom() {
       try {
         const accessToken = localStorage.getItem("accessToken");
         if (!accessToken) {
-         console.log("Bạn chưa đăng nhập");
+          console.log("Bạn chưa đăng nhập");
           return;
         }
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
@@ -1625,7 +1682,7 @@ function BookRoom() {
         const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
         // Kiểm tra xem accessToken có tồn tại không
         if (!accessToken) {
-         console.log("Bạn chưa đăng nhập");
+          console.log("Bạn chưa đăng nhập");
           return;
         }
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
@@ -1688,7 +1745,7 @@ function BookRoom() {
         const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
         // Kiểm tra xem accessToken có tồn tại không
         if (!accessToken) {
-         console.log("Bạn chưa đăng nhập");
+          console.log("Bạn chưa đăng nhập");
           return;
         }
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
@@ -3166,10 +3223,50 @@ function BookRoom() {
               </div>
               <br />
               <div style={{ display: "flex" }}>
+                <br />
+                <FormControl fullWidth style={{ width: 520, marginRight: 30 }}>
+                  <InputLabel id="demo-simple-select-label">
+                    Áp dụng chương trình giảm giá
+                  </InputLabel>
+                  <Select onChange={handleChoseDiscount} value={selectedDiscount}>
+                    <MenuItem key={null} value={null}>
+                      Chương trình giảm giá
+                    </MenuItem>
+                    {discountProgram.map((item) => (
+                      // Use parentheses instead of curly braces to implicitly return the JSX
+                      <MenuItem key={item.id} value={item}>
+                        {item.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+                <br />
+                <br />
+                <TextField
+                  style={{ width: 520, marginRight: 30 }}
+                  label="Phần trăm giảm"
+                  value={discountPercent ? discountPercent + "%" : "0 %"}
+                  fullWidth
+                  variant="outlined"
+                />
+                <br />
+                <br />
+                <TextField
+                  style={{ width: 520, marginRight: 30 }}
+                  label="Số tiền được giảm"
+                  value={discountMonney ? formatPrice(discountMonney) : "0 VND"}
+                  fullWidth
+                  variant="outlined"
+                />
+              </div>
+              <br />
+              <div style={{ display: "flex" }}></div>
+
+              <div style={{ display: "flex" }}>
                 <TextField
                   style={{ width: 520, marginRight: 30 }}
                   label="Tổng tiền"
-                  value={sumAmount ? formatPrice(sumAmount) : "0 VND"}
+                  value={sumAmountValue ? formatPrice(sumAmountValue) : "0 VND"}
                   fullWidth
                   variant="outlined"
                 />
@@ -3202,7 +3299,11 @@ function BookRoom() {
               <br />
               <TextField
                 label="Tiền trả lại"
-                value={givenCustomer - sumAmount ? formatPrice(givenCustomer - sumAmount) : "0 VND"}
+                value={
+                  givenCustomer - sumAmountValue
+                    ? formatPrice(givenCustomer - sumAmountValue)
+                    : "0 VND"
+                }
                 fullWidth
                 variant="outlined"
               />
