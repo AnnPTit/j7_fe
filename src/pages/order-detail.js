@@ -412,7 +412,7 @@ function OrderTimeline() {
     fetchServiceUsed();
   }, [orderDetail]);
 
-  const hrefReturnRoom = `/room-service?id=${id}`;
+  const hrefReturnRoom = `/booking?id=${id}`;
 
   return (
     <div
@@ -434,7 +434,7 @@ function OrderTimeline() {
           marginLeft: 140,
         }}
       >
-        <Timeline minEvents={5} placeholder>
+        <Timeline minEvents={timelineEvents.length} placeholder>
           {timelineEvents.map((event, index) => (
             <TimelineEvent
               key={index}

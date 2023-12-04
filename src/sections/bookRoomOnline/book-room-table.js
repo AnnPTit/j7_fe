@@ -262,7 +262,7 @@ export const BookRoomTable = (props) => {
   const refuseOrder = async () => {};
 
   const handleRedirect = () => {
-    router.push(`/room-service?id=${orderId}`);
+    router.push(`/booking?id=${orderId}`);
   };
 
   const renderButtonsBasedOnStatus = () => {
@@ -471,7 +471,7 @@ export const BookRoomTable = (props) => {
                 const created = moment(order.createAt).format("DD/MM/YYYY");
                 const statusData = getStatusButtonColor(order.status);
                 const statusText = statusData.text;
-                const hrefUpdate = `/room-service?id=${order.id}`;
+                const hrefUpdate = `/booking?id=${order.id}`;
 
                 return (
                   <TableRow hover key={order.id}>

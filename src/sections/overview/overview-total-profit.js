@@ -21,7 +21,7 @@ export const OverviewTotalProfit = (props) => {
               color="text.secondary"
               variant="overline"
             >
-              Doanh thu tháng này
+              Doanh thu hôm nay
             </Typography>
             <Typography variant="h4">
               {value}
