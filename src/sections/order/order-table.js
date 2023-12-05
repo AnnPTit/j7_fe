@@ -25,8 +25,7 @@ export const OrderTable = (props) => {
   };
 
   const handleRowClick = (id) => {
-    // Navigate to the "orders" page based on the selected row's ID
-    router.push(`/orders?id=${id}`);
+    router.push(`/order-detail?id=${id}`);
   };
 
   const getTypeOrderColor = (method) => {

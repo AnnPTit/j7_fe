@@ -129,7 +129,7 @@ export const BookRoomTable = (props) => {
       toast.success("Hủy thành công!", {
         position: toast.POSITION.BOTTOM_CENTER,
       });
-      router.push(`/orders?id=${orderId}`);
+      router.push(`/order-detail?id=${orderId}`);
     } catch (error) {
       console.log(error);
     }
@@ -210,7 +210,7 @@ export const BookRoomTable = (props) => {
                 const created = moment(order.createAt).format("DD/MM/YYYY - HH:mm:ss");
                 const statusData = getStatusButtonColor(order.status);
                 const statusText = statusData.text;
-                const hrefUpdate = `/room-service?id=${order.id}`;
+                const hrefUpdate = `/booking?id=${order.id}`;
 
                 return (
                   <TableRow hover key={order.id}>

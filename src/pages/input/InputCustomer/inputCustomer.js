@@ -73,7 +73,7 @@ function InputCustomer() {
       const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
       // Kiểm tra xem accessToken có tồn tại không
       if (!accessToken) {
-       console.log("Bạn chưa đăng nhập");
+        console.log("Bạn chưa đăng nhập");
         return false;
       }
 
@@ -402,7 +402,7 @@ function InputCustomer() {
       >
         <option value="">Chọn phường xã</option>
         {wards.map((ward) => (
-          <option key={ward.ward_id} value={ward.wards_id}>
+          <option key={ward.ward_id} value={ward.ward_id}>
             {ward.ward_name}
           </option>
         ))}

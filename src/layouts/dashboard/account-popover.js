@@ -12,24 +12,23 @@ export const AccountPopover = (props) => {
   const router = useRouter();
   const auth = useAuth();
 
-
   const fullname = localStorage.getItem("fullName");
   const id = localStorage.getItem("idAccount");
   const hrefResetPassword = `/account/change-password?id=${id}`;
-
-
 
   const handleProfile = () => {
     onClose?.();
     router.push("/profile");
   };
 
-
   const handleSignOut = useCallback(() => {
     onClose?.();
     auth.signOut();
     router.push("/auth/login");
     localStorage.removeItem("accessToken");
+    localStorage.removeItem("fullName");
+    localStorage.removeItem("idAccount");
+    localStorage.removeItem("position");
   }, [onClose, auth, router]);
 
   return (
