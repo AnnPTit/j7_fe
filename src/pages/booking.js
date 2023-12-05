@@ -27,6 +27,7 @@ import {
   Typography,
   Slider,
   Divider,
+  IconButton,
 } from "@mui/material";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
@@ -41,6 +42,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import TrashIcon from "@heroicons/react/24/solid/TrashIcon";
 import PencilSquareIcon from "@heroicons/react/24/solid/PencilSquareIcon";
+import CloseIcon from "@mui/icons-material/Close";
 import Radio from "@mui/material/Radio";
 import RadioGroup from "@mui/material/RadioGroup";
 import FormControlLabel from "@mui/material/FormControlLabel";
@@ -111,6 +113,7 @@ function BookRoom() {
   const [noteReturnRoom, setNoteReturnRoom] = useState("");
   const [noteReturnOneRoom, setNoteReturnOneRoom] = useState("");
   const [noteCancelRoom, setNoteCancelRoom] = useState("");
+  const [noteChangeRoom, setNoteChangeRoom] = useState("");
   const [givenCustomer, setGivenCustomer] = useState(0);
   const [givenCustomerOneRoom, setGivenCustomerOneRoom] = useState(0);
   const [textSearch, setTextSearch] = useState("");
@@ -121,6 +124,11 @@ function BookRoom() {
   const [selectedCustomerAccept, setSelectedCustomerAccept] = useState("");
   const [selectedCustomerReturn, setSelectedCustomerReturn] = useState("");
   const [searchCustomer, setSearchCustomer] = useState("");
+  const [idOrderDetailChange, setIdOrderDetailChange] = useState("");
+  const [checkInChangeRoom, setCheckInChangeRoom] = useState("");
+  const [checkOutChangeRoom, setCheckOutChangeRoom] = useState("");
+  const [idRoomChoosed, setIdRoomChoosed] = useState("");
+  const [roomPriceChoosed, setRoomPriceChoosed] = useState("");
   const [sumAmountValue, setSumAmountValue] = useState(0);
 
   // CTGG
@@ -128,10 +136,11 @@ function BookRoom() {
   const [discountProgram, setDiscountProgram] = useState([]);
   const [selectedDiscount, setSelectedDiscount] = useState({});
   const [discountPercent, setDiscountPercent] = useState(0);
-  const [discountMonney, setDiscountMonney] = useState(0);
+  const [discountMoney, setDiscountMoney] = useState(0);
 
   // Dialogs
   const [openSeacrhRoom, setOpenSeacrhRoom] = React.useState(false);
+  const [openChangeRoom, setOpenChangeRoom] = React.useState(false);
   const [openAddService, setOpenAddService] = React.useState(false);
   const [openAddCombo, setOpenAddCombo] = React.useState(false);
   const [openDateDialog, setOpenDateDialog] = React.useState(false);
@@ -142,6 +151,7 @@ function BookRoom() {
   const [openReturnRoom, setOpenReturnRoom] = React.useState(false);
   const [openCancelRoom, setOpenCancelRoom] = React.useState(false);
   const [openReturnOneRoom, setOpenReturnOneRoom] = React.useState(false);
+  const [openNoteChangeRoom, setOpenNoteChangeRoom] = React.useState(false);
   const [openQr, setOpenQr] = React.useState(false);
 
   // Xử lí lọc khoảng ngày
@@ -253,7 +263,7 @@ function BookRoom() {
 
   // Chuyển sang chi tiết
   const handleRedirectOrders = () => {
-    router.push(`/orders?id=${id}`);
+    router.push(`/order-detail?id=${id}`);
   };
   // Xử lí các hàm đóng, mở dialog
   const handleOpenSearchRoom = () => {
@@ -268,6 +278,104 @@ function BookRoom() {
     setPriceRange([0, 3000000]);
     setValueDateFrom(null);
     setValueDateTo(null);
+  };
+
+  useEffect(() => {
+    console.log("IdUseEffect: ", idOrderDetailChange);
+  }, [idOrderDetailChange]);
+
+  const handleOpenChangeRoom = async (idOrderDetail) => {
+    console.log("IdOrderDetail: ", idOrderDetail);
+    setIdOrderDetailChange(idOrderDetail);
+    console.log("Id: ", selectedOrderDetails);
+    if (!selectedOrderDetails) {
+      toast.error("Vui lòng chọn phòng trước khi chuyển phòng!", {
+        position: toast.POSITION.BOTTOM_CENTER,
+      });
+      return;
+    }
+    // } else if (selectedOrderDetails != idOrderDetailChange) {
+    //   toast.error("Vui lòng chọn đúng phòng bạn đã tích chọn!", {
+    //     position: toast.POSITION.BOTTOM_CENTER,
+    //   });
+    //   return;
+    // }
+    setOpenChangeRoom(true);
+    try {
+      const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
+      // Kiểm tra xem accessToken có tồn tại không
+      if (!accessToken) {
+        console.log("Bạn chưa đăng nhập");
+        return;
+      }
+      axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+
+      // Thay đổi endpoint để lấy thông tin chi tiết đặt phòng dựa trên idOrderDetail
+      const orderDetailApi = `http://localhost:2003/api/order-detail/detail/${selectedOrderDetails}`;
+      const orderDetailResponse = await axios.get(orderDetailApi);
+
+      // Kiểm tra xem orderDetailResponse có dữ liệu hay không
+      if (orderDetailResponse.data) {
+        const { customerQuantity, checkInDatetime, checkOutDatetime, room } =
+          orderDetailResponse.data;
+        const { typeRoom } = room;
+        const { capacity, children } = typeRoom;
+
+        let Api = `http://localhost:2003/api/admin/room/loadByCondition`;
+        // Add search text parameter only if there's a search text entered
+        let hasQueryParams = false;
+
+        // Construct the API URL based on the selected options
+        if (capacity !== "") {
+          Api += `?capacity=${capacity}`;
+          hasQueryParams = true;
+        }
+        if (customerQuantity !== "") {
+          Api += hasQueryParams ? `&adult=${customerQuantity}` : `?adult=${customerQuantity}`;
+          hasQueryParams = true;
+        }
+        if (children !== "") {
+          Api += hasQueryParams ? `&children=${children}` : `?children=${children}`;
+          hasQueryParams = true;
+        }
+        if (checkInDatetime) {
+          const valueFromDate = new Date(checkInDatetime);
+          const formattedValueFrom = valueFromDate.toISOString().slice(0, 10);
+          Api = Api + `&dayStart=${formattedValueFrom}`;
+          setCheckInChangeRoom(formattedValueFrom);
+        }
+        if (checkOutDatetime) {
+          const valueToDate = new Date(checkOutDatetime);
+          const formattedValueTo = valueToDate.toISOString().slice(0, 10);
+          Api = Api + `&dayEnd=${formattedValueTo}`;
+          setCheckOutChangeRoom(formattedValueTo);
+        }
+        console.warn(Api);
+        const response = await axios.get(Api);
+        setRooms(response.data);
+      } else {
+        console.log("Không tìm thấy thông tin chi tiết đặt phòng");
+      }
+    } catch (error) {
+      if (error.response) {
+        // Xử lý response lỗi
+        if (error.response.status === 403) {
+          alert("Bạn không có quyền truy cập vào trang này");
+          window.location.href = "/auth/login";
+        } else {
+          alert("Có lỗi xảy ra trong quá trình gọi API");
+        }
+      } else {
+        console.log("Không thể kết nối đến API");
+      }
+    }
+  };
+
+  const handleCloseChangeRoom = () => {
+    setOpenChangeRoom(false);
+    setIdOrderDetailChange("");
+    setCheckInChangeRoom("");
+    setCheckOutChangeRoom("");
   };
 
   const handleOpenAddService = () => {
@@ -361,6 +469,23 @@ function BookRoom() {
   const handleCloseCancelOrder = () => {
     setNoteCancelRoom("");
     setOpenCancelRoom(false);
+  };
+
+  const handleOpenNoteChangeRoom = (roomId, priceRoom) => {
+    setOpenNoteChangeRoom(true);
+    setIdRoomChoosed(roomId);
+    setRoomPriceChoosed(priceRoom);
+  };
+
+  useEffect(() => {}, [idRoomChoosed]);
+
+  useEffect(() => {}, [roomPriceChoosed]);
+
+  const handleCloseNoteChangeRoom = () => {
+    setIdRoomChoosed("");
+    setRoomPriceChoosed("");
+    setNoteChangeRoom("");
+    setOpenNoteChangeRoom(false);
   };
 
   const handleOpenQuantityNoteCombo = (comboId) => {
@@ -652,7 +777,7 @@ function BookRoom() {
               onClick={handleOpenReturnRoom}
               variant="outlined"
             >
-              Trả phòng
+              Thanh toán
             </Button>
           </React.Fragment>
         );
@@ -711,24 +836,26 @@ function BookRoom() {
   };
 
   const handleChoseDiscount = (event) => {
-    const discont = event.target.value;
-    if (discont) {
-      setSelectedDiscount(discont);
-      setDiscountPercent(discont.reduceValue);
+    const discount = event.target.value;
+    if (discount) {
+      setSelectedDiscount(discount);
+      setDiscountPercent(discount.reduceValue);
       const total = calculateTotal();
-      const totalAfterDiscount = (total * discont.reduceValue) / 100;
-      setDiscountMonney(totalAfterDiscount);
-      console.log(totalAfterDiscount);
-      console.log(sumAmount - totalAfterDiscount);
-      setSumAmountValue(sumAmount - totalAfterDiscount);
+      const totalAfterDiscount = (total * discount.reduceValue) / 100;
+      if (totalAfterDiscount <= discount.maximumDiscount) {
+        setDiscountMoney(totalAfterDiscount);
+        setSumAmountValue(sumAmount - totalAfterDiscount);
+      }
+      {
+        setDiscountMoney(discount.maximumDiscount);
+        setSumAmountValue(sumAmount - discount.maximumDiscount);
+      }
     } else {
       setSelectedDiscount(null);
       setDiscountPercent(null);
-      const total = calculateTotal();
-      setDiscountMonney(null);
+      setDiscountMoney(null);
       setSumAmountValue(sumAmount);
     }
-    console.log(sumAmountValue);
   };
 
   // Xác nhận phòng
@@ -765,17 +892,6 @@ function BookRoom() {
       return;
     }
 
-    const selectedOrderDetail = orderDetailData.find(
-      (detail) => detail.id === selectedOrderDetails
-    );
-
-    if (customerInfo.length !== selectedOrderDetail.customerQuantity) {
-      toast.error("Có phòng chưa đủ số người ở!", {
-        position: toast.POSITION.BOTTOM_CENTER,
-      });
-      return;
-    }
-
     try {
       const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
       // Kiểm tra xem accessToken có tồn tại không
@@ -796,7 +912,7 @@ function BookRoom() {
       toast.success("Nhận phòng thành công!", {
         position: toast.POSITION.BOTTOM_CENTER,
       });
-      router.push(`/orders?id=${id}`);
+      router.push(`/order-detail?id=${id}`);
     } catch (error) {
       console.log(error);
     }
@@ -837,7 +953,7 @@ function BookRoom() {
       toast.success("Trả phòng thành công!", {
         position: toast.POSITION.BOTTOM_CENTER,
       });
-      router.push(`/orders?id=${orderId}`);
+      router.push(`/order-detail?id=${orderId}`);
     } catch (error) {
       console.log(error);
     }
@@ -867,15 +983,15 @@ function BookRoom() {
         moneyGivenByCustomer: givenCustomer,
         excessMoney: moneyReturnCustomer,
         note: noteReturnRoom,
-        discountProgram: selectedDiscount.id,
-        discountMonney: discountMonney,
+        discountProgram: selectedDiscount ? selectedDiscount.id : null,
+        discountMoney: discountMoney,
       });
       setOrder({ ...order, status: 3 });
       handleCloseReturnRoom();
       toast.success("Trả phòng thành công!", {
         position: toast.POSITION.BOTTOM_CENTER,
       });
-      router.push(`/orders?id=${id}`);
+      router.push(`/order-detail?id=${id}`);
     } catch (error) {
       console.log(error);
     }
@@ -901,7 +1017,7 @@ function BookRoom() {
       toast.success("Hủy thành công!", {
         position: toast.POSITION.BOTTOM_CENTER,
       });
-      router.push(`/orders?id=${id}`);
+      router.push(`/order-detail?id=${id}`);
     } catch (error) {
       console.log(error);
     }
@@ -922,7 +1038,7 @@ function BookRoom() {
     toast.success("Lưu thành công!", {
       position: toast.POSITION.BOTTOM_CENTER,
     });
-    // router.push(`/room-service?id=${id}`);
+    // router.push(`/booking?id=${id}`);
     console.log(response.data);
   };
 
@@ -1066,7 +1182,7 @@ function BookRoom() {
       // const newTotal = calculateTotal();
       // setTotalAmount(newTotal);
       console.log("Service added to serviceUsed: ", response.data);
-      // window.location.href = `/room-service?id=${id}`;
+      // window.location.href = `/booking?id=${id}`;
       toast.success("Thêm thành công!", {
         position: toast.POSITION.BOTTOM_CENTER,
       });
@@ -1083,10 +1199,10 @@ function BookRoom() {
         const response = await axios.get(
           `http://localhost:2003/api/order/discount-program?totalMoney=${total}`
         );
-        console.log(response.data);
+        console.log("ABC: ", response.data);
         setDiscountProgram(response.data);
       } catch (error) {
-        console.error("Error loading combo used:", error);
+        console.error("Error loading discount program:", error);
       }
     };
     fetchDiscount();
@@ -1434,7 +1550,7 @@ function BookRoom() {
       setOrderDetailData((prevOrderDetail) =>
         prevOrderDetail.filter((orderDetailData) => orderDetailData.id !== id)
       );
-      router.push(`/room-service?id=${id}`);
+      router.push(`/booking?id=${id}`);
       const response = await axios.get(
         `http://localhost:2003/api/order-detail/loadOrderDetailByOrderId/${id}`
       );
@@ -1709,7 +1825,7 @@ function BookRoom() {
           "http://localhost:2003/api/admin/room/loadAndSearchBookRoom"
         );
         setRooms(responseRoom.data);
-        // router.push(`/room-service?id=${id}`);
+        // router.push(`/booking?id=${id}`);
         toast.success("Thêm phòng thành công!", {
           position: toast.POSITION.BOTTOM_CENTER,
         });
@@ -1735,6 +1851,71 @@ function BookRoom() {
         position: toast.POSITION.BOTTOM_CENTER,
       });
       return false;
+    }
+  };
+
+  // Chuyển phòng
+  const updateRoom = async () => {
+    const checkOutDate = new Date(checkOutChangeRoom);
+    const checkInDate = new Date(checkInChangeRoom);
+
+    const timeDiff = Math.abs(checkOutDate - checkInDate);
+    const numberOfDays = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+    const totalAmount = numberOfDays * roomPriceChoosed;
+
+    try {
+      const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
+      // Kiểm tra xem accessToken có tồn tại không
+      if (!accessToken) {
+        console.log("Bạn chưa đăng nhập");
+        return;
+      }
+      axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+
+      const response = await axios.put(
+        `http://localhost:2003/api/order-detail/update/${selectedOrderDetails}`,
+        {
+          room: rooms.find((r) => r.id === idRoomChoosed),
+          roomPrice: totalAmount,
+          updatedBy: fullname,
+          note: noteChangeRoom,
+        }
+      );
+
+      setOrderDetailData([...orderDetailData, response.data]);
+      const responseOrderDetail = await axios.get(
+        `http://localhost:2003/api/order-detail/loadOrderDetailByOrderId/${id}`
+      );
+      setOrderDetailData(responseOrderDetail.data);
+      const responseRoom = await axios.get(
+        "http://localhost:2003/api/admin/room/loadAndSearchBookRoom"
+      );
+      setRooms(responseRoom.data);
+      const responseRoomByCondition = await axios.get(
+        "http://localhost:2003/api/admin/room/loadByCondition"
+      );
+      setRooms(responseRoomByCondition.data);
+      // router.push(`/booking?id=${id}`);
+      toast.success("Chuyển phòng thành công!", {
+        position: toast.POSITION.BOTTOM_CENTER,
+      });
+      console.log("Phòng đã được thêm vào hóa đơn chi tiết:", response.data);
+      // Đóng dialog chuyển phòng
+      handleCloseNoteChangeRoom();
+      handleCloseChangeRoom();
+      setAnchorEl(null);
+    } catch (error) {
+      console.log("Lỗi khi thêm phòng vào hóa đơn chi tiết:", error);
+      // Xử lý lỗi nếu có
+      if (error.response.status === 400) {
+        toast.error("Phòng đã bị trùng. Vui lòng chọn ngày hoặc phòng khác.", {
+          position: toast.POSITION.BOTTOM_CENTER,
+        });
+      } else {
+        toast.error("Lỗi không xác định. Vui lòng thử lại sau.", {
+          position: toast.POSITION.BOTTOM_CENTER,
+        });
+      }
     }
   };
 
@@ -1817,7 +1998,12 @@ function BookRoom() {
   const createPayment = async () => {
     try {
       const response = await axios.post(
-        `http://localhost:2003/api/payment-method/payment-vnpay/${id}`
+        `http://localhost:2003/api/payment-method/payment-vnpay/${id}`,
+        {
+          amount: sumAmountValue,
+          discount: discountMoney,
+          idDiscount: selectedDiscount ? selectedDiscount.id : "",
+        }
       );
       const { finalUrl } = response.data;
       window.location.href = finalUrl;
@@ -1829,7 +2015,10 @@ function BookRoom() {
   const createPaymentMomo = async () => {
     try {
       const response = await axios.post(
-        `http://localhost:2003/api/payment-method/payment-momo/${id}`
+        `http://localhost:2003/api/payment-method/payment-momo/${id}`,
+        {
+          amount: sumAmountValue,
+        }
       );
       window.location.href = response.data.payUrl;
     } catch (error) {
@@ -1863,6 +2052,141 @@ function BookRoom() {
       </Head>
       <ToastContainer />
       <Dialog
+        open={openChangeRoom}
+        onClose={handleCloseChangeRoom}
+        fullWidth
+        PaperProps={{
+          style: {
+            maxWidth: "80%",
+            maxHeight: "90%",
+          },
+        }}
+      >
+        <IconButton
+          aria-label="close"
+          onClick={handleCloseChangeRoom}
+          sx={{
+            position: "absolute",
+            right: 8,
+            top: 8,
+            color: (theme) => theme.palette.grey[900],
+          }}
+        >
+          <CloseIcon />
+        </IconButton>
+        <DialogContent>
+          <br />
+          <Scrollbar>
+            <Box sx={{ minWidth: 800 }}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>STT</TableCell>
+                    <TableCell></TableCell>
+                    <TableCell>Mã phòng</TableCell>
+                    <TableCell>Phòng</TableCell>
+                    <TableCell>Loại phòng</TableCell>
+                    <TableCell>Tầng</TableCell>
+                    <TableCell>Sức chứa</TableCell>
+                    <TableCell>Giá theo ngày</TableCell>
+                    <TableCell>Trạng thái</TableCell>
+                    <TableCell>Thao tác</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {rooms.map((room, index) => {
+                    const statusData = getStatusButtonColor(room.status);
+                    const statusText = statusData.text;
+                    return (
+                      <TableRow key={room.id}>
+                        <TableCell padding="checkbox">
+                          <div key={index}>
+                            <span>{index + 1}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <img
+                            style={{ height: 200, objectFit: "cover", width: "80%" }}
+                            src={room.photoList[0].url}
+                          />
+                        </TableCell>
+                        <TableCell>{room.roomCode}</TableCell>
+                        <TableCell>{room.roomName}</TableCell>
+                        <TableCell>{room.typeRoom.typeRoomName}</TableCell>
+                        <TableCell>{room.floor.floorName}</TableCell>
+                        <TableCell>{room.typeRoom.capacity}</TableCell>
+                        <TableCell>
+                          {room.typeRoom.pricePerDay ? formatPrice(room.typeRoom.pricePerDay) : ""}
+                        </TableCell>
+                        <TableCell>
+                          <SeverityPill variant="contained" color={statusData.color}>
+                            {statusText}
+                          </SeverityPill>
+                        </TableCell>
+                        <TableCell>
+                          {room.status === 1 && ( // Kiểm tra nếu room.status là 1 thì hiển thị nút
+                            <Button
+                              variant="outlined"
+                              onClick={() =>
+                                handleOpenNoteChangeRoom(room.id, room.typeRoom.pricePerDay)
+                              }
+                            >
+                              Chọn
+                            </Button>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </Box>
+          </Scrollbar>
+        </DialogContent>
+      </Dialog>
+      <Dialog
+        open={openNoteChangeRoom}
+        onClose={handleCloseNoteChangeRoom}
+        fullWidth
+        PaperProps={{
+          style: {
+            maxWidth: "30%",
+            maxHeight: "100%",
+          },
+        }}
+      >
+        <DialogTitle>Lí do chuyển phòng</DialogTitle>
+        <IconButton
+          aria-label="close"
+          onClick={handleCloseNoteChangeRoom}
+          sx={{
+            position: "absolute",
+            right: 8,
+            top: 8,
+            color: (theme) => theme.palette.grey[900],
+          }}
+        >
+          <CloseIcon />
+        </IconButton>
+        <DialogContent>
+          <TextareaAutosize
+            className="form-control"
+            placeholder="Ghi chú"
+            name="note"
+            value={noteChangeRoom}
+            onChange={(e) => setNoteChangeRoom(e.target.value)}
+            cols={80}
+            style={{ height: 150 }}
+            variant="outlined"
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={updateRoom} variant="outlined">
+            Xác nhận
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog
         open={openSeacrhRoom}
         onClose={handleCloseSearchRoom}
         fullWidth
@@ -1873,7 +2197,21 @@ function BookRoom() {
           },
         }}
       >
-        <DialogTitle>Tìm kiếm phòng</DialogTitle>
+        <DialogTitle sx={{ m: 0, p: 2 }} id="customized-dialog-title">
+          Tìm kiếm phòng
+        </DialogTitle>
+        <IconButton
+          aria-label="close"
+          onClick={handleCloseSearchRoom}
+          sx={{
+            position: "absolute",
+            right: 8,
+            top: 8,
+            color: (theme) => theme.palette.grey[900],
+          }}
+        >
+          <CloseIcon />
+        </IconButton>
         <DialogContent>
           <RoomSearch textSearch={textSearch} setTextSearch={setTextSearch} />
           <div style={{ display: "flex", marginLeft: 600, marginTop: -70 }}>
@@ -1974,7 +2312,9 @@ function BookRoom() {
                         <TableCell>{room.typeRoom.typeRoomName}</TableCell>
                         <TableCell>{room.floor.floorName}</TableCell>
                         <TableCell>{room.typeRoom.capacity}</TableCell>
-                        <TableCell>{formatPrice(room.typeRoom.pricePerDay)}</TableCell>
+                        <TableCell>
+                          {room.typeRoom.pricePerDay ? formatPrice(room.typeRoom.pricePerDay) : ""}
+                        </TableCell>
                         <TableCell>
                           <SeverityPill variant="contained" color={statusData.color}>
                             {statusText}
@@ -1998,7 +2338,6 @@ function BookRoom() {
       </Dialog>
       <Dialog
         open={openDateDialog}
-        onClose={handleCloseDateDialog}
         fullWidth
         PaperProps={{
           style: {
@@ -2007,6 +2346,18 @@ function BookRoom() {
         }}
       >
         <DialogTitle>Chọn ngày check-in và check-out</DialogTitle>
+        <IconButton
+          aria-label="close"
+          onClick={handleCloseDateDialog}
+          sx={{
+            position: "absolute",
+            right: 8,
+            top: 8,
+            color: (theme) => theme.palette.grey[900],
+          }}
+        >
+          <CloseIcon />
+        </IconButton>
         <DialogContent
           style={{
             marginTop: 15,
@@ -2192,118 +2543,141 @@ function BookRoom() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {orderDetailData.map((orderDetail, index) => (
-                  <TableRow key={index}>
-                    <TableCell>
-                      <Checkbox
-                        checked={selectedOrderDetails === orderDetail.id}
-                        onChange={() => handleCheckboxChange(orderDetail.id)}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      {orderDetail && orderDetail.roomImages && orderDetail.roomImages[0] && (
-                        <img
-                          style={{ objectFit: "cover", width: "100%" }}
-                          src={orderDetail.roomImages[0]}
-                          alt={`Room ${index + 1} Image 1`}
+                {orderDetailData.length > 0 ? (
+                  orderDetailData.map((orderDetail, index) => (
+                    <TableRow key={orderDetail.id}>
+                      <TableCell>
+                        <Checkbox
+                          checked={selectedOrderDetails === orderDetail.id}
+                          onChange={() => handleCheckboxChange(orderDetail.id)}
                         />
-                      )}
-                    </TableCell>
-                    <TableCell>{orderDetail.room.roomName}</TableCell>
-                    <TableCell>{orderDetail.room.floor.floorName}</TableCell>
-                    <TableCell>{orderDetail.room.typeRoom.typeRoomName}</TableCell>
-                    <TableCell>{orderDetail.room.typeRoom.capacity}</TableCell>
-                    <TableCell>{orderDetail.customerQuantity}</TableCell>
-                    <TableCell>{orderDetail.room.typeRoom.children}</TableCell>
-                    <TableCell>
-                      {orderDetail &&
-                        orderDetail.checkIn &&
-                        format(new Date(orderDetail.checkIn), "dd/MM/yyyy")}
-                    </TableCell>
-                    <TableCell>
-                      {orderDetail &&
-                        orderDetail.checkOut &&
-                        format(new Date(orderDetail.checkOut), "dd/MM/yyyy")}
-                    </TableCell>
-                    <TableCell>{formatPrice(orderDetail.roomPrice)}</TableCell>
-                    <TableCell>
-                      {order.status === 1 || order.status === 5 ? (
-                        <>
-                          <Button
-                            className="btn btn-primary m-xl-2"
-                            id="demo-positioned-button"
-                            aria-controls={open ? "demo-positioned-menu" : undefined}
-                            aria-haspopup="true"
-                            aria-expanded={open ? "true" : undefined}
-                            onClick={handleClick}
-                          >
-                            <SvgIcon fontSize="small">
-                              <PencilSquareIcon />
-                            </SvgIcon>
-                          </Button>
-                          <Menu
-                            id="demo-positioned-menu"
-                            aria-labelledby="demo-positioned-button"
-                            anchorEl={anchorEl}
-                            open={open}
-                            onClose={handleClose}
-                            anchorOrigin={{
-                              vertical: "top",
-                              horizontal: "left",
-                            }}
-                            transformOrigin={{
-                              vertical: "top",
-                              horizontal: "left",
-                            }}
-                          >
-                            <MenuItem onClick={handleClose}>Chuyển phòng</MenuItem>
-                            <MenuItem onClick={() => handleDeleteRoom(orderDetail.id)}>
-                              Hủy phòng
-                            </MenuItem>
-                          </Menu>
-                        </>
-                      ) : null}
-                      {order.status === 2 ? (
-                        <>
-                          <Button
-                            className="btn btn-primary m-xl-2"
-                            id="demo-positioned-button"
-                            aria-controls={open ? "demo-positioned-menu" : undefined}
-                            aria-haspopup="true"
-                            aria-expanded={open ? "true" : undefined}
-                            onClick={handleClick}
-                          >
-                            <SvgIcon fontSize="small">
-                              <PencilSquareIcon />
-                            </SvgIcon>
-                          </Button>
-                          <Menu
-                            id="demo-positioned-menu"
-                            aria-labelledby="demo-positioned-button"
-                            anchorEl={anchorEl}
-                            open={open}
-                            onClose={handleClose}
-                            anchorOrigin={{
-                              vertical: "top",
-                              horizontal: "left",
-                            }}
-                            transformOrigin={{
-                              vertical: "top",
-                              horizontal: "left",
-                            }}
-                          >
-                            <MenuItem onClick={handleClose}>Chuyển phòng</MenuItem>
-                            {orderDetailData.length > 1 && (
-                              <MenuItem onClick={() => handleOpenReturnOneRoom(orderDetail.id)}>
-                                Trả phòng
+                      </TableCell>
+                      <TableCell>
+                        {orderDetail && orderDetail.roomImages && orderDetail.roomImages[0] && (
+                          <img
+                            style={{ objectFit: "cover", width: "100%" }}
+                            src={orderDetail.roomImages[0]}
+                            alt={`Room ${index + 1} Image 1`}
+                          />
+                        )}
+                      </TableCell>
+                      <TableCell>{orderDetail.room.roomName}</TableCell>
+                      <TableCell>{orderDetail.room.floor.floorName}</TableCell>
+                      <TableCell>{orderDetail.room.typeRoom.typeRoomName}</TableCell>
+                      <TableCell>{orderDetail.room.typeRoom.capacity}</TableCell>
+                      <TableCell>{orderDetail.customerQuantity}</TableCell>
+                      <TableCell>{orderDetail.room.typeRoom.children}</TableCell>
+                      <TableCell>
+                        {orderDetail &&
+                          orderDetail.checkIn &&
+                          format(new Date(orderDetail.checkIn), "dd/MM/yyyy")}
+                      </TableCell>
+                      <TableCell>
+                        {orderDetail &&
+                          orderDetail.checkOut &&
+                          format(new Date(orderDetail.checkOut), "dd/MM/yyyy")}
+                      </TableCell>
+                      <TableCell>
+                        {orderDetail.roomPrice ? formatPrice(orderDetail.roomPrice) : ""}
+                      </TableCell>
+                      <TableCell>
+                        {order.status === 1 || order.status === 5 ? (
+                          <>
+                            <Button
+                              className="btn btn-primary m-xl-2"
+                              id="demo-positioned-button"
+                              aria-controls={open ? "demo-positioned-menu" : undefined}
+                              aria-haspopup="true"
+                              aria-expanded={open ? "true" : undefined}
+                              onClick={handleClick}
+                            >
+                              <SvgIcon fontSize="small">
+                                <PencilSquareIcon />
+                              </SvgIcon>
+                            </Button>
+                            <Menu
+                              id="demo-positioned-menu"
+                              aria-labelledby="demo-positioned-button"
+                              anchorEl={anchorEl}
+                              open={open}
+                              onClose={handleClose}
+                              anchorOrigin={{
+                                vertical: "top",
+                                horizontal: "left",
+                              }}
+                              transformOrigin={{
+                                vertical: "top",
+                                horizontal: "left",
+                              }}
+                            >
+                              <MenuItem onClick={() => handleDeleteRoom(orderDetail.id)}>
+                                Hủy phòng
                               </MenuItem>
-                            )}
-                          </Menu>
-                        </>
-                      ) : null}
+                            </Menu>
+                          </>
+                        ) : null}
+                        {order.status === 2 ? (
+                          <>
+                            <Button
+                              className="btn btn-primary m-xl-2"
+                              id="demo-positioned-button"
+                              aria-controls={open ? "demo-positioned-menu" : undefined}
+                              aria-haspopup="true"
+                              aria-expanded={open ? "true" : undefined}
+                              onClick={handleClick}
+                            >
+                              <SvgIcon fontSize="small">
+                                <PencilSquareIcon />
+                              </SvgIcon>
+                            </Button>
+                            <Menu
+                              id="demo-positioned-menu"
+                              aria-labelledby="demo-positioned-button"
+                              anchorEl={anchorEl}
+                              open={open}
+                              onClose={handleClose}
+                              anchorOrigin={{
+                                vertical: "top",
+                                horizontal: "left",
+                              }}
+                              transformOrigin={{
+                                vertical: "top",
+                                horizontal: "left",
+                              }}
+                            >
+                              {orderDetailData.length > 0 ? (
+                                <MenuItem
+                                  key="changeRoom"
+                                  onClick={() => handleOpenChangeRoom(orderDetail.id)}
+                                >
+                                  Chuyển phòng
+                                </MenuItem>
+                              ) : null}
+                              {orderDetailData.length > 1 ? (
+                                <MenuItem
+                                  key="returnRoom"
+                                  onClick={() => handleOpenReturnOneRoom(orderDetail.id)}
+                                >
+                                  Trả phòng
+                                </MenuItem>
+                              ) : null}
+                            </Menu>
+                          </>
+                        ) : null}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={12} align="center">
+                      <div>
+                        <span style={{ fontFamily: "monospace", fontSize: 20 }}>
+                          Chưa có phòng nào được đặt.
+                        </span>
+                      </div>
                     </TableCell>
                   </TableRow>
-                ))}
+                )}
               </TableBody>
             </Table>
             <h6
@@ -2359,7 +2733,7 @@ function BookRoom() {
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={6} align="center">
+                      <TableCell colSpan={7} align="center">
                         <div>
                           <span style={{ fontFamily: "monospace", fontSize: 20 }}>
                             Không có dữ liệu.
@@ -2514,16 +2888,28 @@ function BookRoom() {
         </Scrollbar>
       </Box>
       <Dialog open={openReturnOneRoom} onClose={handleCloseReturnOneRoom} maxWidth="md">
-        <DialogTitle>XÁC NHẬN THANH TOÁN</DialogTitle>
+        <DialogTitle sx={{ m: 0, p: 2 }} id="customized-dialog-title">
+          XÁC NHẬN THANH TOÁN
+        </DialogTitle>
+        <IconButton
+          aria-label="close"
+          onClick={handleCloseReturnOneRoom}
+          sx={{
+            position: "absolute",
+            right: 8,
+            top: 8,
+            color: (theme) => theme.palette.grey[900],
+          }}
+        >
+          <CloseIcon />
+        </IconButton>
         <DialogContent>
-          <br />
           <div style={{ display: "flex" }}>
             <br />
             <TextField
               style={{ width: 520, marginRight: 30 }}
-              disabled
               label="Số tiền"
-              value={totalCostForOrderDetail}
+              value={totalCostForOrderDetail ? formatPrice(totalCostForOrderDetail) : ""}
               fullWidth
               variant="outlined"
             />
@@ -2531,18 +2917,16 @@ function BookRoom() {
             <br />
             <TextField
               style={{ width: 550 }}
-              disabled
               label="VAT"
-              value={vatOrderDetail}
+              value={vatOrderDetail ? formatPrice(vatOrderDetail) : ""}
               fullWidth
               variant="outlined"
             />
           </div>
           <br />
           <TextField
-            disabled
             label="Tổng tiền"
-            value={sumOrderDetail}
+            value={sumOrderDetail ? formatPrice(sumOrderDetail) : ""}
             fullWidth
             variant="outlined"
           />
@@ -2581,9 +2965,12 @@ function BookRoom() {
             </FormControl>
             <TextField
               style={{ marginLeft: 135, width: 500 }}
-              disabled
               label="Tiền trả lại"
-              value={givenCustomerOneRoom - sumOrderDetail}
+              value={
+                givenCustomerOneRoom - sumOrderDetail
+                  ? formatPrice(givenCustomerOneRoom - sumOrderDetail)
+                  : ""
+              }
               variant="outlined"
             />
           </div>
@@ -2600,83 +2987,23 @@ function BookRoom() {
           />
         </DialogContent>
         <DialogActions>
-          <button onClick={handleReturnOneRoom} className="btn btn-outline-primary">
-            TIỀN MẶT
-          </button>
-          {/* <button className="btn btn-outline-danger">CHUYỂN KHOẢN</button> */}
+          <Button onClick={handleReturnOneRoom} variant="outlined">
+            Tiền mặt
+          </Button>
+          <Button onClick={createPaymentMomo} variant="outlined" color="error">
+            Thanh toán MOMO
+          </Button>
+          <Button
+            style={{ marginRight: 20 }}
+            onClick={createPayment}
+            variant="outlined"
+            color="secondary"
+          >
+            Chuyển khoản ngân hàng
+          </Button>
         </DialogActions>
         <br />
       </Dialog>
-      {/* <Box
-        style={{
-          border: "1px solid #ccc",
-          padding: "20px",
-          boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
-          width: 1150,
-          marginLeft: 140, // Add the box shadow
-          marginTop: 30,
-        }}
-      >
-        <h3 style={{ display: "flex", justifyContent: "center" }}>THÔNG TIN KHÁCH HÀNG</h3>
-        <hr />
-        <Scrollbar>
-          <Box sx={{ minWidth: 800 }}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>CCCD</TableCell>
-                  <TableCell>Tên khách hàng</TableCell>
-                  <TableCell>Giới tính</TableCell>
-                  <TableCell>Ngày sinh</TableCell>
-                  <TableCell>Số điện thoại</TableCell>
-                  <TableCell>Email</TableCell>
-                  <TableCell>
-                    {order.status === 1 || order.status === 5 ? <>Thao tác</> : null}
-                  </TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {customerInfo.length > 0 ? (
-                  customerInfo.map((customer) => (
-                    <TableRow key={customer.id}>
-                      <TableCell>{customer.citizenId}</TableCell>
-                      <TableCell>{customer.fullname}</TableCell>
-                      <TableCell>{customer.gender == 1 ? "Nam" : "Nữ"}</TableCell>
-                      <TableCell>{format(new Date(customer.birthday), "dd/MM/yyyy")}</TableCell>
-                      <TableCell>{customer.phoneNumber}</TableCell>
-                      <TableCell>{customer.email}</TableCell>
-                      <TableCell>
-                        {order.status === 1 || order.status === 5 ? (
-                          <>
-                            <button
-                              onClick={() => handleDelete(customer.id)}
-                              className="btn btn-danger m-xl-2"
-                            >
-                              <SvgIcon fontSize="small">
-                                <TrashIcon />
-                              </SvgIcon>
-                            </button>
-                          </>
-                        ) : null}
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={6} align="center">
-                      <div>
-                        <span style={{ fontFamily: "monospace", fontSize: 20 }}>
-                          Không có dữ liệu.
-                        </span>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </Box>
-        </Scrollbar>
-      </Box> */}
       <div className="row">
         <Box
           style={{
@@ -2721,7 +3048,21 @@ function BookRoom() {
                 },
               }}
             >
-              <DialogTitle>Danh sách khách hàng</DialogTitle>
+              <DialogTitle sx={{ m: 0, p: 2 }} id="customized-dialog-title">
+                Danh sách khách hàng
+              </DialogTitle>
+              <IconButton
+                aria-label="close"
+                onClick={handleCloseChooseCustomer}
+                sx={{
+                  position: "absolute",
+                  right: 8,
+                  top: 8,
+                  color: (theme) => theme.palette.grey[900],
+                }}
+              >
+                <CloseIcon />
+              </IconButton>
               <DialogContent>
                 <CustomerSearch
                   searchCustomer={searchCustomer}
@@ -2907,7 +3248,6 @@ function BookRoom() {
         >
           <Dialog
             open={openQuantityNote}
-            onClose={handleCloseQuantityNote}
             fullWidth
             PaperProps={{
               style: {
@@ -2920,6 +3260,18 @@ function BookRoom() {
               {selectedServiceId !== null &&
                 service.find((service) => service.id === selectedServiceId)?.serviceName}
             </DialogTitle>
+            <IconButton
+              aria-label="close"
+              onClick={handleCloseQuantityNote}
+              sx={{
+                position: "absolute",
+                right: 8,
+                top: 8,
+                color: (theme) => theme.palette.grey[900],
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
             <DialogContent>
               <TextField
                 style={{ marginTop: 10 }}
@@ -2959,7 +3311,21 @@ function BookRoom() {
               },
             }}
           >
-            <DialogTitle>CÁC LOẠI DỊCH VỤ</DialogTitle>
+            <DialogTitle sx={{ m: 0, p: 2 }} id="customized-dialog-title">
+              Các loại dịch vụ
+            </DialogTitle>
+            <IconButton
+              aria-label="close"
+              onClick={handleCloseAddService}
+              sx={{
+                position: "absolute",
+                right: 8,
+                top: 8,
+                color: (theme) => theme.palette.grey[900],
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
             <DialogContent>
               <div>
                 <OutlinedInput
@@ -3022,7 +3388,6 @@ function BookRoom() {
           </Dialog>
           <Dialog
             open={openQuantityNoteCombo}
-            onClose={handleCloseQuantityNoteCombo}
             fullWidth
             PaperProps={{
               style: {
@@ -3035,6 +3400,18 @@ function BookRoom() {
               {selectedComboId !== null &&
                 combo.find((combo) => combo.id === selectedComboId)?.comboName}
             </DialogTitle>
+            <IconButton
+              aria-label="close"
+              onClick={handleCloseQuantityNoteCombo}
+              sx={{
+                position: "absolute",
+                right: 8,
+                top: 8,
+                color: (theme) => theme.palette.grey[900],
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
             <DialogContent>
               <TextField
                 style={{ marginTop: 10 }}
@@ -3074,7 +3451,21 @@ function BookRoom() {
               },
             }}
           >
-            <DialogTitle>COMBO DỊCH VỤ</DialogTitle>
+            <DialogTitle sx={{ m: 0, p: 2 }} id="customized-dialog-title">
+              COMBO DỊCH VỤ
+            </DialogTitle>
+            <IconButton
+              aria-label="close"
+              onClick={handleCloseAddCombo}
+              sx={{
+                position: "absolute",
+                right: 8,
+                top: 8,
+                color: (theme) => theme.palette.grey[900],
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
             <DialogContent>
               <div>
                 <OutlinedInput
@@ -3152,8 +3543,20 @@ function BookRoom() {
             <TextField label="VAT" value={formatPrice(vatAmount)} />
           </div>
           {renderButtonsBasedOnStatus()}
-          <Dialog open={openAcceptOrder} onClose={handleCloseAcceptOrder} maxWidth="md">
+          <Dialog open={openAcceptOrder} maxWidth="md">
             <DialogTitle>Xác nhận khách hàng đại diện nhận phòng</DialogTitle>
+            <IconButton
+              aria-label="close"
+              onClick={handleCloseAcceptOrder}
+              sx={{
+                position: "absolute",
+                right: 8,
+                top: 8,
+                color: (theme) => theme.palette.grey[900],
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
             <hr />
             <DialogContent>
               <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
@@ -3199,9 +3602,22 @@ function BookRoom() {
             </DialogActions>
           </Dialog>
           <Dialog open={openReturnRoom} onClose={handleCloseReturnRoom} maxWidth="md">
-            <DialogTitle>XÁC NHẬN THANH TOÁN</DialogTitle>
+            <DialogTitle sx={{ m: 0, p: 2 }} id="customized-dialog-title">
+              XÁC NHẬN THANH TOÁN - {order.orderCode}
+            </DialogTitle>
+            <IconButton
+              aria-label="close"
+              onClick={handleCloseReturnRoom}
+              sx={{
+                position: "absolute",
+                right: 8,
+                top: 8,
+                color: (theme) => theme.palette.grey[900],
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
             <DialogContent>
-              <br />
               <div style={{ display: "flex" }}>
                 <br />
                 <TextField
@@ -3228,18 +3644,18 @@ function BookRoom() {
                   <InputLabel id="demo-simple-select-label">
                     Áp dụng chương trình giảm giá
                   </InputLabel>
-                  <Select onChange={handleChoseDiscount} value={selectedDiscount}>
-                    <MenuItem key={null} value={null}>
+                  <Select onChange={handleChoseDiscount} value={selectedDiscount || ""}>
+                    <MenuItem key={""} value={""}>
                       Chương trình giảm giá
                     </MenuItem>
                     {discountProgram.map((item) => (
-                      // Use parentheses instead of curly braces to implicitly return the JSX
                       <MenuItem key={item.id} value={item}>
                         {item.name}
                       </MenuItem>
                     ))}
                   </Select>
                 </FormControl>
+
                 <br />
                 <br />
                 <TextField
@@ -3254,14 +3670,12 @@ function BookRoom() {
                 <TextField
                   style={{ width: 520, marginRight: 30 }}
                   label="Số tiền được giảm"
-                  value={discountMonney ? formatPrice(discountMonney) : "0 VND"}
+                  value={discountMoney ? formatPrice(discountMoney) : "0 VND"}
                   fullWidth
                   variant="outlined"
                 />
               </div>
               <br />
-              <div style={{ display: "flex" }}></div>
-
               <div style={{ display: "flex" }}>
                 <TextField
                   style={{ width: 520, marginRight: 30 }}
@@ -3341,8 +3755,20 @@ function BookRoom() {
             </DialogActions>
             <br />
           </Dialog>
-          <Dialog open={openCancelRoom} onClose={handleCloseCancelOrder} maxWidth="md">
+          <Dialog open={openCancelRoom} maxWidth="md">
             <DialogTitle>Xác nhận khách hàng hủy phòng</DialogTitle>
+            <IconButton
+              aria-label="close"
+              onClick={handleCloseCancelOrder}
+              sx={{
+                position: "absolute",
+                right: 8,
+                top: 8,
+                color: (theme) => theme.palette.grey[900],
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
             <DialogContent>
               <TextareaAutosize
                 className="form-control"

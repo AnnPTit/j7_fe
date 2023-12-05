@@ -11,7 +11,7 @@ export const BookRoomSearch = ({ textSearch, setTextSearch }) => {
 
   const item = {
     title: "Add",
-    path: "/room-service",
+    path: "/booking",
     icon: (
       <SvgIcon fontSize="small">
         <ForwardIcon />
@@ -37,7 +37,7 @@ export const BookRoomSearch = ({ textSearch, setTextSearch }) => {
       }
       // Gửi yêu cầu POST đến server để đặt phòng
       const response = await axios.post("http://localhost:2003/api/order/save", orderData);
-      router.push(`/room-service?id=${response.data.id}`);
+      router.push(`/booking?id=${response.data.id}`);
       console.log("Tạo thành công:", response.data);
       console.log("Id:", response.data.id);
     } catch (error) {
