@@ -57,6 +57,8 @@ import PriceRangeSlider from "src/sections/room/price-slider";
 import { SeverityPill } from "src/components/severity-pill";
 import QrCodeScannerIcon from "@mui/icons-material/QrCodeScanner";
 import { CustomerSearch } from "src/sections/bookRoomOffline/customer-search";
+import { sum } from "lodash";
+import { el } from "date-fns/locale";
 function BookRoom() {
   const router = useRouter(); // Sử dụng useRouter để truy cập router của Next.js
   const { id } = router.query;
@@ -127,6 +129,14 @@ function BookRoom() {
   const [checkOutChangeRoom, setCheckOutChangeRoom] = useState("");
   const [idRoomChoosed, setIdRoomChoosed] = useState("");
   const [roomPriceChoosed, setRoomPriceChoosed] = useState("");
+  const [sumAmountValue, setSumAmountValue] = useState(0);
+
+  // CTGG
+  const [reduceValue, setReduceValue] = useState(0);
+  const [discountProgram, setDiscountProgram] = useState([]);
+  const [selectedDiscount, setSelectedDiscount] = useState({});
+  const [discountPercent, setDiscountPercent] = useState(0);
+  const [discountMoney, setDiscountMoney] = useState(0);
 
   // Dialogs
   const [openSeacrhRoom, setOpenSeacrhRoom] = React.useState(false);
@@ -273,7 +283,7 @@ function BookRoom() {
   useEffect(() => {
     console.log("IdUseEffect: ", idOrderDetailChange);
   }, [idOrderDetailChange]);
-  
+
   const handleOpenChangeRoom = async (idOrderDetail) => {
     console.log("IdOrderDetail: ", idOrderDetail);
     setIdOrderDetailChange(idOrderDetail);
@@ -690,6 +700,9 @@ function BookRoom() {
   const vatAmount = totalAmount * 0.1;
   const totalMoney = totalAmount + vatAmount;
   const sumAmount = totalAmount + vatAmount - order.deposit;
+  useEffect(() => {
+    setSumAmountValue(sumAmount);
+  }, [sumAmount]);
   const moneyReturnCustomer = givenCustomer - sumAmount;
 
   useEffect(() => {
@@ -764,7 +777,7 @@ function BookRoom() {
               onClick={handleOpenReturnRoom}
               variant="outlined"
             >
-              Trả phòng
+              Thanh toán
             </Button>
           </React.Fragment>
         );
@@ -822,6 +835,29 @@ function BookRoom() {
     }
   };
 
+  const handleChoseDiscount = (event) => {
+    const discount = event.target.value;
+    if (discount) {
+      setSelectedDiscount(discount);
+      setDiscountPercent(discount.reduceValue);
+      const total = calculateTotal();
+      const totalAfterDiscount = (total * discount.reduceValue) / 100;
+      if (totalAfterDiscount <= discount.maximumDiscount) {
+        setDiscountMoney(totalAfterDiscount);
+        setSumAmountValue(sumAmount - totalAfterDiscount);
+      }
+      {
+        setDiscountMoney(discount.maximumDiscount);
+        setSumAmountValue(sumAmount - discount.maximumDiscount);
+      }
+    } else {
+      setSelectedDiscount(null);
+      setDiscountPercent(null);
+      setDiscountMoney(null);
+      setSumAmountValue(sumAmount);
+    }
+  };
+
   // Xác nhận phòng
   const handleConfirmOrder = async () => {
     if (orderDetailData.length == 0) {
@@ -867,7 +903,7 @@ function BookRoom() {
 
       await axios.put(`http://localhost:2003/api/order/update-accept/${id}`, {
         customerId: selectedCustomerAccept,
-        totalMoney: sumAmount,
+        totalMoney: sumAmountValue,
         vat: vatAmount,
         note: noteOrder,
       });
@@ -925,7 +961,7 @@ function BookRoom() {
 
   //Trả phòng
   const handleReturnRoom = async () => {
-    if (!givenCustomer || givenCustomer < sumAmount) {
+    if (!givenCustomer || givenCustomer < sumAmountValue) {
       // Xử lý khi tiền khách trả không hợp lệ, ví dụ: hiển thị thông báo lỗi
       toast.error("Số tiền khách trả không hợp lệ!", {
         position: toast.POSITION.BOTTOM_CENTER,
@@ -942,11 +978,13 @@ function BookRoom() {
       axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
 
       await axios.put(`http://localhost:2003/api/order/update-return/${id}`, {
-        totalMoney: sumAmount,
+        totalMoney: sumAmountValue,
         vat: vatAmount,
         moneyGivenByCustomer: givenCustomer,
         excessMoney: moneyReturnCustomer,
         note: noteReturnRoom,
+        discountProgram: selectedDiscount ? selectedDiscount.id : null,
+        discountMoney: discountMoney,
       });
       setOrder({ ...order, status: 3 });
       handleCloseReturnRoom();
@@ -995,7 +1033,7 @@ function BookRoom() {
     axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
     // const updatedTotalMoney = calculateTotal(); // Lấy giá trị tạm tính
     const response = await axios.put(`http://localhost:2003/api/order/update/${id}`, {
-      totalMoney: sumAmount,
+      totalMoney: sumAmountValue,
     });
     toast.success("Lưu thành công!", {
       position: toast.POSITION.BOTTOM_CENTER,
@@ -1153,6 +1191,27 @@ function BookRoom() {
     }
   };
 
+  // Load commbox discount -> Load theo tổng tiền
+  useEffect(() => {
+    const fetchDiscount = async () => {
+      try {
+        const total = calculateTotal();
+        const response = await axios.get(
+          `http://localhost:2003/api/order/discount-program?totalMoney=${total}`
+        );
+        console.log("ABC: ", response.data);
+        setDiscountProgram(response.data);
+      } catch (error) {
+        console.error("Error loading discount program:", error);
+      }
+    };
+    fetchDiscount();
+  }, [
+    sumOrderDetail,
+    calculateTotalAmountPriceRoom(),
+    calculateTotalService(),
+    calculateTotalCombo(),
+  ]);
   // Thêm khách hàng cho từng phòng
   const handleAddCustomerToRooms = async () => {
     if (!selectedOrderDetails) {
@@ -1939,7 +1998,12 @@ function BookRoom() {
   const createPayment = async () => {
     try {
       const response = await axios.post(
-        `http://localhost:2003/api/payment-method/payment-vnpay/${id}`
+        `http://localhost:2003/api/payment-method/payment-vnpay/${id}`,
+        {
+          amount: sumAmountValue,
+          discount: discountMoney,
+          idDiscount: selectedDiscount ? selectedDiscount.id : "",
+        }
       );
       const { finalUrl } = response.data;
       window.location.href = finalUrl;
@@ -1951,7 +2015,10 @@ function BookRoom() {
   const createPaymentMomo = async () => {
     try {
       const response = await axios.post(
-        `http://localhost:2003/api/payment-method/payment-momo/${id}`
+        `http://localhost:2003/api/payment-method/payment-momo/${id}`,
+        {
+          amount: sumAmountValue,
+        }
       );
       window.location.href = response.data.payUrl;
     } catch (error) {
@@ -2271,7 +2338,6 @@ function BookRoom() {
       </Dialog>
       <Dialog
         open={openDateDialog}
-        onClose={handleCloseDateDialog}
         fullWidth
         PaperProps={{
           style: {
@@ -2280,6 +2346,18 @@ function BookRoom() {
         }}
       >
         <DialogTitle>Chọn ngày check-in và check-out</DialogTitle>
+        <IconButton
+          aria-label="close"
+          onClick={handleCloseDateDialog}
+          sx={{
+            position: "absolute",
+            right: 8,
+            top: 8,
+            color: (theme) => theme.palette.grey[900],
+          }}
+        >
+          <CloseIcon />
+        </IconButton>
         <DialogContent
           style={{
             marginTop: 15,
@@ -2465,129 +2543,141 @@ function BookRoom() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {orderDetailData.map((orderDetail, index) => (
-                  <TableRow key={orderDetail.id}>
-                    <TableCell>
-                      <Checkbox
-                        checked={selectedOrderDetails === orderDetail.id}
-                        onChange={() => handleCheckboxChange(orderDetail.id)}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      {orderDetail && orderDetail.roomImages && orderDetail.roomImages[0] && (
-                        <img
-                          style={{ objectFit: "cover", width: "100%" }}
-                          src={orderDetail.roomImages[0]}
-                          alt={`Room ${index + 1} Image 1`}
+                {orderDetailData.length > 0 ? (
+                  orderDetailData.map((orderDetail, index) => (
+                    <TableRow key={orderDetail.id}>
+                      <TableCell>
+                        <Checkbox
+                          checked={selectedOrderDetails === orderDetail.id}
+                          onChange={() => handleCheckboxChange(orderDetail.id)}
                         />
-                      )}
-                    </TableCell>
-                    <TableCell>{orderDetail.room.roomName}</TableCell>
-                    <TableCell>{orderDetail.room.floor.floorName}</TableCell>
-                    <TableCell>{orderDetail.room.typeRoom.typeRoomName}</TableCell>
-                    <TableCell>{orderDetail.room.typeRoom.capacity}</TableCell>
-                    <TableCell>{orderDetail.customerQuantity}</TableCell>
-                    <TableCell>{orderDetail.room.typeRoom.children}</TableCell>
-                    <TableCell>
-                      {orderDetail &&
-                        orderDetail.checkIn &&
-                        format(new Date(orderDetail.checkIn), "dd/MM/yyyy")}
-                    </TableCell>
-                    <TableCell>
-                      {orderDetail &&
-                        orderDetail.checkOut &&
-                        format(new Date(orderDetail.checkOut), "dd/MM/yyyy")}
-                    </TableCell>
-                    <TableCell>
-                      {orderDetail.roomPrice ? formatPrice(orderDetail.roomPrice) : ""}
-                    </TableCell>
-                    <TableCell>
-                      {order.status === 1 || order.status === 5 ? (
-                        <>
-                          <Button
-                            className="btn btn-primary m-xl-2"
-                            id="demo-positioned-button"
-                            aria-controls={open ? "demo-positioned-menu" : undefined}
-                            aria-haspopup="true"
-                            aria-expanded={open ? "true" : undefined}
-                            onClick={handleClick}
-                          >
-                            <SvgIcon fontSize="small">
-                              <PencilSquareIcon />
-                            </SvgIcon>
-                          </Button>
-                          <Menu
-                            id="demo-positioned-menu"
-                            aria-labelledby="demo-positioned-button"
-                            anchorEl={anchorEl}
-                            open={open}
-                            onClose={handleClose}
-                            anchorOrigin={{
-                              vertical: "top",
-                              horizontal: "left",
-                            }}
-                            transformOrigin={{
-                              vertical: "top",
-                              horizontal: "left",
-                            }}
-                          >
-                            <MenuItem onClick={() => handleDeleteRoom(orderDetail.id)}>
-                              Hủy phòng
-                            </MenuItem>
-                          </Menu>
-                        </>
-                      ) : null}
-                      {order.status === 2 ? (
-                        <>
-                          <Button
-                            className="btn btn-primary m-xl-2"
-                            id="demo-positioned-button"
-                            aria-controls={open ? "demo-positioned-menu" : undefined}
-                            aria-haspopup="true"
-                            aria-expanded={open ? "true" : undefined}
-                            onClick={handleClick}
-                          >
-                            <SvgIcon fontSize="small">
-                              <PencilSquareIcon />
-                            </SvgIcon>
-                          </Button>
-                          <Menu
-                            id="demo-positioned-menu"
-                            aria-labelledby="demo-positioned-button"
-                            anchorEl={anchorEl}
-                            open={open}
-                            onClose={handleClose}
-                            anchorOrigin={{
-                              vertical: "top",
-                              horizontal: "left",
-                            }}
-                            transformOrigin={{
-                              vertical: "top",
-                              horizontal: "left",
-                            }}
-                          >
-                            {orderDetailData.length > 0 ? (
-                              <MenuItem
-                                key="changeRoom"
-                                onClick={() => handleOpenChangeRoom(orderDetail.id)}
-                              >
-                                Chuyển phòng
+                      </TableCell>
+                      <TableCell>
+                        {orderDetail && orderDetail.roomImages && orderDetail.roomImages[0] && (
+                          <img
+                            style={{ objectFit: "cover", width: "100%" }}
+                            src={orderDetail.roomImages[0]}
+                            alt={`Room ${index + 1} Image 1`}
+                          />
+                        )}
+                      </TableCell>
+                      <TableCell>{orderDetail.room.roomName}</TableCell>
+                      <TableCell>{orderDetail.room.floor.floorName}</TableCell>
+                      <TableCell>{orderDetail.room.typeRoom.typeRoomName}</TableCell>
+                      <TableCell>{orderDetail.room.typeRoom.capacity}</TableCell>
+                      <TableCell>{orderDetail.customerQuantity}</TableCell>
+                      <TableCell>{orderDetail.room.typeRoom.children}</TableCell>
+                      <TableCell>
+                        {orderDetail &&
+                          orderDetail.checkIn &&
+                          format(new Date(orderDetail.checkIn), "dd/MM/yyyy")}
+                      </TableCell>
+                      <TableCell>
+                        {orderDetail &&
+                          orderDetail.checkOut &&
+                          format(new Date(orderDetail.checkOut), "dd/MM/yyyy")}
+                      </TableCell>
+                      <TableCell>
+                        {orderDetail.roomPrice ? formatPrice(orderDetail.roomPrice) : ""}
+                      </TableCell>
+                      <TableCell>
+                        {order.status === 1 || order.status === 5 ? (
+                          <>
+                            <Button
+                              className="btn btn-primary m-xl-2"
+                              id="demo-positioned-button"
+                              aria-controls={open ? "demo-positioned-menu" : undefined}
+                              aria-haspopup="true"
+                              aria-expanded={open ? "true" : undefined}
+                              onClick={handleClick}
+                            >
+                              <SvgIcon fontSize="small">
+                                <PencilSquareIcon />
+                              </SvgIcon>
+                            </Button>
+                            <Menu
+                              id="demo-positioned-menu"
+                              aria-labelledby="demo-positioned-button"
+                              anchorEl={anchorEl}
+                              open={open}
+                              onClose={handleClose}
+                              anchorOrigin={{
+                                vertical: "top",
+                                horizontal: "left",
+                              }}
+                              transformOrigin={{
+                                vertical: "top",
+                                horizontal: "left",
+                              }}
+                            >
+                              <MenuItem onClick={() => handleDeleteRoom(orderDetail.id)}>
+                                Hủy phòng
                               </MenuItem>
-                            ) : null}
-                            {orderDetailData.length > 1 ? (
-                              <MenuItem
-                                key="returnRoom"
-                                onClick={() => handleOpenReturnOneRoom(orderDetail.id)}
-                              >
-                                Trả phòng
-                              </MenuItem>
-                            ) : null}
-                          </Menu>
-                        </>
-                      ) : null}
+                            </Menu>
+                          </>
+                        ) : null}
+                        {order.status === 2 ? (
+                          <>
+                            <Button
+                              className="btn btn-primary m-xl-2"
+                              id="demo-positioned-button"
+                              aria-controls={open ? "demo-positioned-menu" : undefined}
+                              aria-haspopup="true"
+                              aria-expanded={open ? "true" : undefined}
+                              onClick={handleClick}
+                            >
+                              <SvgIcon fontSize="small">
+                                <PencilSquareIcon />
+                              </SvgIcon>
+                            </Button>
+                            <Menu
+                              id="demo-positioned-menu"
+                              aria-labelledby="demo-positioned-button"
+                              anchorEl={anchorEl}
+                              open={open}
+                              onClose={handleClose}
+                              anchorOrigin={{
+                                vertical: "top",
+                                horizontal: "left",
+                              }}
+                              transformOrigin={{
+                                vertical: "top",
+                                horizontal: "left",
+                              }}
+                            >
+                              {orderDetailData.length > 0 ? (
+                                <MenuItem
+                                  key="changeRoom"
+                                  onClick={() => handleOpenChangeRoom(orderDetail.id)}
+                                >
+                                  Chuyển phòng
+                                </MenuItem>
+                              ) : null}
+                              {orderDetailData.length > 1 ? (
+                                <MenuItem
+                                  key="returnRoom"
+                                  onClick={() => handleOpenReturnOneRoom(orderDetail.id)}
+                                >
+                                  Trả phòng
+                                </MenuItem>
+                              ) : null}
+                            </Menu>
+                          </>
+                        ) : null}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={12} align="center">
+                      <div>
+                        <span style={{ fontFamily: "monospace", fontSize: 20 }}>
+                          Chưa có phòng nào được đặt.
+                        </span>
+                      </div>
                     </TableCell>
                   </TableRow>
-                ))}
+                )}
               </TableBody>
             </Table>
             <h6
@@ -2643,7 +2733,7 @@ function BookRoom() {
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={6} align="center">
+                      <TableCell colSpan={7} align="center">
                         <div>
                           <span style={{ fontFamily: "monospace", fontSize: 20 }}>
                             Không có dữ liệu.
@@ -3158,7 +3248,6 @@ function BookRoom() {
         >
           <Dialog
             open={openQuantityNote}
-            onClose={handleCloseQuantityNote}
             fullWidth
             PaperProps={{
               style: {
@@ -3171,6 +3260,18 @@ function BookRoom() {
               {selectedServiceId !== null &&
                 service.find((service) => service.id === selectedServiceId)?.serviceName}
             </DialogTitle>
+            <IconButton
+              aria-label="close"
+              onClick={handleCloseQuantityNote}
+              sx={{
+                position: "absolute",
+                right: 8,
+                top: 8,
+                color: (theme) => theme.palette.grey[900],
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
             <DialogContent>
               <TextField
                 style={{ marginTop: 10 }}
@@ -3287,7 +3388,6 @@ function BookRoom() {
           </Dialog>
           <Dialog
             open={openQuantityNoteCombo}
-            onClose={handleCloseQuantityNoteCombo}
             fullWidth
             PaperProps={{
               style: {
@@ -3300,6 +3400,18 @@ function BookRoom() {
               {selectedComboId !== null &&
                 combo.find((combo) => combo.id === selectedComboId)?.comboName}
             </DialogTitle>
+            <IconButton
+              aria-label="close"
+              onClick={handleCloseQuantityNoteCombo}
+              sx={{
+                position: "absolute",
+                right: 8,
+                top: 8,
+                color: (theme) => theme.palette.grey[900],
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
             <DialogContent>
               <TextField
                 style={{ marginTop: 10 }}
@@ -3431,8 +3543,20 @@ function BookRoom() {
             <TextField label="VAT" value={formatPrice(vatAmount)} />
           </div>
           {renderButtonsBasedOnStatus()}
-          <Dialog open={openAcceptOrder} onClose={handleCloseAcceptOrder} maxWidth="md">
+          <Dialog open={openAcceptOrder} maxWidth="md">
             <DialogTitle>Xác nhận khách hàng đại diện nhận phòng</DialogTitle>
+            <IconButton
+              aria-label="close"
+              onClick={handleCloseAcceptOrder}
+              sx={{
+                position: "absolute",
+                right: 8,
+                top: 8,
+                color: (theme) => theme.palette.grey[900],
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
             <hr />
             <DialogContent>
               <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
@@ -3515,10 +3639,48 @@ function BookRoom() {
               </div>
               <br />
               <div style={{ display: "flex" }}>
+                <br />
+                <FormControl fullWidth style={{ width: 520, marginRight: 30 }}>
+                  <InputLabel id="demo-simple-select-label">
+                    Áp dụng chương trình giảm giá
+                  </InputLabel>
+                  <Select onChange={handleChoseDiscount} value={selectedDiscount || ""}>
+                    <MenuItem key={""} value={""}>
+                      Chương trình giảm giá
+                    </MenuItem>
+                    {discountProgram.map((item) => (
+                      <MenuItem key={item.id} value={item}>
+                        {item.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+
+                <br />
+                <br />
+                <TextField
+                  style={{ width: 520, marginRight: 30 }}
+                  label="Phần trăm giảm"
+                  value={discountPercent ? discountPercent + "%" : "0 %"}
+                  fullWidth
+                  variant="outlined"
+                />
+                <br />
+                <br />
+                <TextField
+                  style={{ width: 520, marginRight: 30 }}
+                  label="Số tiền được giảm"
+                  value={discountMoney ? formatPrice(discountMoney) : "0 VND"}
+                  fullWidth
+                  variant="outlined"
+                />
+              </div>
+              <br />
+              <div style={{ display: "flex" }}>
                 <TextField
                   style={{ width: 520, marginRight: 30 }}
                   label="Tổng tiền"
-                  value={sumAmount ? formatPrice(sumAmount) : "0 VND"}
+                  value={sumAmountValue ? formatPrice(sumAmountValue) : "0 VND"}
                   fullWidth
                   variant="outlined"
                 />
@@ -3551,7 +3713,11 @@ function BookRoom() {
               <br />
               <TextField
                 label="Tiền trả lại"
-                value={givenCustomer - sumAmount ? formatPrice(givenCustomer - sumAmount) : "0 VND"}
+                value={
+                  givenCustomer - sumAmountValue
+                    ? formatPrice(givenCustomer - sumAmountValue)
+                    : "0 VND"
+                }
                 fullWidth
                 variant="outlined"
               />
@@ -3589,8 +3755,20 @@ function BookRoom() {
             </DialogActions>
             <br />
           </Dialog>
-          <Dialog open={openCancelRoom} onClose={handleCloseCancelOrder} maxWidth="md">
+          <Dialog open={openCancelRoom} maxWidth="md">
             <DialogTitle>Xác nhận khách hàng hủy phòng</DialogTitle>
+            <IconButton
+              aria-label="close"
+              onClick={handleCloseCancelOrder}
+              sx={{
+                position: "absolute",
+                right: 8,
+                top: 8,
+                color: (theme) => theme.palette.grey[900],
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
             <DialogContent>
               <TextareaAutosize
                 className="form-control"

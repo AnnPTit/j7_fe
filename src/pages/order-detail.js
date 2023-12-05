@@ -544,8 +544,8 @@ function OrderTimeline() {
             <label style={{ marginLeft: 135 }}>{order.orderCode}</label>
             <br />
             <br />
-            <label>Tổng tiền + (VAT)</label>
-            <span style={{ marginLeft: 93, color: "red" }}>
+            <label>Tổng tiền + VAT</label>
+            <span style={{ marginLeft: 105, color: "red" }}>
               {order.totalMoney ? formatPrice(order.totalMoney) : "0 VND"}
             </span>
             <br />
@@ -553,6 +553,12 @@ function OrderTimeline() {
             <label>Tiền cọc</label>
             <span style={{ marginLeft: 160, color: "red" }}>
               {order.deposit ? formatPrice(order.deposit) : "0 VND"}
+            </span>
+            <br />
+            <br />
+            <label>Giảm giá</label>
+            <span style={{ marginLeft: 157, color: "red" }}>
+              {order.discount ? formatPrice(order.discount) : "0 VND"}
             </span>
             <br />
             <br />
@@ -567,7 +573,11 @@ function OrderTimeline() {
             <br />
             <br />
             <label>Email</label>
-            <label style={{ marginLeft: 180 }}>{order.customer.email}</label>
+            <label style={{ marginLeft: 178 }}>{order.customer.email}</label>
+            <br />
+            <br />
+            <label>Nhân viên</label>
+            <label style={{ marginLeft: 145 }}>{order?.account?.fullname}</label>
             <br />
             <br />
           </div>
