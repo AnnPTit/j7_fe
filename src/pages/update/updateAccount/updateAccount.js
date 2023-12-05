@@ -12,142 +12,6 @@ import { TextField } from "@mui/material";
 import { DatePicker, TimePicker } from "@mui/x-date-pickers";
 
 const cx = classNames.bind(style);
-const handleSubmit = async (event, id, accountUpdate) => {
-  event.preventDefault(); // Ngăn chặn sự kiện submit mặc định
-  // Tạo payload dữ liệu để gửi đến API
-  const payload = {
-    ...accountUpdate,
-    id: id,
-    accountCode: accountUpdate.accountCode,
-    gender: accountUpdate.gender,
-    fullname: accountUpdate.fullname,
-    email: accountUpdate.email,
-    phoneNumber: accountUpdate.phoneNumber,
-    birthday: accountUpdate.birthday,
-    citizenId: accountUpdate.citizenId,
-    provinces: accountUpdate.provinces,
-    districts: accountUpdate.districts,
-    wards: accountUpdate.wards,
-  };
-  console.log("payload ", payload);
-
-  try {
-    const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
-    // Kiểm tra xem accessToken có tồn tại không
-    if (!accessToken) {
-     console.log("Bạn chưa đăng nhập");
-      return false;
-    }
-
-    axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
-    const response = await axios.put(
-      `http://localhost:2003/api/admin/account/update/${id}`,
-      payload
-    ); // Gọi API /api/service-type/save với payload và access token
-    console.log(response); //
-
-    if (response.status === 200) {
-      // Xử lý khi API thành công
-      console.log("API call successful");
-
-      window.location.href = "/account";
-      return true;
-      // Thực hiện các hành động khác sau khi API thành công
-    } else {
-      // Xử lý khi API gặp lỗi
-      console.log("API call failed");
-      return false;
-      // Thực hiện các hành động khác khi gọi API thất bại
-    }
-  } catch (error) {
-    // Xử lý khi có lỗi xảy ra trong quá trình gọi API
-    if (error.response) {
-      // Xử lý response lỗi
-      if (error.response.status === 403) {
-        alert("Bạn không có quyền truy cập vào trang này");
-        window.location.href = "/auth/login"; // Chuyển hướng đến trang đăng nhập
-      } else if (error.response.status === 400) {
-        console.log(error.response.data);
-
-        const isAccountCodeError = error.response.data.accountCode === undefined;
-        const isFullnameError = error.response.data.fullname === undefined;
-        const isEmailError = error.response.data.email === undefined;
-        const isPhoneNumberError = error.response.data.phoneNumber === undefined;
-        const isCitizenIdError = error.response.data.citizenId === undefined;
-        const isBirthdayError = error.response.data.birthday === undefined;
-
-        if (
-          !isAccountCodeError &&
-          !isFullnameError &&
-          !isEmailError &&
-          !isPhoneNumberError &&
-          !isCitizenIdError &&
-          !isBirthdayError
-        ) {
-          toast.error(error.response.data.accountCode, {
-            position: toast.POSITION.BOTTOM_RIGHT,
-          });
-          toast.error(error.response.data.fullname, {
-            position: toast.POSITION.BOTTOM_RIGHT,
-          });
-          toast.error(error.response.data.email, {
-            position: toast.POSITION.BOTTOM_RIGHT,
-          });
-          toast.error(error.response.data.phoneNumber, {
-            position: toast.POSITION.BOTTOM_RIGHT,
-          });
-          toast.error(error.response.data.citizenId, {
-            position: toast.POSITION.BOTTOM_RIGHT,
-          });
-          toast.error(error.response.data.birthday, {
-            position: toast.POSITION.BOTTOM_RIGHT,
-          });
-          return false;
-        } else {
-          // Nếu có ít nhất một trường bị thiếu, xóa thông báo lỗi cho trường đó nếu có
-          // và hiển thị thông báo lỗi cho các trường còn lại
-          if (!isAccountCodeError) {
-            toast.error(error.response.data.accountCode, {
-              position: toast.POSITION.BOTTOM_RIGHT,
-            });
-          }
-          if (!isFullnameError) {
-            toast.error(error.response.data.fullname, {
-              position: toast.POSITION.BOTTOM_RIGHT,
-            });
-          }
-          if (!isEmailError) {
-            toast.error(error.response.data.email, {
-              position: toast.POSITION.BOTTOM_RIGHT,
-            });
-          }
-          if (!isPhoneNumberError) {
-            toast.error(error.response.data.phoneNumber, {
-              position: toast.POSITION.BOTTOM_RIGHT,
-            });
-          }
-          if (!isCitizenIdError) {
-            toast.error(error.response.data.citizenId, {
-              position: toast.POSITION.BOTTOM_RIGHT,
-            });
-          }
-          if (!isBirthdayError) {
-            toast.error(error.response.data.birthday, {
-              position: toast.POSITION.BOTTOM_RIGHT,
-            });
-          }
-          return false;
-        }
-      } else {
-        alert("Có lỗi xảy ra trong quá trình gọi API");
-        return false;
-      }
-    } else {
-      console.log("Không thể kết nối đến API");
-      return false;
-    }
-  }
-};
 
 function UpdateAccount() {
   // const [serviceType, setServiceType] = useState([]);
@@ -176,7 +40,7 @@ function UpdateAccount() {
         const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
         // Kiểm tra xem accessToken có tồn tại không
         if (!accessToken) {
-         console.log("Bạn chưa đăng nhập");
+          console.log("Bạn chưa đăng nhập");
           return;
         }
       } catch (error) {
@@ -194,7 +58,7 @@ function UpdateAccount() {
         const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
         // Kiểm tra xem accessToken có tồn tại không
         if (!accessToken) {
-         console.log("Bạn chưa đăng nhập");
+          console.log("Bạn chưa đăng nhập");
           return;
         }
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
@@ -311,6 +175,7 @@ function UpdateAccount() {
 
   const handleProvinceChange = (e) => {
     setSelectedProvince(e.target.value);
+    console.log("ABC: ", selectedProvince);
     const province = provinces.find((p) => p.province_id === e.target.value);
     setIdProvince(province?.province_id || 0);
     const name = province ? province.province_name : "";
@@ -356,6 +221,142 @@ function UpdateAccount() {
   const selectedWardId = findWardIdByName(selectedWards);
 
   console.log(provinces);
+  const handleSubmit = async (event, id, accountUpdate) => {
+    event.preventDefault(); // Ngăn chặn sự kiện submit mặc định
+    // Tạo payload dữ liệu để gửi đến API
+    const payload = {
+      ...accountUpdate,
+      id: id,
+      accountCode: accountUpdate.accountCode,
+      gender: accountUpdate.gender,
+      fullname: accountUpdate.fullname,
+      email: accountUpdate.email,
+      phoneNumber: accountUpdate.phoneNumber,
+      birthday: accountUpdate.birthday,
+      citizenId: accountUpdate.citizenId,
+      provinces: selectedProvinceName,
+      districts: selectedDistrictName,
+      wards: selectedWards,
+    };
+    console.log("payload ", payload);
+
+    try {
+      const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
+      // Kiểm tra xem accessToken có tồn tại không
+      if (!accessToken) {
+        console.log("Bạn chưa đăng nhập");
+        return false;
+      }
+
+      axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
+      const response = await axios.put(
+        `http://localhost:2003/api/admin/account/update/${id}`,
+        payload
+      ); // Gọi API /api/service-type/save với payload và access token
+      console.log(response); //
+
+      if (response.status === 200) {
+        // Xử lý khi API thành công
+        console.log("API call successful");
+
+        window.location.href = "/account";
+        return true;
+        // Thực hiện các hành động khác sau khi API thành công
+      } else {
+        // Xử lý khi API gặp lỗi
+        console.log("API call failed");
+        return false;
+        // Thực hiện các hành động khác khi gọi API thất bại
+      }
+    } catch (error) {
+      // Xử lý khi có lỗi xảy ra trong quá trình gọi API
+      if (error.response) {
+        // Xử lý response lỗi
+        if (error.response.status === 403) {
+          alert("Bạn không có quyền truy cập vào trang này");
+          window.location.href = "/auth/login"; // Chuyển hướng đến trang đăng nhập
+        } else if (error.response.status === 400) {
+          console.log(error.response.data);
+
+          const isAccountCodeError = error.response.data.accountCode === undefined;
+          const isFullnameError = error.response.data.fullname === undefined;
+          const isEmailError = error.response.data.email === undefined;
+          const isPhoneNumberError = error.response.data.phoneNumber === undefined;
+          const isCitizenIdError = error.response.data.citizenId === undefined;
+          const isBirthdayError = error.response.data.birthday === undefined;
+
+          if (
+            !isAccountCodeError &&
+            !isFullnameError &&
+            !isEmailError &&
+            !isPhoneNumberError &&
+            !isCitizenIdError &&
+            !isBirthdayError
+          ) {
+            toast.error(error.response.data.accountCode, {
+              position: toast.POSITION.BOTTOM_RIGHT,
+            });
+            toast.error(error.response.data.fullname, {
+              position: toast.POSITION.BOTTOM_RIGHT,
+            });
+            toast.error(error.response.data.email, {
+              position: toast.POSITION.BOTTOM_RIGHT,
+            });
+            toast.error(error.response.data.phoneNumber, {
+              position: toast.POSITION.BOTTOM_RIGHT,
+            });
+            toast.error(error.response.data.citizenId, {
+              position: toast.POSITION.BOTTOM_RIGHT,
+            });
+            toast.error(error.response.data.birthday, {
+              position: toast.POSITION.BOTTOM_RIGHT,
+            });
+            return false;
+          } else {
+            // Nếu có ít nhất một trường bị thiếu, xóa thông báo lỗi cho trường đó nếu có
+            // và hiển thị thông báo lỗi cho các trường còn lại
+            if (!isAccountCodeError) {
+              toast.error(error.response.data.accountCode, {
+                position: toast.POSITION.BOTTOM_RIGHT,
+              });
+            }
+            if (!isFullnameError) {
+              toast.error(error.response.data.fullname, {
+                position: toast.POSITION.BOTTOM_RIGHT,
+              });
+            }
+            if (!isEmailError) {
+              toast.error(error.response.data.email, {
+                position: toast.POSITION.BOTTOM_RIGHT,
+              });
+            }
+            if (!isPhoneNumberError) {
+              toast.error(error.response.data.phoneNumber, {
+                position: toast.POSITION.BOTTOM_RIGHT,
+              });
+            }
+            if (!isCitizenIdError) {
+              toast.error(error.response.data.citizenId, {
+                position: toast.POSITION.BOTTOM_RIGHT,
+              });
+            }
+            if (!isBirthdayError) {
+              toast.error(error.response.data.birthday, {
+                position: toast.POSITION.BOTTOM_RIGHT,
+              });
+            }
+            return false;
+          }
+        } else {
+          alert("Có lỗi xảy ra trong quá trình gọi API");
+          return false;
+        }
+      } else {
+        console.log("Không thể kết nối đến API");
+        return false;
+      }
+    }
+  };
   return (
     <div className={cx("wrapper")}>
       <h1>Cập nhật tài khoản</h1>
@@ -519,7 +520,7 @@ function UpdateAccount() {
       <select
         className="form-select"
         name="provinces"
-        value={selectedProvinceId}
+        value={selectedProvinceId} // Sử dụng giá trị đã tìm thấy
         onChange={handleProvinceChange}
       >
         <option value="">Chọn tỉnh thành</option>
@@ -533,7 +534,7 @@ function UpdateAccount() {
       <select
         className="form-select"
         name="districts"
-        value={selectedDistrictId}
+        value={selectedDistrictId} // Sử dụng giá trị đã tìm thấy
         onChange={handleDistrictChange}
       >
         <option value="">Chọn quận huyện</option>
@@ -548,7 +549,7 @@ function UpdateAccount() {
       <select
         className="form-select"
         name="wards"
-        value={selectedWardId}
+        value={selectedWardId} // Sử dụng giá trị đã tìm thấy
         onChange={handleWardsChange}
       >
         <option value="">Chọn phường xã</option>
