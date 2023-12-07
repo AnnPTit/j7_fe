@@ -29,7 +29,6 @@ export const DiscountProgramTable = (props) => {
     props.onDelete(id);
   };
 
-
   return (
     <Card>
       <Scrollbar>
@@ -38,24 +37,24 @@ export const DiscountProgramTable = (props) => {
             <TableHead>
               <TableRow>
                 <TableCell padding="checkbox">STT</TableCell>
+                <TableCell>Mã</TableCell>
                 <TableCell>Tên Chương Trình</TableCell>
                 <TableCell>Hóa Đơn Tối Thiểu</TableCell>
                 <TableCell>Giá Trị Giảm</TableCell>
                 <TableCell>Số Lượng</TableCell>
                 <TableCell>Ngày Áp Dụng</TableCell>
                 <TableCell>Ngày Kết Thúc</TableCell>
-                <TableCell>Ngày Tạo</TableCell>
-                <TableCell>Người Tạo</TableCell>
                 <TableCell>Trạng Thái CTGG</TableCell>
                 <TableCell>Hành động</TableCell>
               </TableRow>
             </TableHead>
 
             <TableBody>
-              {items.map((account, index) => {
-                const birthday = moment(account.birthday).format("DD/MM/YYYY");
-                const isSelected = selected.includes(account.id);
-                const hrefUpdate = `/discount-program/update?id=${account.id}`;
+              {items.map((discountProgram, index) => {
+                const startDay = moment(discountProgram.startDay).format("DD/MM/YYYY");
+                const endDate = moment(discountProgram.endDate).format("DD/MM/YYYY");
+                const isSelected = selected.includes(discountProgram.id);
+                const hrefUpdate = `/discount-program/update?id=${discountProgram.id}`;
                 const alertDelete = () => {
                   Swal.fire({
                     title: "Are you sure?",
@@ -68,29 +67,26 @@ export const DiscountProgramTable = (props) => {
                   }).then((result) => {
                     if (result.isConfirmed) {
                       Swal.fire("Deleted!", "Your data has been deleted.", "success");
-                      handleDelete(account.id);
+                      handleDelete(discountProgram.id);
                       toast.success("Delete Successfully!");
                     }
                   });
                 };
                 return (
-                  <TableRow hover key={account.id} selected={isSelected}>
+                  <TableRow hover key={discountProgram.id} selected={isSelected}>
                     <TableCell padding="checkbox">
                       <div key={index}>
                         <span>{index + props.pageNumber * 5 + 1}</span>
                       </div>
                     </TableCell>
-                    <TableCell>{account.accountCode}</TableCell>
-                    <TableCell>{account.fullname}</TableCell>
-                    <TableCell>{account.gender ? "Nam" : "Nữ"}</TableCell>
-                    <TableCell>{account.birthday}</TableCell>
-                    <TableCell>{account.phoneNumber}</TableCell>
-                    <TableCell>{account.citizenId}</TableCell>
-                    <TableCell>{account.email}</TableCell>
-                    <TableCell>
-                      {account.position.positionName === "ROLE_ADMIN" ? "Quản lý" : "Nhân Viên"}
-                    </TableCell>
-                    <TableCell>{account.status}</TableCell>
+                    <TableCell>{discountProgram.code}</TableCell>
+                    <TableCell>{discountProgram.name}</TableCell>
+                    <TableCell>{discountProgram.minimumInvoice}</TableCell>
+                    <TableCell>{discountProgram.reduceValue}</TableCell>
+                    <TableCell>{discountProgram.numberOfApplication}</TableCell>
+                    <TableCell>{startDay}</TableCell>
+                    <TableCell>{endDate}</TableCell>
+                    <TableCell>{discountProgram.textStatus}</TableCell>
                     <TableCell>
                       <a className="btn btn-primary m-xl-2" href={hrefUpdate}>
                         <SvgIcon fontSize="small">

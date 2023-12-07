@@ -26,28 +26,60 @@ import { DatePicker, TimePicker } from "@mui/x-date-pickers";
 const cx = classNames.bind(style);
 
 function inputDiscountProgram() {
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const [startDay, setStartDay] = useState();
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const [endDate, setEndDate] = useState();
+
+  const handleDateFromChange = (date) => {
+    setStartDay(date);
+    if (date > endDate) {
+      setEndDate(date);
+    }
+    console.log(date);
+  };
+
+  const handleDateToChange = (date) => {
+    setEndDate(date);
+    if (date < startDay) {
+      toast.error("Ngày kết thúc không được trước ngày bắt đầu", {
+        position: toast.POSITION.TOP_RIGHT,
+      });
+      setStartDay(date);
+    }
+    console.log(date);
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault(); // Ngăn chặn sự kiện submit mặc định
-    // Lấy giá trị từ các trường nhập liệu
-    const accountCodeInput = document.querySelector('input[name="accountCode"]');
-    const passwordInput = document.querySelector('input[name="password"]');
-    const fullNameInput = document.querySelector('input[name="fullname"]');
-    const genderdInput = document.querySelector('input[name="gender"]');
-    const emailInput = document.querySelector('input[name="email"]');
-    const phoneInput = document.querySelector('input[name="phoneNumber"]');
-    const citizenIdInput = document.querySelector('input[name="citizenId"]');
 
-    const accountCode = accountCodeInput?.value;
-    const password = passwordInput?.value;
-    const gender = genderdInput?.value;
-    const fullname = fullNameInput?.value;
-    const email = emailInput?.value;
-    const phoneNumber = phoneInput?.value;
-    const birthdayAccount = birthday;
-    const citizenId = citizenIdInput?.value;
+    // Lấy giá trị từ các trường nhập liệu
+    const nameInput = document.querySelector('input[name="name"]');
+    const minimumInvoiceInput = document.querySelector('input[name="minimumInvoice"]');
+    const reduceValueInput = document.querySelector('input[name="reduceValue"]');
+    const numberOfApplicationInput = document.querySelector('input[name="numberOfApplication"]');
+    const maximumReductionValueInput = document.querySelector(
+      'input[name="maximumReductionValue"]'
+    );
+    const startDayInput = document.querySelector('input[name="startDay"]');
+    const endDateInput = document.querySelector('input[name="endDate"]');
+
+    const name = nameInput?.value;
+    const minimumInvoice = minimumInvoiceInput?.value;
+    const reduceValue = reduceValueInput?.value;
+    const numberOfApplication = numberOfApplicationInput?.value;
+    const maximumReductionValue = maximumReductionValueInput?.value;
 
     // Tạo payload dữ liệu để gửi đến API
-    const payload = {};
+    const payload = {
+      name,
+      minimumInvoice,
+      reduceValue,
+      numberOfApplication,
+      maximumReductionValue,
+      startDay,
+      endDate,
+    };
     console.log("payload ", payload);
 
     try {
@@ -60,7 +92,10 @@ function inputDiscountProgram() {
 
       axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
 
-      // const response = await axios.post("http://localhost:2003/api/admin/account/save", payload); // Gọi API /api/service-type/save với payload và access token
+      const response = await axios.post(
+        "http://localhost:2003/api/admin/discount-program/save",
+        payload
+      ); // Gọi API /api/service-type/save với payload và access token
       console.log(response);
 
       //
@@ -88,89 +123,89 @@ function inputDiscountProgram() {
         } else if (error.response.status === 400) {
           console.log(error.response.data);
           toast.error(error.response.data);
-          const isFullnameError = error.response.data.fullname === undefined;
-          const isEmailError = error.response.data.email === undefined;
-          const isPhoneNumberError = error.response.data.phoneNumber === undefined;
-          const isCitizenIdError = error.response.data.citizenId === undefined;
-          const isBirthdayError = error.response.data.birthday === undefined;
-          const isProvinceError = error.response.data.provinces === undefined;
-          const isDistrictError = error.response.data.districts === undefined;
-          const isWardError = error.response.data.wards === undefined;
+          // const isFullnameError = error.response.data.fullname === undefined;
+          // const isEmailError = error.response.data.email === undefined;
+          // const isPhoneNumberError = error.response.data.phoneNumber === undefined;
+          // const isCitizenIdError = error.response.data.citizenId === undefined;
+          // const isBirthdayError = error.response.data.birthday === undefined;
+          // const isProvinceError = error.response.data.provinces === undefined;
+          // const isDistrictError = error.response.data.districts === undefined;
+          // const isWardError = error.response.data.wards === undefined;
 
-          if (
-            !isFullnameError &&
-            !isEmailError &&
-            !isPhoneNumberError &&
-            !isCitizenIdError &&
-            !isBirthdayError &&
-            !isWardError
-          ) {
-            toast.error(error.response.data.fullname, {
-              position: toast.POSITION.BOTTOM_RIGHT,
-            });
-            toast.error(error.response.data.email, {
-              position: toast.POSITION.BOTTOM_RIGHT,
-            });
-            toast.error(error.response.data.phoneNumber, {
-              position: toast.POSITION.BOTTOM_RIGHT,
-            });
-            toast.error(error.response.data.citizenId, {
-              position: toast.POSITION.BOTTOM_RIGHT,
-            });
-            toast.error(error.response.data.birthday, {
-              position: toast.POSITION.BOTTOM_RIGHT,
-            });
-            toast.error(error.response.data.wards, {
-              position: toast.POSITION.BOTTOM_RIGHT,
-            });
-            return false;
-          } else {
-            // Nếu có ít nhất một trường bị thiếu, xóa thông báo lỗi cho trường đó nếu có
-            // và hiển thị thông báo lỗi cho các trường còn lại
-            if (!isFullnameError) {
-              toast.error(error.response.data.fullname, {
-                position: toast.POSITION.BOTTOM_RIGHT,
-              });
-            }
-            if (!isEmailError) {
-              toast.error(error.response.data.email, {
-                position: toast.POSITION.BOTTOM_RIGHT,
-              });
-            }
-            if (!isPhoneNumberError) {
-              toast.error(error.response.data.phoneNumber, {
-                position: toast.POSITION.BOTTOM_RIGHT,
-              });
-            }
-            if (!isCitizenIdError) {
-              toast.error(error.response.data.citizenId, {
-                position: toast.POSITION.BOTTOM_RIGHT,
-              });
-            }
-            if (!isBirthdayError) {
-              toast.error(error.response.data.birthday, {
-                position: toast.POSITION.BOTTOM_RIGHT,
-              });
-            }
-            if (!isWardError) {
-              toast.error(error.response.data.wards, {
-                position: toast.POSITION.BOTTOM_RIGHT,
-              });
-            }
-            toast.error(error.response.data.email, {
-              position: toast.POSITION.BOTTOM_RIGHT,
-            });
-            // if (error.response.data.email) {
-            //   // API trả về lỗi cho trường email
-            //   toast.error("Email này đã tồn tại!");
-            // }
+          // if (
+          //   !isFullnameError &&
+          //   !isEmailError &&
+          //   !isPhoneNumberError &&
+          //   !isCitizenIdError &&
+          //   !isBirthdayError &&
+          //   !isWardError
+          // ) {
+          //   toast.error(error.response.data.fullname, {
+          //     position: toast.POSITION.BOTTOM_RIGHT,
+          //   });
+          //   toast.error(error.response.data.email, {
+          //     position: toast.POSITION.BOTTOM_RIGHT,
+          //   });
+          //   toast.error(error.response.data.phoneNumber, {
+          //     position: toast.POSITION.BOTTOM_RIGHT,
+          //   });
+          //   toast.error(error.response.data.citizenId, {
+          //     position: toast.POSITION.BOTTOM_RIGHT,
+          //   });
+          //   toast.error(error.response.data.birthday, {
+          //     position: toast.POSITION.BOTTOM_RIGHT,
+          //   });
+          //   toast.error(error.response.data.wards, {
+          //     position: toast.POSITION.BOTTOM_RIGHT,
+          //   });
+          //   return false;
+          // } else {
+          // Nếu có ít nhất một trường bị thiếu, xóa thông báo lỗi cho trường đó nếu có
+          // và hiển thị thông báo lỗi cho các trường còn lại
+          // if (!isFullnameError) {
+          //   toast.error(error.response.data.fullname, {
+          //     position: toast.POSITION.BOTTOM_RIGHT,
+          //   });
+          // }
+          // if (!isEmailError) {
+          //   toast.error(error.response.data.email, {
+          //     position: toast.POSITION.BOTTOM_RIGHT,
+          //   });
+          // }
+          // if (!isPhoneNumberError) {
+          //   toast.error(error.response.data.phoneNumber, {
+          //     position: toast.POSITION.BOTTOM_RIGHT,
+          //   });
+          // }
+          // if (!isCitizenIdError) {
+          //   toast.error(error.response.data.citizenId, {
+          //     position: toast.POSITION.BOTTOM_RIGHT,
+          //   });
+          // }
+          // if (!isBirthdayError) {
+          //   toast.error(error.response.data.birthday, {
+          //     position: toast.POSITION.BOTTOM_RIGHT,
+          //   });
+          // }
+          // if (!isWardError) {
+          //   toast.error(error.response.data.wards, {
+          //     position: toast.POSITION.BOTTOM_RIGHT,
+          //   });
+          // }
+          // toast.error(error.response.data.email, {
+          //   position: toast.POSITION.BOTTOM_RIGHT,
+          // });
+          // if (error.response.data.email) {
+          //   // API trả về lỗi cho trường email
+          //   toast.error("Email này đã tồn tại!");
+          // }
 
-            // if (error.response.data.citizenId) {
-            //   // API trả về lỗi cho trường số căn cước công dân
-            //   toast.error("Số căn cước công dân này đã tồn tại!");
-            // }
-            return false;
-          }
+          // if (error.response.data.citizenId) {
+          //   // API trả về lỗi cho trường số căn cước công dân
+          //   toast.error("Số căn cước công dân này đã tồn tại!");
+          // }
+          // return false;
+          // }
         } else {
           alert("Có lỗi xảy ra trong quá trình gọi API");
           return false;
@@ -195,6 +230,11 @@ function inputDiscountProgram() {
     console.log(formattedDate);
   };
 
+  const formatDate = (date) => {
+    const options = { day: "2-digit", month: "2-digit", year: "numeric" };
+    return new Intl.DateTimeFormat("en-GB", options).format(date);
+  };
+
   return (
     <div className={cx("wrapper")}>
       <h1>Thêm Chương Trình Giảm Giá</h1>
@@ -205,7 +245,7 @@ function inputDiscountProgram() {
           id="floatingPassword"
           placeholder="Password"
           variant="outlined"
-          name="fullname"
+          name="name"
         />
         <label htmlFor="floatingPassword">Tên chương trình</label>
       </div>
@@ -217,7 +257,7 @@ function inputDiscountProgram() {
           id="floatingPassword"
           placeholder="Password"
           variant="outlined"
-          name="fullname"
+          name="minimumInvoice"
         />
         <label htmlFor="floatingPassword">Hóa đơn tối thiểu</label>
       </div>
@@ -229,7 +269,7 @@ function inputDiscountProgram() {
           id="floatingPassword"
           placeholder="Password"
           variant="outlined"
-          name="fullname"
+          name="reduceValue"
         />
         <label htmlFor="floatingPassword">Giá trị giảm</label>
       </div>
@@ -241,38 +281,56 @@ function inputDiscountProgram() {
           id="floatingPassword"
           placeholder="Password"
           variant="outlined"
-          name="fullname"
+          name="maximumReductionValue"
+        />
+        <label htmlFor="floatingPassword">Giá trị giảm tối đa</label>
+      </div>
+      <br />
+      <div className="form-floating">
+        <input
+          type="number"
+          className="form-control"
+          id="floatingPassword"
+          placeholder="Password"
+          variant="outlined"
+          name="numberOfApplication"
         />
         <label htmlFor="floatingPassword">Số lượng</label>
       </div>
       <br />
+
       <DatePicker
-        label="Ngày áp dụng"
-        value={"" || null}
-        onChange={handleBirthDayChange}
         className="form-control"
+        label="Ngày bắt đầu"
+        disablePast
+        value={startDay}
+        onChange={handleDateFromChange}
         renderInput={(params) => (
           <TextField
-            // style={{ width: 290 }}
+            style={{ marginRight: 20 }}
             {...params}
             inputProps={{
+              value: formatDate(startDay),
               readOnly: true,
             }}
           />
         )}
       />
+
       <br />
       <br />
       <DatePicker
-        label="Ngày kết thúc"
-        value={"" || null}
-        onChange={handleBirthDayChange}
         className="form-control"
+        disablePast
+        label="Ngày kết thúc"
+        value={endDate}
+        onChange={handleDateToChange}
         renderInput={(params) => (
           <TextField
-            // style={{ width: 290 }}
+            style={{ marginRight: 20 }}
             {...params}
             inputProps={{
+              value: formatDate(endDate),
               readOnly: true,
             }}
           />

@@ -58,14 +58,13 @@ const Page = () => {
   // Delete
   const handleDelete = async (id) => {
     try {
-    //   await axios.delete(`http://localhost:2003/api/admin/account/delete/${id}`);
+      await axios.delete(`http://localhost:2003/api/admin/discount-program/delete/${id}`);
       console.log(id);
       setDataChange(!dataChange);
     } catch (error) {
       console.log(error);
     }
   };
-
 
   // Load
   useEffect(() => {
@@ -75,7 +74,7 @@ const Page = () => {
         console.log(accessToken);
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
 
-        let Api = `http://localhost:2003/api/admin/account/loadAndSearch?current_page=${pageNumber}`;
+        let Api = `http://localhost:2003/api/admin/discount-program/loadAndSearch?current_page=${pageNumber}`;
 
         if (textSearch !== "") {
           Api = Api + `&key=${textSearch}`;
@@ -107,7 +106,7 @@ const Page = () => {
   return (
     <>
       <Head>
-        <title>Chương trình giảm giá |  Armani Hotel</title>
+        <title>Chương trình giảm giá | Armani Hotel</title>
       </Head>
       <Box
         component="main"
