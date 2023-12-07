@@ -2018,6 +2018,8 @@ function BookRoom() {
         `http://localhost:2003/api/payment-method/payment-momo/${id}`,
         {
           amount: sumAmountValue,
+          discount: discountMoney,
+          idDiscount: selectedDiscount ? selectedDiscount.id : "",
         }
       );
       window.location.href = response.data.payUrl;

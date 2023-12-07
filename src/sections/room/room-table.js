@@ -74,18 +74,16 @@ export const RoomTable = (props) => {
                 const hrefUpdate = `/update/updateRoom/updateRoom?id=${room.id}`;
                 const alertDelete = () => {
                   Swal.fire({
-                    title: "Are you sure?",
-                    text: "You won't be able to revert this!",
+                    title: "Bạn chắc chắn muốn xóa chứ?",
                     icon: "warning",
                     showCancelButton: true,
                     confirmButtonColor: "#3085d6",
                     cancelButtonColor: "#d33",
-                    confirmButtonText: "Yes, delete it!",
+                    confirmButtonText: "Chắc chắn!",
                   }).then((result) => {
                     if (result.isConfirmed) {
-                      Swal.fire("Deleted!", "Your data has been deleted.", "success");
+                      Swal.fire("Đã xóa!", "Dữ liệu đã được xóa.", "success");
                       handleDelete(room.id);
-                      toast.success("Delete Successfully!");
                     }
                   });
                 };
