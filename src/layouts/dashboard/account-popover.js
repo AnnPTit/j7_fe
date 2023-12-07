@@ -26,9 +26,9 @@ export const AccountPopover = (props) => {
     auth.signOut();
     router.push("/auth/login");
     localStorage.removeItem("accessToken");
-    localStorage.removeItem("fullName");
-    localStorage.removeItem("idAccount");
-    localStorage.removeItem("position");
+    // localStorage.removeItem("fullName");
+    // localStorage.removeItem("idAccount");
+    // localStorage.removeItem("position");
   }, [onClose, auth, router]);
 
   return (
@@ -65,7 +65,6 @@ export const AccountPopover = (props) => {
         }}
       >
         <MenuItem onClick={handleProfile}>Thông tin cá nhân</MenuItem>
-        <Divider />
         <MenuItem>
           <Link
             style={{
