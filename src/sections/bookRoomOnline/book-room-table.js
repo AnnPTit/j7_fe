@@ -26,7 +26,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { Drawer } from "antd";
 import { DatePicker, TimePicker } from "@mui/x-date-pickers";
-import { parse, format, subYears, differenceInYears } from "date-fns";
+import { parse, format, subYears, differenceInYears, differenceInHours, isToday } from "date-fns";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import FormControl from "@mui/material/FormControl";
 import FormLabel from "@mui/material/FormLabel";
@@ -56,6 +56,7 @@ export const BookRoomTable = (props) => {
   const [openDetail, setOpenDetail] = React.useState(false);
   const [refuseReason, setRefuseReason] = React.useState("");
   const [isNewCustom, SetIsNewCustom] = React.useState(true);
+  const [surcharge, setSurcharge] = useState(0);
 
   const [open, setOpen] = useState(false);
   const showDrawer = async (orderId) => {
@@ -274,9 +275,104 @@ export const BookRoomTable = (props) => {
 
   const refuseOrder = async () => {};
 
-  const handleRedirect = () => {
-    router.push(`/booking?id=${orderId}`);
+  const handleRedirect = async () => {
+    const { bookingDateStart } = order;
+    console.log("Check-in: ", bookingDateStart);
+    const currentDate = new Date();
+    const checkinDateTime = new Date(bookingDateStart);
+    console.log("Check-in Datetime: ", checkinDateTime);
+
+    const shouldApplySurcharge =
+      currentDate < checkinDateTime &&
+      (differenceInHours(checkinDateTime, currentDate) <= 24 ||
+        (isToday(checkinDateTime) && currentDate.getHours() < checkinDateTime.getHours()));
+
+    const inTime =
+      currentDate > checkinDateTime &&
+      isToday(checkinDateTime) &&
+      currentDate.getHours() > checkinDateTime.getHours();
+
+    if (shouldApplySurcharge) {
+      const payload = {
+        orderId: orderId,
+        surcharge: surcharge,
+      };
+
+      try {
+        const accessToken = localStorage.getItem("accessToken");
+        if (!accessToken) {
+          console.log("Bạn chưa đăng nhập");
+          return;
+        }
+        axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+        const response = await axios.put(
+          `http://localhost:2003/api/order/update-surcharge`,
+          payload
+        );
+        router.push(`/booking?id=${orderId}`);
+      } catch (error) {
+        console.log(error);
+        toast.error("Có lỗi xảy ra !");
+      }
+    } else if (inTime) {
+      const payload = {
+        orderId: orderId,
+        surcharge: surcharge,
+      };
+
+      try {
+        const accessToken = localStorage.getItem("accessToken");
+        if (!accessToken) {
+          console.log("Bạn chưa đăng nhập");
+          return;
+        }
+        axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+        const response = await axios.put(
+          `http://localhost:2003/api/order/update-surcharge`,
+          payload
+        );
+        router.push(`/booking?id=${orderId}`);
+      } catch (error) {
+        console.log(error);
+        toast.error("Có lỗi xảy ra !");
+      }
+    } else {
+      toast.warning(
+        "Vui lòng chờ đến đúng ngày check-in. Hoặc bạn có thể check-in sớm hơn 1 ngày nhưng sẽ tính thêm phụ thu!",
+        {
+          position: toast.POSITION.BOTTOM_CENTER,
+        }
+      );
+      return;
+    }
   };
+
+  useEffect(() => {
+    const calculateSurcharge = () => {
+      const { bookingDateStart } = order;
+      console.log("Check-in: ", bookingDateStart);
+      const currentDate = new Date();
+      const checkinDateTime = new Date(bookingDateStart);
+      console.log("Check-in Datetime: ", checkinDateTime);
+
+      const shouldApplySurcharge =
+        currentDate < checkinDateTime &&
+        (differenceInHours(checkinDateTime, currentDate) <= 24 ||
+          (isToday(checkinDateTime) && currentDate.getHours() < checkinDateTime.getHours()));
+
+      console.log("ABC: ", shouldApplySurcharge);
+
+      if (shouldApplySurcharge) {
+        const hoursDifference = differenceInHours(checkinDateTime, currentDate);
+        const surchargeAmount = (hoursDifference + 1) * 10000;
+        return surchargeAmount;
+      }
+
+      return 0;
+    };
+
+    setSurcharge(calculateSurcharge());
+  }, [order, setSurcharge]);
 
   const renderButtonsBasedOnStatus = () => {
     switch (order.status) {
@@ -374,13 +470,13 @@ export const BookRoomTable = (props) => {
                     showCancelButton: true,
                     confirmButtonColor: "#3085d6",
                     cancelButtonColor: "#d33",
-                    confirmButtonText: "Yes, Add it!",
+                    confirmButtonText: "Xác nhận",
                   }).then(async (result) => {
                     if (result.isConfirmed) {
                       const isSubmitSuccess = await handleSubmit();
                       if (isSubmitSuccess) {
-                        Swal.fire("Thêm thành công !", "success");
-                        toast.success("Thêm Thành Công !");
+                        Swal.fire("Xác nhận thành công !", "success");
+                        toast.success("Xác nhận thành công !");
                       }
                     }
                   });
@@ -440,6 +536,11 @@ export const BookRoomTable = (props) => {
         return (
           <React.Fragment>
             <div style={{ display: "flex", justifyContent: "flex-end" }}>
+              <TextField
+                style={{ marginRight: 20 }}
+                value={numeral(surcharge).format("0,0 ") + "  đ"}
+                label="Phụ thu"
+              />
               <TextField
                 style={{ marginRight: 20 }}
                 value={numeral(order.deposit).format("0,0 ") + "  đ"}

@@ -57,8 +57,6 @@ import PriceRangeSlider from "src/sections/room/price-slider";
 import { SeverityPill } from "src/components/severity-pill";
 import QrCodeScannerIcon from "@mui/icons-material/QrCodeScanner";
 import { CustomerSearch } from "src/sections/bookRoomOffline/customer-search";
-import { sum } from "lodash";
-import { el } from "date-fns/locale";
 function BookRoom() {
   const router = useRouter(); // Sử dụng useRouter để truy cập router của Next.js
   const { id } = router.query;
@@ -699,7 +697,7 @@ function BookRoom() {
   const moneyReturnCustomerOneRoom = givenCustomerOneRoom - sumOrderDetail;
   const vatAmount = totalAmount * 0.1;
   const totalMoney = totalAmount + vatAmount;
-  const sumAmount = totalAmount + vatAmount - order.deposit;
+  const sumAmount = totalAmount + vatAmount - order.deposit + order.surcharge;
   useEffect(() => {
     setSumAmountValue(sumAmount);
   }, [sumAmount]);
