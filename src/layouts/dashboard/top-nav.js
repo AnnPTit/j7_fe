@@ -92,7 +92,7 @@ export const TopNav = (props) => {
                 </SvgIcon>
               </IconButton>
             </Tooltip>
-            <Tooltip title="Notifications">
+            <Tooltip title="Thông báo">
               <Stack direction="row" spacing={2}>
                 <IconButton
                   onClick={notificationPopover.handleOpen}
@@ -108,13 +108,6 @@ export const TopNav = (props) => {
             </Tooltip>
           </Stack>
           <Stack alignItems="center" direction="row" spacing={2}>
-            <Tooltip title="Contacts">
-              <IconButton>
-                <SvgIcon fontSize="small">
-                  <UsersIcon />
-                </SvgIcon>
-              </IconButton>
-            </Tooltip>
             <Avatar
               onClick={accountPopover.handleOpen}
               ref={accountPopover.anchorRef}
