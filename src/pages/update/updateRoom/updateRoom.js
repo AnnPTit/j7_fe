@@ -14,6 +14,118 @@ import { Autocomplete, TextField } from "@mui/material";
 
 const cx = classNames.bind(style);
 
+const handleSubmit = async (event, id, roomUpdate, selectedImages, selectedFacilities) => {
+  event.preventDefault(); // Ngăn chặn sự kiện submit mặc định
+  const formData = new FormData();
+
+  // Append room information to formData
+  formData.append("id", id);
+  formData.append("roomCode", roomUpdate.roomCode);
+  formData.append("roomName", roomUpdate.roomName);
+  formData.append("note", roomUpdate.note);
+  formData.append("typeRoom", roomUpdate.typeRoom.id);
+  formData.append("floor", roomUpdate.floor.id);
+
+  // Append each image file to formData
+  selectedImages.forEach((image) => {
+    formData.append("photos", image);
+  });
+
+  selectedFacilities.forEach((facility) => {
+    formData.append("facilities", facility.id);
+  });
+
+  console.log("FormData:", formData);
+
+  try {
+    const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
+    // Kiểm tra xem accessToken có tồn tại không
+    if (!accessToken) {
+      console.log("Bạn chưa đăng nhập");
+      return false;
+    }
+
+    axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
+    const response = await axios.put(
+      `http://localhost:2003/api/admin/room/update/${id}`,
+      formData
+    );
+    toast.success("Cập nhật thành công!", {
+      position: toast.POSITION.BOTTOM_CENTER,
+    });
+    console.log(response); //
+
+    if (response.status === 200) {
+      // Xử lý khi API thành công
+      console.log("API call successful");
+      window.location.href = "/room";
+      return true;
+      // Thực hiện các hành động khác sau khi API thành công
+    } else {
+      // Xử lý khi API gặp lỗi
+      console.log("API call failed");
+      return false;
+      // Thực hiện các hành động khác khi gọi API thất bại
+    }
+  } catch (error) {
+    // Xử lý khi có lỗi xảy ra trong quá trình gọi API
+    if (error.response) {
+      // Xử lý response lỗi
+      if (error.response.status === 403) {
+        alert("Bạn không có quyền truy cập vào trang này");
+        window.location.href = "/auth/login"; // Chuyển hướng đến trang đăng nhập
+        return false;
+      } else if (error.response.status === 400) {
+        console.log(error.response.data);
+
+        const isRoomNameError = error.response.data.roomName === undefined;
+        const isRoomCodeError = error.response.data.roomCode === undefined;
+        const isNoteError = error.response.data.note === undefined;
+
+        // Kiểm tra nếu tất cả các trường không bị thiếu, hiển thị thông báo lỗi cho cả 3 trường
+        if (!isRoomNameError && !isRoomCodeError && !isNoteError) {
+          toast.error(error.response.data.roomName, {
+            position: toast.POSITION.BOTTOM_CENTER,
+          });
+          toast.error(error.response.data.roomCode, {
+            position: toast.POSITION.BOTTOM_CENTER,
+          });
+          toast.error(error.response.data.note, {
+            position: toast.POSITION.BOTTOM_CENTER,
+          });
+          return false;
+        } else {
+          // Nếu có ít nhất một trường bị thiếu, xóa thông báo lỗi cho trường đó nếu có
+          // và hiển thị thông báo lỗi cho các trường còn lại
+          if (!isRoomNameError) {
+            alert(error.response.data.roomName);
+            toast.error(error.response.data.roomName, {
+              position: toast.POSITION.BOTTOM_CENTER,
+            });
+          }
+          if (!isRoomCodeError) {
+            toast.error(error.response.data.roomCode, {
+              position: toast.POSITION.BOTTOM_CENTER,
+            });
+          }
+          if (!isNoteError) {
+            toast.error(error.response.data.note, {
+              position: toast.POSITION.BOTTOM_CENTER,
+            });
+          }
+          return false;
+        }
+      } else {
+        alert("Có lỗi xảy ra trong quá trình gọi API");
+        return false;
+      }
+    } else {
+      console.log("Không thể kết nối đến API");
+      return false;
+    }
+  }
+};
+
 function UpdateRoom() {
   const [typeRoom, setTypeRoom] = useState([]);
   const [floor, setFloor] = useState([]);
@@ -35,116 +147,6 @@ function UpdateRoom() {
   const MAX_IMAGE_COUNT = 6; // Giới hạn số lượng ảnh tối đa
   const [facility, setFacility] = useState([]);
   const [selectedFacilities, setSelectedFacilities] = useState([]);
-
-  const handleSubmit = async (event, id, roomUpdate, selectedImages) => {
-    event.preventDefault(); // Ngăn chặn sự kiện submit mặc định
-    const formData = new FormData();
-
-    // Append room information to formData
-    formData.append("id", id);
-    formData.append("roomCode", roomUpdate.roomCode);
-    formData.append("roomName", roomUpdate.roomName);
-    formData.append("note", roomUpdate.note);
-    formData.append("typeRoom", roomUpdate.typeRoom.id);
-    formData.append("floor", roomUpdate.floor.id);
-
-    // Append each image file to formData
-    selectedImages.forEach((image) => {
-      formData.append("photos", image);
-    });
-
-    selectedFacilities.forEach((facility) => {
-      formData.append("facilities", facility.id);
-    });
-
-    try {
-      const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
-      // Kiểm tra xem accessToken có tồn tại không
-      if (!accessToken) {
-        console.log("Bạn chưa đăng nhập");
-        return false;
-      }
-
-      axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
-      const response = await axios.put(
-        `http://localhost:2003/api/admin/room/update/${id}`,
-        formData
-      );
-      toast.success("Cập nhật thành công!", {
-        position: toast.POSITION.BOTTOM_CENTER,
-      });
-      console.log(response); //
-
-      if (response.status === 200) {
-        // Xử lý khi API thành công
-        console.log("API call successful");
-        window.location.href = "/room";
-        return true;
-        // Thực hiện các hành động khác sau khi API thành công
-      } else {
-        // Xử lý khi API gặp lỗi
-        console.log("API call failed");
-        return false;
-        // Thực hiện các hành động khác khi gọi API thất bại
-      }
-    } catch (error) {
-      // Xử lý khi có lỗi xảy ra trong quá trình gọi API
-      if (error.response) {
-        // Xử lý response lỗi
-        if (error.response.status === 403) {
-          alert("Bạn không có quyền truy cập vào trang này");
-          window.location.href = "/auth/login"; // Chuyển hướng đến trang đăng nhập
-          return false;
-        } else if (error.response.status === 400) {
-          console.log(error.response.data);
-
-          const isRoomNameError = error.response.data.roomName === undefined;
-          const isRoomCodeError = error.response.data.roomCode === undefined;
-          const isNoteError = error.response.data.note === undefined;
-
-          // Kiểm tra nếu tất cả các trường không bị thiếu, hiển thị thông báo lỗi cho cả 3 trường
-          if (!isRoomNameError && !isRoomCodeError && !isNoteError) {
-            toast.error(error.response.data.roomName, {
-              position: toast.POSITION.BOTTOM_CENTER,
-            });
-            toast.error(error.response.data.roomCode, {
-              position: toast.POSITION.BOTTOM_CENTER,
-            });
-            toast.error(error.response.data.note, {
-              position: toast.POSITION.BOTTOM_CENTER,
-            });
-            return false;
-          } else {
-            // Nếu có ít nhất một trường bị thiếu, xóa thông báo lỗi cho trường đó nếu có
-            // và hiển thị thông báo lỗi cho các trường còn lại
-            if (!isRoomNameError) {
-              alert(error.response.data.roomName);
-              toast.error(error.response.data.roomName, {
-                position: toast.POSITION.BOTTOM_CENTER,
-              });
-            }
-            if (!isRoomCodeError) {
-              toast.error(error.response.data.roomCode, {
-                position: toast.POSITION.BOTTOM_CENTER,
-              });
-            }
-            if (!isNoteError) {
-              toast.error(error.response.data.note, {
-                position: toast.POSITION.BOTTOM_CENTER,
-              });
-            }
-            return false;
-          }
-        } else {
-          alert("Có lỗi xảy ra trong quá trình gọi API");
-          return false;
-        }
-      } else {
-        console.log("Không thể kết nối đến API");
-        return false;
-      }
-    }
-  };
 
   const handleImageChange = (event) => {
     const files = event.target.files;
@@ -533,7 +535,7 @@ function UpdateRoom() {
             confirmButtonText: "Cập nhật!",
           }).then(async (result) => {
             if (result.isConfirmed) {
-              const isSubmitSuccess = await handleSubmit(event, id, roomUpdate, selectedImages);
+              const isSubmitSuccess = await handleSubmit(event, id, roomUpdate, selectedImages, selectedFacilities);
               if (isSubmitSuccess) {
                 Swal.fire("Cập nhật!", "Cập nhật thành công", "success");
                 toast.success("Cập nhật thành công!");

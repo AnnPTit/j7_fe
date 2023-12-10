@@ -4,6 +4,7 @@ import PropTypes from "prop-types";
 import { Box, Divider, MenuItem, MenuList, Popover, Typography } from "@mui/material";
 import { useAuth } from "src/hooks/use-auth";
 import axios from "axios";
+import Link from "next/link";
 
 export const AccountPopover = (props) => {
   const { anchorEl, onClose, open } = props;
@@ -11,10 +12,11 @@ export const AccountPopover = (props) => {
   const auth = useAuth();
 
   const fullname = localStorage.getItem("fullName");
+  const id = localStorage.getItem("idAccount");
 
   const handleProfile = () => {
     onClose?.();
-    router.push("/profile");
+    router.push(`/profile?id=${id}`);
   };
 
   const handleSignOut = useCallback(() => {
@@ -22,6 +24,9 @@ export const AccountPopover = (props) => {
     auth.signOut();
     router.push("/auth/login");
     localStorage.removeItem("accessToken");
+    // localStorage.removeItem("fullName");
+    // localStorage.removeItem("idAccount");
+    // localStorage.removeItem("position");
   }, [onClose, auth, router]);
 
   return (
@@ -58,7 +63,6 @@ export const AccountPopover = (props) => {
         }}
       >
         <MenuItem onClick={handleProfile}>Thông tin cá nhân</MenuItem>
-        <Divider />
         <MenuItem onClick={handleSignOut}>Đăng xuất</MenuItem>
       </MenuList>
     </Popover>

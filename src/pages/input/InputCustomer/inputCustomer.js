@@ -22,6 +22,7 @@ function InputCustomer() {
   const [selectedWards, setSelectedWards] = useState("");
   const [selectedProvinceName, setSelectedProvinceName] = useState("");
   const [selectedDistrictName, setSelectedDistrictName] = useState("");
+  const [selectedWardName, setSelectedWardName] = useState("");
   const [idProvince, setIdProvince] = useState(0);
   const [idDistrict, setIdDistrict] = useState(0);
 
@@ -65,7 +66,7 @@ function InputCustomer() {
       citizenId,
       provinces: selectedProvinceName,
       districts: selectedDistrictName,
-      wards,
+      wards: selectedWardName,
     };
     console.log("payload ", payload);
 
@@ -73,7 +74,7 @@ function InputCustomer() {
       const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
       // Kiểm tra xem accessToken có tồn tại không
       if (!accessToken) {
-       console.log("Bạn chưa đăng nhập");
+        console.log("Bạn chưa đăng nhập");
         return false;
       }
 
@@ -247,8 +248,9 @@ function InputCustomer() {
 
   const handleWardsChange = (e) => {
     setSelectedWards(e.target.value);
-    // const ward = wards.find((wards) => wards.wards_id === e.target.value);
-    // setSelectedWards(ward);
+    const ward = wards.find((ward) => ward.ward_id === e.target.value);
+    const name = ward ? ward.ward_name : "";
+    setSelectedWardName(name);
     console.log(e.target.value);
   };
 
@@ -402,7 +404,7 @@ function InputCustomer() {
       >
         <option value="">Chọn phường xã</option>
         {wards.map((ward) => (
-          <option key={ward.ward_id} value={ward.wards_id}>
+          <option key={ward.ward_id} value={ward.ward_id}>
             {ward.ward_name}
           </option>
         ))}

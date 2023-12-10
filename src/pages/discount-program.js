@@ -5,14 +5,13 @@ import PlusIcon from "@heroicons/react/24/solid/PlusIcon";
 import { Box, Button, Container, Link, Stack, SvgIcon, Typography } from "@mui/material";
 import { useSelection } from "src/hooks/use-selection";
 import { Layout as DashboardLayout } from "src/layouts/dashboard/layout";
-import { AccountTable } from "src/sections/account/account-table";
-import { AccountSearch } from "src/sections/account/account-search";
+import { DiscountProgramTable } from "src/sections/discountProgram/discount-program-table";
+import { DiscountProgramSearch } from "src/sections/discountProgram/discount-program-search";
 import { applyPagination } from "src/utils/apply-pagination";
 import MyPagination from "src/components/Pagination";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { SideNavItem } from "src/layouts/dashboard/side-nav-item";
 import { usePathname } from "next/navigation";
-import AccountFilter from "src/sections/account/account-filter";
 
 const useAccount = (data, page, rowsPerPage) => {
   return useMemo(() => {
@@ -40,9 +39,6 @@ const Page = () => {
 
   const [textSearch, setTextSearch] = useState("");
 
-  const [position, setPosition] = useState([]);
-  const [positionChose, setPositionChose] = useState("");
-
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
 
@@ -50,7 +46,7 @@ const Page = () => {
 
   const item = {
     title: "Add",
-    path: "input/InputAccount/inputAccount",
+    path: "/discount-program/add",
     icon: (
       <SvgIcon fontSize="small">
         <PlusIcon />
@@ -62,48 +58,13 @@ const Page = () => {
   // Delete
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:2003/api/admin/account/delete/${id}`);
+      await axios.delete(`http://localhost:2003/api/admin/discount-program/delete/${id}`);
       console.log(id);
       setDataChange(!dataChange);
     } catch (error) {
       console.log(error);
     }
   };
-
-    // ResetPassword
-    const handleResetPassword = async (id) => {
-      try {
-        await axios.put(`http://localhost:2003/api/admin/account/resetPassword/${id}`);
-        console.log(id);
-        setDataChange(!dataChange);
-      } catch (error) {
-        console.log(error);
-      }
-    };
-
-  // get data for filter
-  useEffect(() => {
-    // Định nghĩa hàm fetchData bên trong useEffect
-    async function fetchData() {
-      try {
-        const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
-        // Kiểm tra xem accessToken có tồn tại không
-        if (!accessToken) {
-         console.log("Bạn chưa đăng nhập");
-          return;
-        }
-        axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
-        const response = await axios.get("http://localhost:2003/api/position/getAll");
-        console.log(response.data);
-        setPosition(response.data);
-      } catch (error) {
-        console.log(error);
-      }
-    }
-    // Gọi hàm fetchData ngay lập tức
-    fetchData();
-  }, []);
-
 
   // Load
   useEffect(() => {
@@ -113,13 +74,10 @@ const Page = () => {
         console.log(accessToken);
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
 
-        let Api = `http://localhost:2003/api/admin/account/loadAndSearch?current_page=${pageNumber}`;
+        let Api = `http://localhost:2003/api/admin/discount-program/loadAndSearch?current_page=${pageNumber}`;
 
         if (textSearch !== "") {
           Api = Api + `&key=${textSearch}`;
-        }
-        if (positionChose !== "") {
-          Api = Api + `&positionId=${positionChose}`;
         }
         console.warn(Api);
         const response = await axios.get(Api); // Thay đổi URL API của bạn tại đây
@@ -143,12 +101,12 @@ const Page = () => {
     };
 
     fetchData();
-  }, [pageNumber, dataChange, textSearch, positionChose]);
+  }, [pageNumber, dataChange, textSearch]);
 
   return (
     <>
       <Head>
-        <title>Nhân Viên |  Armani Hotel</title>
+        <title>Chương trình giảm giá | Armani Hotel</title>
       </Head>
       <Box
         component="main"
@@ -161,7 +119,7 @@ const Page = () => {
           <Stack spacing={3}>
             <Stack direction="row" justifyContent="space-between" spacing={4}>
               <Stack spacing={1}>
-                <Typography variant="h4">Nhân viên</Typography>
+                <Typography variant="h4">Chương trình giảm giá</Typography>
                 <Stack alignItems="center" direction="row" spacing={1}></Stack>
               </Stack>
               <div>
@@ -178,27 +136,13 @@ const Page = () => {
                 />
               </div>
             </Stack>
-            <AccountSearch textSearch={textSearch} setTextSearch={setTextSearch} />
-            <p
-              style={{
-                marginLeft: 20,
-              }}
-            >
-              {" "}
-              Lọc:
-            </p>
-            <AccountFilter
-              position={position}
-              positionChose={positionChose}
-              setPositionChose={setPositionChose}
-            />
+            <DiscountProgramSearch textSearch={textSearch} setTextSearch={setTextSearch} />
             <div style={{ minHeight: 500 }}>
               {" "}
-              <AccountTable
+              <DiscountProgramTable
                 items={account}
                 selected={accountSelection.selected}
                 onDelete={handleDelete} // Thêm prop onDelete và truyền giá trị của handleDelete vào đây
-                onResetPassword={handleResetPassword} 
                 setPageNumber={setPageNumber}
                 totalElements={totalElements}
                 pageNumber={pageNumber}

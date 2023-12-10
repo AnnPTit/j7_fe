@@ -11,157 +11,6 @@ import Swal from "sweetalert2";
 import { useRouter } from "next/router";
 
 const cx = classNames.bind(style);
-const handleSubmit = async (event, id, customerUpdate) => {
-  event.preventDefault(); // Ngăn chặn sự kiện submit mặc định
-  const provincesInput = document.querySelector('select[name="provinces"]');
-  const districtsInput = document.querySelector('select[name="districts"]');
-  const wardsInput = document.querySelector('select[name="wards"]');
-
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  // const [provinces, setProvinces] = useState([]);
-
-  const provinces1 = provincesInput?.value;
-  const districts = districtsInput?.value;
-  const wards = wardsInput?.value;
-
-  // Tạo payload dữ liệu để gửi đến API
-
-  const payload = {
-    ...customerUpdate,
-    id: id,
-    customerCode: customerUpdate.customerCode,
-    gender: customerUpdate.gender,
-    fullname: customerUpdate.fullname,
-    email: customerUpdate.email,
-    phoneNumber: customerUpdate.phoneNumber,
-    birthday: customerUpdate.birthday,
-    citizenId: customerUpdate.citizenId,
-    provinces: customerUpdate.provinces,
-    districts: customerUpdate.districts,
-    wards: customerUpdate.wards,
-  };
-  console.log("payload ", payload);
-
-  try {
-    const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
-    // Kiểm tra xem accessToken có tồn tại không
-    if (!accessToken) {
-     console.log("Bạn chưa đăng nhập");
-      return false;
-    }
-
-    axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
-    const response = await axios.put(
-      `http://localhost:2003/api/admin/customer/update/${id}`,
-      payload
-    ); // Gọi API /api/service-type/save với payload và access token
-    // toast.success("update Successfully!", {
-    //   position: toast.POSITION.BOTTOM_RIGHT,
-    // });
-    console.log(response); //
-
-    if (response.status === 200) {
-      // Xử lý khi API thành công
-      console.log("API call successful");
-
-      window.location.href = "/customer";
-      return true;
-      // Thực hiện các hành động khác sau khi API thành công
-    } else {
-      // Xử lý khi API gặp lỗi
-      console.log("API call failed");
-      return false;
-      // Thực hiện các hành động khác khi gọi API thất bại
-    }
-  } catch (error) {
-    // Xử lý khi có lỗi xảy ra trong quá trình gọi API
-    if (error.response) {
-      // Xử lý response lỗi
-      if (error.response.status === 403) {
-        alert("Bạn không có quyền truy cập vào trang này");
-        window.location.href = "/auth/login"; // Chuyển hướng đến trang đăng nhập
-      } else if (error.response.status === 400) {
-        console.log(error.response.data);
-
-        const isCustomerCodeError = error.response.data.customerCode === undefined;
-        const isFullnameError = error.response.data.fullname === undefined;
-        const isEmailError = error.response.data.email === undefined;
-        const isPhoneNumberError = error.response.data.phoneNumber === undefined;
-        const isCitizenIdError = error.response.data.citizenId === undefined;
-        const isBirthdayError = error.response.data.birthday === undefined;
-
-        if (
-          !isCustomerCodeError &&
-          !isFullnameError &&
-          !isEmailError &&
-          !isPhoneNumberError &&
-          !isCitizenIdError &&
-          !isBirthdayError
-        ) {
-          toast.error(error.response.data.customerCode, {
-            position: toast.POSITION.BOTTOM_RIGHT,
-          });
-          toast.error(error.response.data.fullname, {
-            position: toast.POSITION.BOTTOM_RIGHT,
-          });
-          toast.error(error.response.data.email, {
-            position: toast.POSITION.BOTTOM_RIGHT,
-          });
-          toast.error(error.response.data.phoneNumber, {
-            position: toast.POSITION.BOTTOM_RIGHT,
-          });
-          toast.error(error.response.data.citizenId, {
-            position: toast.POSITION.BOTTOM_RIGHT,
-          });
-          toast.error(error.response.data.birthday, {
-            position: toast.POSITION.BOTTOM_RIGHT,
-          });
-          return false;
-        } else {
-          // Nếu có ít nhất một trường bị thiếu, xóa thông báo lỗi cho trường đó nếu có
-          // và hiển thị thông báo lỗi cho các trường còn lại
-          if (!isCustomerCodeError) {
-            toast.error(error.response.data.customerCode, {
-              position: toast.POSITION.BOTTOM_RIGHT,
-            });
-          }
-          if (!isFullnameError) {
-            toast.error(error.response.data.fullname, {
-              position: toast.POSITION.BOTTOM_RIGHT,
-            });
-          }
-          if (!isEmailError) {
-            toast.error(error.response.data.email, {
-              position: toast.POSITION.BOTTOM_RIGHT,
-            });
-          }
-          if (!isPhoneNumberError) {
-            toast.error(error.response.data.phoneNumber, {
-              position: toast.POSITION.BOTTOM_RIGHT,
-            });
-          }
-          if (!isCitizenIdError) {
-            toast.error(error.response.data.citizenId, {
-              position: toast.POSITION.BOTTOM_RIGHT,
-            });
-          }
-          if (!isBirthdayError) {
-            toast.error(error.response.data.birthday, {
-              position: toast.POSITION.BOTTOM_RIGHT,
-            });
-          }
-          return false;
-        }
-      } else {
-        alert("Có lỗi xảy ra trong quá trình gọi API");
-        return false;
-      }
-    } else {
-      console.log("Không thể kết nối đến API");
-      return false;
-    }
-  }
-};
 
 function UpdateCustomer() {
   // const [serviceType, setServiceType] = useState([]);
@@ -195,7 +44,7 @@ function UpdateCustomer() {
         const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
         // Kiểm tra xem accessToken có tồn tại không
         if (!accessToken) {
-         console.log("Bạn chưa đăng nhập");
+          console.log("Bạn chưa đăng nhập");
           return;
         }
       } catch (error) {
@@ -214,7 +63,7 @@ function UpdateCustomer() {
         const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
         // Kiểm tra xem accessToken có tồn tại không
         if (!accessToken) {
-         console.log("Bạn chưa đăng nhập");
+          console.log("Bạn chưa đăng nhập");
           return;
         }
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
@@ -243,9 +92,11 @@ function UpdateCustomer() {
 
   const [idProvince, setIdProvince] = useState(0);
   const [idDistrict, setIdDistrict] = useState(0);
+  const [idWard, setIdWard] = useState(0);
 
   const [selectedProvinceName, setSelectedProvinceName] = useState("");
   const [selectedDistrictName, setSelectedDistrictName] = useState("");
+  const [selectedWardName, setSelectedWardName] = useState("");
   const [proId, setProId] = useState();
   const findProvinceIdByName = (name) => {
     const province = provinces.find((p) => p.province_name === name);
@@ -315,6 +166,7 @@ function UpdateCustomer() {
 
   const handleProvinceChange = (e) => {
     setSelectedProvince(e.target.value);
+    console.log("ABC: ", selectedProvince);
     const province = provinces.find((p) => p.province_id === e.target.value);
     setIdProvince(province?.province_id || 0);
     const name = province ? province.province_name : "";
@@ -342,7 +194,11 @@ function UpdateCustomer() {
 
   const handleWardsChange = (e) => {
     setSelectedWards(e.target.value);
-    console.log(e.target.value);
+    const ward = wards.find((w) => w.ward_id === e.target.value);
+    setIdWard(ward?.ward_id || 0);
+    const name = ward ? ward.ward_name : "";
+    setSelectedWardName(name);
+    console.log(ward);
   };
 
   const findDistrictIdByName = (name) => {
@@ -376,6 +232,155 @@ function UpdateCustomer() {
 
   const handleSubmitButtonClick = (event) => {
     event.preventDefault();
+  };
+
+  const handleSubmit = async (event, id, customerUpdate) => {
+    event.preventDefault(); // Ngăn chặn sự kiện submit mặc định
+    const provincesInput = document.querySelector('select[name="provinces"]');
+    const districtsInput = document.querySelector('select[name="districts"]');
+    const wardsInput = document.querySelector('select[name="wards"]');
+
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    // const [provinces, setProvinces] = useState([]);
+
+    const provinces1 = provincesInput?.value;
+    const districts = districtsInput?.value;
+    const wards = wardsInput?.value;
+
+    // Tạo payload dữ liệu để gửi đến API
+
+    const payload = {
+      ...customerUpdate,
+      id: id,
+      customerCode: customerUpdate.customerCode,
+      gender: customerUpdate.gender,
+      fullname: customerUpdate.fullname,
+      email: customerUpdate.email,
+      phoneNumber: customerUpdate.phoneNumber,
+      birthday: customerUpdate.birthday,
+      citizenId: customerUpdate.citizenId,
+      provinces: selectedProvinceName,
+      districts: selectedDistrictName,
+      wards: selectedWardName,
+    };
+    console.log("payload ", payload);
+
+    try {
+      const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
+      // Kiểm tra xem accessToken có tồn tại không
+      if (!accessToken) {
+        alert("Bạn chưa đăng nhập");
+        return false;
+      }
+
+      axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
+      const response = await axios.put(
+        `http://localhost:2003/api/admin/customer/update/${id}`,
+        payload
+      );
+      console.log(response); //
+
+      if (response.status === 200) {
+        // Xử lý khi API thành công
+        console.log("API call successful");
+
+        window.location.href = "/customer";
+        return true;
+        // Thực hiện các hành động khác sau khi API thành công
+      } else {
+        // Xử lý khi API gặp lỗi
+        console.log("API call failed");
+        return false;
+        // Thực hiện các hành động khác khi gọi API thất bại
+      }
+    } catch (error) {
+      // Xử lý khi có lỗi xảy ra trong quá trình gọi API
+      if (error.response) {
+        // Xử lý response lỗi
+        if (error.response.status === 403) {
+          alert("Bạn không có quyền truy cập vào trang này");
+          window.location.href = "/auth/login"; // Chuyển hướng đến trang đăng nhập
+        } else if (error.response.status === 400) {
+          console.log(error.response.data);
+
+          const isCustomerCodeError = error.response.data.customerCode === undefined;
+          const isFullnameError = error.response.data.fullname === undefined;
+          const isEmailError = error.response.data.email === undefined;
+          const isPhoneNumberError = error.response.data.phoneNumber === undefined;
+          const isCitizenIdError = error.response.data.citizenId === undefined;
+          const isBirthdayError = error.response.data.birthday === undefined;
+
+          if (
+            !isCustomerCodeError &&
+            !isFullnameError &&
+            !isEmailError &&
+            !isPhoneNumberError &&
+            !isCitizenIdError &&
+            !isBirthdayError
+          ) {
+            toast.error(error.response.data.customerCode, {
+              position: toast.POSITION.BOTTOM_RIGHT,
+            });
+            toast.error(error.response.data.fullname, {
+              position: toast.POSITION.BOTTOM_RIGHT,
+            });
+            toast.error(error.response.data.email, {
+              position: toast.POSITION.BOTTOM_RIGHT,
+            });
+            toast.error(error.response.data.phoneNumber, {
+              position: toast.POSITION.BOTTOM_RIGHT,
+            });
+            toast.error(error.response.data.citizenId, {
+              position: toast.POSITION.BOTTOM_RIGHT,
+            });
+            toast.error(error.response.data.birthday, {
+              position: toast.POSITION.BOTTOM_RIGHT,
+            });
+            return false;
+          } else {
+            // Nếu có ít nhất một trường bị thiếu, xóa thông báo lỗi cho trường đó nếu có
+            // và hiển thị thông báo lỗi cho các trường còn lại
+            if (!isCustomerCodeError) {
+              toast.error(error.response.data.customerCode, {
+                position: toast.POSITION.BOTTOM_RIGHT,
+              });
+            }
+            if (!isFullnameError) {
+              toast.error(error.response.data.fullname, {
+                position: toast.POSITION.BOTTOM_RIGHT,
+              });
+            }
+            if (!isEmailError) {
+              toast.error(error.response.data.email, {
+                position: toast.POSITION.BOTTOM_RIGHT,
+              });
+            }
+            if (!isPhoneNumberError) {
+              toast.error(error.response.data.phoneNumber, {
+                position: toast.POSITION.BOTTOM_RIGHT,
+              });
+            }
+            if (!isCitizenIdError) {
+              toast.error(error.response.data.citizenId, {
+                position: toast.POSITION.BOTTOM_RIGHT,
+              });
+            }
+            if (!isBirthdayError) {
+              toast.error(error.response.data.birthday, {
+                position: toast.POSITION.BOTTOM_RIGHT,
+              });
+            }
+            return false;
+          }
+        } else {
+          alert("Có lỗi xảy ra trong quá trình gọi API");
+          return false;
+        }
+      } else {
+        console.log("Không thể kết nối đến API");
+        return false;
+      }
+    }
   };
 
   return (

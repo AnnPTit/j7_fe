@@ -135,7 +135,7 @@ function OrderTimeline() {
         const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
         // Kiểm tra xem accessToken có tồn tại không
         if (!accessToken) {
-         console.log("Bạn chưa đăng nhập");
+          console.log("Bạn chưa đăng nhập");
           return;
         }
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
@@ -161,7 +161,7 @@ function OrderTimeline() {
         const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
         // Kiểm tra xem accessToken có tồn tại không
         if (!accessToken) {
-         console.log("Bạn chưa đăng nhập");
+          console.log("Bạn chưa đăng nhập");
           return;
         }
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
@@ -352,7 +352,7 @@ function OrderTimeline() {
       try {
         const accessToken = localStorage.getItem("accessToken");
         if (!accessToken) {
-         console.log("Bạn chưa đăng nhập");
+          console.log("Bạn chưa đăng nhập");
           return;
         }
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
@@ -373,7 +373,7 @@ function OrderTimeline() {
       try {
         const accessToken = localStorage.getItem("accessToken");
         if (!accessToken) {
-         console.log("Bạn chưa đăng nhập");
+          console.log("Bạn chưa đăng nhập");
           return;
         }
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
@@ -393,7 +393,7 @@ function OrderTimeline() {
         if (orderDetail && orderDetail.id) {
           const accessToken = localStorage.getItem("accessToken");
           if (!accessToken) {
-           console.log("Bạn chưa đăng nhập");
+            console.log("Bạn chưa đăng nhập");
             return;
           }
 
@@ -412,7 +412,7 @@ function OrderTimeline() {
     fetchServiceUsed();
   }, [orderDetail]);
 
-  const hrefReturnRoom = `/room-service?id=${id}`;
+  const hrefReturnRoom = `/booking?id=${id}`;
 
   return (
     <div
@@ -434,7 +434,7 @@ function OrderTimeline() {
           marginLeft: 140,
         }}
       >
-        <Timeline minEvents={5} placeholder>
+        <Timeline minEvents={timelineEvents.length} placeholder>
           {timelineEvents.map((event, index) => (
             <TimelineEvent
               key={index}
@@ -544,8 +544,8 @@ function OrderTimeline() {
             <label style={{ marginLeft: 135 }}>{order.orderCode}</label>
             <br />
             <br />
-            <label>Tổng tiền + (VAT)</label>
-            <span style={{ marginLeft: 93, color: "red" }}>
+            <label>Tổng tiền + VAT</label>
+            <span style={{ marginLeft: 105, color: "red" }}>
               {order.totalMoney ? formatPrice(order.totalMoney) : "0 VND"}
             </span>
             <br />
@@ -553,6 +553,12 @@ function OrderTimeline() {
             <label>Tiền cọc</label>
             <span style={{ marginLeft: 160, color: "red" }}>
               {order.deposit ? formatPrice(order.deposit) : "0 VND"}
+            </span>
+            <br />
+            <br />
+            <label>Giảm giá</label>
+            <span style={{ marginLeft: 157, color: "red" }}>
+              {order.discount ? formatPrice(order.discount) : "0 VND"}
             </span>
             <br />
             <br />
@@ -567,7 +573,17 @@ function OrderTimeline() {
             <br />
             <br />
             <label>Email</label>
-            <label style={{ marginLeft: 180 }}>{order.customer.email}</label>
+            <label style={{ marginLeft: 178 }}>{order.customer.email}</label>
+            <br />
+            <br />
+            <label>Nhân viên</label>
+            <label style={{ marginLeft: 145 }}>{order?.account?.fullname}</label>
+            <br />
+            <br />
+            <label>Phụ thu</label>
+            <span style={{ marginLeft: 160, color: "red" }}>
+              {order.surcharge ? formatPrice(order.surcharge) : "0 VND"}
+            </span>
             <br />
             <br />
           </div>
@@ -606,8 +622,10 @@ function OrderTimeline() {
               return (
                 <TableRow hover key={paymentMethod.id}>
                   <TableCell>
-                      <SeverityPill color="error">{formatPrice(paymentMethod.totalMoney)}</SeverityPill>
-                    </TableCell>
+                    <SeverityPill color="error">
+                      {formatPrice(paymentMethod.totalMoney)}
+                    </SeverityPill>
+                  </TableCell>
                   <TableCell>
                     {format(new Date(paymentMethod.createAt), "dd/MM/yyyy - HH:mm:ss")}
                   </TableCell>

@@ -60,35 +60,30 @@ export const RoomTable = (props) => {
             <TableHead>
               <TableRow>
                 <TableCell padding="checkbox">STT</TableCell>
-                <TableCell>Room Code</TableCell>
-                <TableCell>Image</TableCell>
-                <TableCell>Room Name</TableCell>
-                <TableCell>Type Room</TableCell>
-                <TableCell>Floor</TableCell>
-                <TableCell>Note</TableCell>
-                <TableCell>Status</TableCell>
-                <TableCell>Actions</TableCell>
+                <TableCell>Mã phòng</TableCell>
+                <TableCell>Ảnh</TableCell>
+                <TableCell>Tên phòng</TableCell>
+                <TableCell>Loại phòng</TableCell>
+                <TableCell>Tầng</TableCell>
+                <TableCell>Trạng thái</TableCell>
+                <TableCell>Hành động</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {items.map((room, index) => {
-                // const created = moment(room.createAt).format("DD/MM/YYYY - HH:mm:ss");
-                // const updated = moment(room.updateAt).format("DD/MM/YYYY - HH:mm:ss");
                 const hrefUpdate = `/update/updateRoom/updateRoom?id=${room.id}`;
                 const alertDelete = () => {
                   Swal.fire({
-                    title: "Are you sure?",
-                    text: "You won't be able to revert this!",
+                    title: "Bạn chắc chắn muốn xóa chứ?",
                     icon: "warning",
                     showCancelButton: true,
                     confirmButtonColor: "#3085d6",
                     cancelButtonColor: "#d33",
-                    confirmButtonText: "Yes, delete it!",
+                    confirmButtonText: "Chắc chắn!",
                   }).then((result) => {
                     if (result.isConfirmed) {
-                      Swal.fire("Deleted!", "Your data has been deleted.", "success");
+                      Swal.fire("Đã xóa!", "Dữ liệu đã được xóa.", "success");
                       handleDelete(room.id);
-                      toast.success("Delete Successfully!");
                     }
                   });
                 };
@@ -116,7 +111,6 @@ export const RoomTable = (props) => {
                     <TableCell>{room.roomName}</TableCell>
                     <TableCell>{room.typeRoom.typeRoomName}</TableCell>
                     <TableCell>{room.floor.floorName}</TableCell>
-                    <TableCell>{room.note}</TableCell>
                     <TableCell>
                       {room.status === 1
                         ? "Phòng trống"

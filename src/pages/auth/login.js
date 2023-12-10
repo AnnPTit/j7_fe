@@ -82,7 +82,7 @@ const Page = () => {
               </Typography>
             </Stack> */}
             <Tabs onChange={handleMethodChange} sx={{ mb: 3 }} value={method}>
-              <Tab label="Login" value="email" />
+              <Tab label="Đăng nhập" value="email" />
             </Tabs>
             {method === "email" && (
               <form noValidate onSubmit={formik.handleSubmit}>
@@ -117,7 +117,7 @@ const Page = () => {
                   </Typography>
                 )}
                 <Button fullWidth size="large" sx={{ mt: 3 }} type="submit" variant="contained">
-                  Continue
+                  Đăng nhập
                 </Button>
               </form>
             )}

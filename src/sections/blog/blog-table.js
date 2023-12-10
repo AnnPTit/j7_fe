@@ -45,8 +45,16 @@ export const BlogTable = (props) => {
             </TableHead>
             <TableBody>
               {items.map((room, index) => {
-                console.log(room.photoDTOS[0].url);
-                const hrefUpdate = `/update/updateRoom/updateRoom?id=${room.id}`;
+                if (
+                  room.photoDTOS !== null &&
+                  room.photoDTOS !== undefined &&
+                  room.photoDTOS.length > 0
+                ) {
+                  // Access the url property of the first element in photoDTOS array
+                  console.log(room.photoDTOS[0].url);
+                }
+                const hrefUpdate = `/blog/update?id=${room.id}`;
+
                 const formatDate = (dateString) => {
                   const options = { day: "numeric", month: "numeric", year: "numeric" };
                   const formattedDate = new Date(dateString).toLocaleDateString(undefined, options);
@@ -79,7 +87,8 @@ export const BlogTable = (props) => {
                     </TableCell>
                     <TableCell>
                       <Stack alignItems="center" direction="row" spacing={2}>
-                        {room.photoDTOS.length > 0 && ( // Check if photoList is not empty
+                        {room.photoDTOS && room.photoDTOS.length > 0 && (
+                          // Check if photoList is not null/undefined and not empty
                           <img
                             key={room.photoDTOS[0]} // Use key from the first photo
                             src={`${room.photoDTOS[0]}`} // Use URL from the first photo

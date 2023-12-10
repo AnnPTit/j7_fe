@@ -117,6 +117,8 @@ export const SideNav = (props) => {
                 return null;
               } else if (userRole === "ROLE_USER" && item.title === "Đơn vị") {
                 return null;
+              } else if (userRole === "ROLE_USER" && item.title === "Chương trình giảm giá") {
+                return null;
               }
 
               return (

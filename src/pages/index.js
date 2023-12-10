@@ -39,7 +39,7 @@ const Page = () => {
         const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
         // Kiểm tra xem accessToken có tồn tại không
         if (!accessToken) {
-         console.log("Bạn chưa đăng nhập");
+          console.log("Bạn chưa đăng nhập");
           return;
         }
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
@@ -79,8 +79,6 @@ const Page = () => {
   revenue.forEach((item) => {
     thisYearData[item.month - 1] = item.revenue;
   });
-
-  const lastYearData = thisYearData.map((value) => value * 0.5);
 
   return (
     <>
@@ -141,10 +139,6 @@ const Page = () => {
                   {
                     name: "This month",
                     data: thisYearData,
-                  },
-                  {
-                    name: "Last month",
-                    data: lastYearData,
                   },
                 ]}
                 sx={{ height: "100%" }}
