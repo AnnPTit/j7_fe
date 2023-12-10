@@ -295,9 +295,7 @@ export const BookRoomTable = (props) => {
         (isToday(checkinDateTime) && currentDate.getHours() < checkinDateTime.getHours()));
 
     const inTime =
-      currentDate >= checkinDateTime &&
-      isToday(checkinDateTime) &&
-      currentDate.getHours() >= checkinDateTime.getHours();
+      currentDate >= checkinDateTime && currentDate.getHours() >= checkinDateTime.getHours();
 
     if (shouldApplySurcharge) {
       const payload = {
@@ -843,6 +841,9 @@ export const BookRoomTable = (props) => {
                             </Box>
                             <br />
                             {renderButtonsBasedOnStatus()}
+                            <br />
+                            <br />
+                            <br />
                             {/* <div style={{ display: "flex", justifyContent: "flex-end" }}>
                               <TextField
                                 style={{ marginRight: 20 }}
