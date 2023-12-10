@@ -135,7 +135,7 @@ function OrderTimeline() {
         const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
         // Kiểm tra xem accessToken có tồn tại không
         if (!accessToken) {
-         console.log("Bạn chưa đăng nhập");
+          console.log("Bạn chưa đăng nhập");
           return;
         }
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
@@ -161,7 +161,7 @@ function OrderTimeline() {
         const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
         // Kiểm tra xem accessToken có tồn tại không
         if (!accessToken) {
-         console.log("Bạn chưa đăng nhập");
+          console.log("Bạn chưa đăng nhập");
           return;
         }
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
@@ -352,7 +352,7 @@ function OrderTimeline() {
       try {
         const accessToken = localStorage.getItem("accessToken");
         if (!accessToken) {
-         console.log("Bạn chưa đăng nhập");
+          console.log("Bạn chưa đăng nhập");
           return;
         }
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
@@ -373,7 +373,7 @@ function OrderTimeline() {
       try {
         const accessToken = localStorage.getItem("accessToken");
         if (!accessToken) {
-         console.log("Bạn chưa đăng nhập");
+          console.log("Bạn chưa đăng nhập");
           return;
         }
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
@@ -393,7 +393,7 @@ function OrderTimeline() {
         if (orderDetail && orderDetail.id) {
           const accessToken = localStorage.getItem("accessToken");
           if (!accessToken) {
-           console.log("Bạn chưa đăng nhập");
+            console.log("Bạn chưa đăng nhập");
             return;
           }
 
@@ -580,6 +580,12 @@ function OrderTimeline() {
             <label style={{ marginLeft: 145 }}>{order?.account?.fullname}</label>
             <br />
             <br />
+            <label>Phụ thu</label>
+            <span style={{ marginLeft: 160, color: "red" }}>
+              {order.surcharge ? formatPrice(order.surcharge) : "0 VND"}
+            </span>
+            <br />
+            <br />
           </div>
         </div>
       </Box>
@@ -616,8 +622,10 @@ function OrderTimeline() {
               return (
                 <TableRow hover key={paymentMethod.id}>
                   <TableCell>
-                      <SeverityPill color="error">{formatPrice(paymentMethod.totalMoney)}</SeverityPill>
-                    </TableCell>
+                    <SeverityPill color="error">
+                      {formatPrice(paymentMethod.totalMoney)}
+                    </SeverityPill>
+                  </TableCell>
                   <TableCell>
                     {format(new Date(paymentMethod.createAt), "dd/MM/yyyy - HH:mm:ss")}
                   </TableCell>
