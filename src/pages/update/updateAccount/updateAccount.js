@@ -103,9 +103,11 @@ function UpdateAccount() {
 
   const [idProvince, setIdProvince] = useState(0);
   const [idDistrict, setIdDistrict] = useState(0);
+  const [idWard, setIdWard] = useState(0);
 
   const [selectedProvinceName, setSelectedProvinceName] = useState("");
   const [selectedDistrictName, setSelectedDistrictName] = useState("");
+  const [selectedWardName, setSelectedWardName] = useState("");
   const [proId, setProId] = useState();
   const findProvinceIdByName = (name) => {
     const province = provinces.find((p) => p.province_name === name);
@@ -203,7 +205,11 @@ function UpdateAccount() {
 
   const handleWardsChange = (e) => {
     setSelectedWards(e.target.value);
-    console.log(e.target.value);
+    const ward = wards.find((w) => w.ward_id === e.target.value);
+    setIdWard(ward?.ward_id || 0);
+    const name = ward ? ward.ward_name : "";
+    setSelectedWardName(name);
+    console.log(ward);
   };
 
   const findDistrictIdByName = (name) => {
@@ -236,7 +242,7 @@ function UpdateAccount() {
       citizenId: accountUpdate.citizenId,
       provinces: selectedProvinceName,
       districts: selectedDistrictName,
-      wards: selectedWards,
+      wards: selectedWardName,
     };
     console.log("payload ", payload);
 
