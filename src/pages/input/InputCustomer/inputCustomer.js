@@ -107,24 +107,26 @@ function InputCustomer() {
         } else if (error.response.status === 400) {
           console.log(error.response.data);
 
-          const userName1 = error.response.data.username === undefined;
+          const isUsernameError = error.response.data.username === undefined;
           const isFullnameError = error.response.data.fullname === undefined;
           const isEmailError = error.response.data.email === undefined;
           const isPhoneNumberError = error.response.data.phoneNumber === undefined;
           const isCitizenIdError = error.response.data.citizenId === undefined;
           const isBirthdayError = error.response.data.birthday === undefined;
+          const isWardsError = error.response.data.wards === undefined;
 
           if (
-            // !userName1 &&
+            !isUsernameError &&
             !isFullnameError &&
             !isEmailError &&
             !isPhoneNumberError &&
             !isCitizenIdError &&
-            !isBirthdayError
+            !isBirthdayError &&
+            !isWardsError
           ) {
-            // toast.error(error.response.data.userName, {
-            //   position: toast.POSITION.BOTTOM_RIGHT,
-            // });
+            toast.error(error.response.data.userName, {
+              position: toast.POSITION.BOTTOM_RIGHT,
+            });
             toast.error(error.response.data.fullname, {
               position: toast.POSITION.BOTTOM_RIGHT,
             });
@@ -140,15 +142,18 @@ function InputCustomer() {
             toast.error(error.response.data.birthday, {
               position: toast.POSITION.BOTTOM_RIGHT,
             });
+            toast.error(error.response.data.wards, {
+              position: toast.POSITION.BOTTOM_RIGHT,
+            });
             return false;
           } else {
             // Nếu có ít nhất một trường bị thiếu, xóa thông báo lỗi cho trường đó nếu có
             // và hiển thị thông báo lỗi cho các trường còn lại
-            // if (!userName1) {
-            //   toast.error(error.response.data.userName, {
-            //     position: toast.POSITION.BOTTOM_RIGHT,
-            //   });
-            // }
+            if (!isUsernameError) {
+              toast.error(error.response.data.userName, {
+                position: toast.POSITION.BOTTOM_RIGHT,
+              });
+            }
             if (!isFullnameError) {
               toast.error(error.response.data.fullname, {
                 position: toast.POSITION.BOTTOM_RIGHT,
@@ -171,6 +176,11 @@ function InputCustomer() {
             }
             if (!isBirthdayError) {
               toast.error(error.response.data.birthday, {
+                position: toast.POSITION.BOTTOM_RIGHT,
+              });
+            }
+            if (!isWardsError) {
+              toast.error(error.response.data.wards, {
                 position: toast.POSITION.BOTTOM_RIGHT,
               });
             }
