@@ -106,7 +106,7 @@ const Page = () => {
                 </Typography>
               )}
               <Button fullWidth size="large" sx={{ mt: 3 }} type="submit" variant="contained">
-                Continue
+                Đăng ký
               </Button>
             </form>
           </div>
