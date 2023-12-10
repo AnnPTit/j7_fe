@@ -784,14 +784,14 @@ function BookRoom() {
       case 5:
         return (
           <React.Fragment>
-            <Button
+            {/* <Button
               style={{ width: 100, height: 50 }}
               onClick={handleOpenCancelOrder}
               variant="outlined"
               color="error"
             >
               Hủy
-            </Button>
+            </Button> */}
             <Button
               onClick={handleSave}
               style={{ marginLeft: 20, width: 100, height: 50 }}

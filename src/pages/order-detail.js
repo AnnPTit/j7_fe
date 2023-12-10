@@ -204,12 +204,12 @@ function OrderTimeline() {
                 case 4:
                   eventColor = "#6959CD";
                   eventIcon = FaCheck;
-                  eventTitle = "Xác nhận thông tin khách";
+                  eventTitle = "Xác nhận thông tin";
                   break;
                 case 5:
                   eventColor = "#00CCCC";
                   eventIcon = FaWallet;
-                  eventTitle = "Khách hàng thanh toán tiền cọc";
+                  eventTitle = "Thanh toán tiền cọc";
                   break;
                 case 7:
                   eventColor = "#FFD700";
@@ -285,7 +285,11 @@ function OrderTimeline() {
         return <FaCheck style={{ fontSize: "50px", color: "#6959CD" }} />;
       case 5:
         return <FaWallet style={{ fontSize: "50px", color: "#00CCCC" }} />;
+      case 6:
+        return <FaSignInAlt style={{ fontSize: "50px", color: "#FFD700" }} />;
       case 7:
+        return <FaSignInAlt style={{ fontSize: "50px", color: "#FFD700" }} />;
+      case 8:
         return <FaSignInAlt style={{ fontSize: "50px", color: "#FFD700" }} />;
       default:
         return <FaBug style={{ fontSize: "50px", color: "default" }} />;
@@ -303,11 +307,15 @@ function OrderTimeline() {
       case 3:
         return "Khách hàng trả phòng";
       case 4:
-        return "Xác nhận thông tin khách hàng";
+        return "Xác nhận thông tin";
       case 5:
-        return "Khách hàng thanh toán tiền cọc";
+        return "Thanh toán tiền cọc";
+      case 6:
+        return "Từ chối";
       case 7:
-        return "Trả phòng đi trước";
+        return "Hết hạn";
+      case 8:
+        return "Hết hạn thanh toán tiền cọc";
       default:
         return "Unknown Type";
     }
