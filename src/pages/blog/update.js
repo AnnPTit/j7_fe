@@ -11,6 +11,32 @@ import { useRouter } from "next/router";
 import Card from "react-bootstrap/Card";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import { Autocomplete, TextField } from "@mui/material";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogTitle from "@mui/material/DialogTitle";
+import CloseIcon from "@mui/icons-material/Close";
+import Button from "@mui/material/Button";
+import {
+  Box,
+  TextareaAutosize,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  SvgIcon,
+  OutlinedInput,
+  InputAdornment,
+  Checkbox,
+  Select,
+  InputLabel,
+  Grid,
+  Typography,
+  Slider,
+  Divider,
+  IconButton,
+} from "@mui/material";
 
 const cx = classNames.bind(style);
 
@@ -18,7 +44,7 @@ function UpdateBlog() {
   const router = useRouter(); // Sử dụng useRouter để truy cập router của Next.js
   const { id } = router.query; // Lấy thông tin từ URL qua router.query
   const [blogImages, setBlogImages] = useState([]);
-
+  const [openDateDialog, setOpenDateDialog] = useState(false);
   const [selectedImages, setSelectedImages] = useState([]);
   const fileInputRef = useRef(null);
   const [blogUpdate, setBlogUpdate] = useState({
@@ -26,6 +52,49 @@ function UpdateBlog() {
     title: "",
     content: "",
   });
+  const [comment, setComment] = useState([]);
+
+  const loadComment = async () => {
+    try {
+      const response = await axios.get(`http://localhost:2003/api/home/blog/comment?blogId=${id}`);
+
+      if (response) {
+        const data = response.data;
+        console.log(data);
+        setComment(data);
+      } else {
+        console.error("Response or content is undefined.");
+      }
+    } catch (error) {
+      console.error("Error fetching data from API:", error);
+    }
+  };
+
+  const formatDate2 = (dateString) => {
+    const options = {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    };
+
+    const formattedDate = new Intl.DateTimeFormat("en-US", options).format(new Date(dateString));
+
+    return formattedDate;
+  };
+
+  const handleOpenDateDialog = () => {
+    setOpenDateDialog(true);
+  };
+  useEffect(() => {
+    loadComment();
+  }, [id]);
+
+  const handleCloseDateDialog = () => {
+    setOpenDateDialog(false);
+  };
   const MAX_IMAGE_COUNT = 6; // Giới hạn số lượng ảnh tối đa
 
   const handleSubmit = async (event, id, blogUpdate, selectedImages) => {
@@ -120,6 +189,21 @@ function UpdateBlog() {
         return false;
       }
     }
+  };
+
+  const handleDeleteComent = async (id) => {
+    console.log(id);
+    const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
+    // Kiểm tra xem accessToken có tồn tại không
+    if (!accessToken) {
+      console.log("Bạn chưa đăng nhập");
+      return false;
+    }
+
+    axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
+    const response = await axios.get(`http://localhost:2003/api/home/blog/comment/${id}`);
+    console.log(response); //
+    loadComment();
   };
 
   const handleImageChange = (event) => {
@@ -274,7 +358,7 @@ function UpdateBlog() {
       <br></br>
       <div className="form-floating">
         <textarea
-        style={{ height: "150px" }}
+          style={{ height: "150px" }}
           type="text"
           className="form-control"
           id="floatingPassword"
@@ -379,7 +463,97 @@ function UpdateBlog() {
       >
         Cập nhật
       </button>
+      <button className={(cx("input-btn"), "btn btn-primary")} onClick={handleOpenDateDialog}>
+        Xem bình luận{" "}
+      </button>
       <ToastContainer />
+
+      <Dialog
+        open={openDateDialog}
+        fullWidth
+        PaperProps={{
+          style: {
+            maxWidth: "35%",
+          },
+        }}
+      >
+        <DialogTitle>Bình Luận</DialogTitle>
+        <IconButton
+          aria-label="close"
+          onClick={handleCloseDateDialog}
+          sx={{
+            position: "absolute",
+            right: 8,
+            top: 8,
+            color: (theme) => theme.palette.grey[900],
+          }}
+        >
+          <CloseIcon />
+        </IconButton>
+        <DialogContent
+          style={{
+            marginTop: 15,
+            // display: "flex",
+            flexDirection: "column",
+            alignItems: "center", // Center content horizontally
+          }}
+        >
+          {comment.map((commentItem, id) => (
+            <div
+              key={id}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <p>
+                {" "}
+                {commentItem.username} : {commentItem.content} {formatDate2(commentItem.createdAt)}
+              </p>
+              <button
+                className={(cx("input-btn"), "btn btn-primary")}
+                onClick={() => {
+                  handleCloseDateDialog();
+                  Swal.fire({
+                    title: "Bạn có chắc chắn muốn xóa ? ",
+                    text: "",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#3085d6",
+                    cancelButtonColor: "#d33",
+                    confirmButtonText: "Vâng !",
+                  }).then(async (result) => {
+                    if (result.isConfirmed) {
+                      const isSubmitSuccess = await handleDeleteComent(commentItem.id);
+                      if (isSubmitSuccess) {
+                        Swal.fire("Xóa thành công !", "success");
+                        toast.success("Xóa Thành Công !");
+                      }
+                    }
+                  });
+                }}
+              >
+                Xóa
+              </button>
+            </div>
+          ))}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDateDialog} variant="outlined" color="error">
+            Hủy
+          </Button>
+          <Button
+            onClick={() => {
+              {
+              }
+            }}
+            variant="outlined"
+          >
+            Xác nhận
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 }
