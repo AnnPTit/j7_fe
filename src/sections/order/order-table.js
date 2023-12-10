@@ -56,6 +56,8 @@ export const OrderTable = (props) => {
         return { color: "error", text: "Từ chối" };
       case 7:
         return { color: "error", text: "Hết hạn" };
+      case 8:
+        return { color: "error", text: "Hết hạn thanh toán tiền cọc" };
       default:
         return { color: "default", text: "Unknown" };
     }
