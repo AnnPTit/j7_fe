@@ -5,7 +5,6 @@ import { Box, Divider, MenuItem, MenuList, Popover, Typography } from "@mui/mate
 import { useAuth } from "src/hooks/use-auth";
 import axios from "axios";
 import Link from "next/link";
-// import ChangePassword from "./ChangePasswordModal";
 
 export const AccountPopover = (props) => {
   const { anchorEl, onClose, open } = props;
@@ -14,11 +13,10 @@ export const AccountPopover = (props) => {
 
   const fullname = localStorage.getItem("fullName");
   const id = localStorage.getItem("idAccount");
-  const hrefResetPassword = `/account/change-password?id=${id}`;
 
   const handleProfile = () => {
     onClose?.();
-    router.push("/profile");
+    router.push(`/profile?id=${id}`);
   };
 
   const handleSignOut = useCallback(() => {
@@ -65,17 +63,6 @@ export const AccountPopover = (props) => {
         }}
       >
         <MenuItem onClick={handleProfile}>Thông tin cá nhân</MenuItem>
-        <MenuItem>
-          <Link
-            style={{
-              textDecoration: "none",
-              color: "black",
-            }}
-            href={hrefResetPassword}
-          >
-            Đổi mật khẩu
-          </Link>
-        </MenuItem>
         <MenuItem onClick={handleSignOut}>Đăng xuất</MenuItem>
       </MenuList>
     </Popover>
