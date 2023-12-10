@@ -948,7 +948,7 @@ function BookRoom() {
       );
       const orderId = response.data.id;
       handleCloseReturnOneRoom();
-      toast.success("Trả phòng thành công!", {
+      toast.success("Tách phòng thành công!", {
         position: toast.POSITION.BOTTOM_CENTER,
       });
       router.push(`/order-detail?id=${orderId}`);
