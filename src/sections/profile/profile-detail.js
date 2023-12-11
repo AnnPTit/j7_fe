@@ -93,6 +93,9 @@ export const ProfileDetail = () => {
 
       if (response.status === 200) {
         console.log("API call successful");
+        localStorage.removeItem("idAccount");
+        localStorage.removeItem("fullName");
+        window.location.href = "/auth/login";
         return true;
       } else {
         console.log("API call failed");

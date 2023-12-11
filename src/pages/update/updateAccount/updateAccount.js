@@ -166,14 +166,14 @@ function UpdateAccount() {
         );
         setWards(response.data.results);
         const ward = response.data.results.find((w) => w.ward_name === accountUpdate.wards);
-        console.log(ward);
         setSelectedWards(ward?.ward_id);
         const name = ward ? ward.ward_name : "";
         setSelectedWards(name);
+        setSelectedWardName(name);
       };
       fetchWards();
     }
-  }, [accountUpdate.wards, idDistrict, selectedWards]);
+  }, [accountUpdate.wards, idDistrict]);
 
   const handleProvinceChange = (e) => {
     setSelectedProvince(e.target.value);
