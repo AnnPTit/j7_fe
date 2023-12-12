@@ -155,14 +155,14 @@ function UpdateCustomer() {
         );
         setWards(response.data.results);
         const ward = response.data.results.find((w) => w.ward_name === customerUpdate.wards);
-        console.log(ward);
         setSelectedWards(ward?.ward_id);
         const name = ward ? ward.ward_name : "";
         setSelectedWards(name);
+        setSelectedWardName(name);
       };
       fetchWards();
     }
-  }, [customerUpdate.wards, idDistrict, selectedWards]);
+  }, [customerUpdate.wards, idDistrict]);
 
   const handleProvinceChange = (e) => {
     setSelectedProvince(e.target.value);
@@ -303,12 +303,16 @@ function UpdateCustomer() {
         } else if (error.response.status === 400) {
           console.log(error.response.data);
 
+          toast.error(error.response.data);
           const isCustomerCodeError = error.response.data.customerCode === undefined;
           const isFullnameError = error.response.data.fullname === undefined;
           const isEmailError = error.response.data.email === undefined;
           const isPhoneNumberError = error.response.data.phoneNumber === undefined;
           const isCitizenIdError = error.response.data.citizenId === undefined;
           const isBirthdayError = error.response.data.birthday === undefined;
+          const isProvinceError = error.response.data.provinces === undefined;
+          const isDistrictError = error.response.data.districts === undefined;
+          const isWardError = error.response.data.wards === undefined;
 
           if (
             !isCustomerCodeError &&
@@ -316,7 +320,10 @@ function UpdateCustomer() {
             !isEmailError &&
             !isPhoneNumberError &&
             !isCitizenIdError &&
-            !isBirthdayError
+            !isBirthdayError &&
+            !isProvinceError &&
+            !isDistrictError &&
+            !isWardError
           ) {
             toast.error(error.response.data.customerCode, {
               position: toast.POSITION.BOTTOM_RIGHT,
@@ -334,6 +341,15 @@ function UpdateCustomer() {
               position: toast.POSITION.BOTTOM_RIGHT,
             });
             toast.error(error.response.data.birthday, {
+              position: toast.POSITION.BOTTOM_RIGHT,
+            });
+            toast.error(error.response.data.provinces, {
+              position: toast.POSITION.BOTTOM_RIGHT,
+            });
+            toast.error(error.response.data.districts, {
+              position: toast.POSITION.BOTTOM_RIGHT,
+            });
+            toast.error(error.response.data.wards, {
               position: toast.POSITION.BOTTOM_RIGHT,
             });
             return false;
@@ -367,6 +383,21 @@ function UpdateCustomer() {
             }
             if (!isBirthdayError) {
               toast.error(error.response.data.birthday, {
+                position: toast.POSITION.BOTTOM_RIGHT,
+              });
+            }
+            if (!isProvinceError) {
+              toast.error(error.response.data.provinces, {
+                position: toast.POSITION.BOTTOM_RIGHT,
+              });
+            }
+            if (!isDistrictError) {
+              toast.error(error.response.data.districts, {
+                position: toast.POSITION.BOTTOM_RIGHT,
+              });
+            }
+            if (!isWardError) {
+              toast.error(error.response.data.wards, {
                 position: toast.POSITION.BOTTOM_RIGHT,
               });
             }
