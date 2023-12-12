@@ -29,7 +29,7 @@ export const OverviewTasksProgress = (props) => {
               gutterBottom
               variant="overline"
             >
-              Số lần đặt trong ngày
+              Số phòng đặt trong ngày
             </Typography>
             <Typography variant="h4">
               {value}
