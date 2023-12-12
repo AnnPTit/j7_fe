@@ -35,6 +35,8 @@ import RadioGroup from "@mui/material/RadioGroup";
 import Swal from "sweetalert2";
 import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
+import "bootstrap/dist/css/bootstrap.min.css";
+
 const numeral = require("numeral");
 
 export const BookRoomTable = (props) => {
@@ -54,6 +56,7 @@ export const BookRoomTable = (props) => {
   const [orderId, setOrderId] = useState("");
   const [orderStatus, setOrderStatus] = useState(0);
   const [openDetail, setOpenDetail] = React.useState(false);
+  const [loading, setLoading] = useState(false);
   const [refuseReason, setRefuseReason] = React.useState("");
   const [isNewCustom, SetIsNewCustom] = React.useState(true);
   const [surcharge, setSurcharge] = useState(0);
@@ -153,6 +156,8 @@ export const BookRoomTable = (props) => {
         return { color: "error", text: "Từ chối" };
       case 7:
         return { color: "error", text: "Hết hạn" };
+      case 8:
+        return { color: "error", text: "Hết hạn thanh toán tiền cọc" };
       default:
         return { color: "default", text: "Unknown" };
     }
@@ -162,6 +167,7 @@ export const BookRoomTable = (props) => {
   const handleCancelOrder = async (id) => {
     try {
       console.log(id);
+      setLoading(true);
       const response = await axios.post(
         `http://localhost:2003/api/home/order/cancel/${orderId}/6?refuseReason=${refuseReason}`
       );
@@ -171,6 +177,7 @@ export const BookRoomTable = (props) => {
       if (response.data.status === 0) {
         toast.error(response.data.message);
       }
+      setLoading(false);
       window.location.href = `/book-room-online`;
     } catch (error) {
       console.log(error);
@@ -284,13 +291,11 @@ export const BookRoomTable = (props) => {
 
     const shouldApplySurcharge =
       currentDate < checkinDateTime &&
-      (differenceInHours(checkinDateTime, currentDate) <= 24 ||
+      (differenceInHours(checkinDateTime, currentDate) <= 38 ||
         (isToday(checkinDateTime) && currentDate.getHours() < checkinDateTime.getHours()));
 
     const inTime =
-      currentDate > checkinDateTime &&
-      isToday(checkinDateTime) &&
-      currentDate.getHours() > checkinDateTime.getHours();
+      currentDate >= checkinDateTime && currentDate.getHours() >= checkinDateTime.getHours();
 
     if (shouldApplySurcharge) {
       const payload = {
@@ -345,6 +350,10 @@ export const BookRoomTable = (props) => {
       );
       return;
     }
+  };
+
+  const handleRedirectDetail = async () => {
+    router.push(`/booking?id=${orderId}`);
   };
 
   useEffect(() => {
@@ -422,6 +431,13 @@ export const BookRoomTable = (props) => {
                   >
                     Hủy xác nhận
                   </Button>
+                  {loading && (
+                    <div class="d-flex justify-content-center">
+                      <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                      </div>
+                    </div>
+                  )}
                 </Table>
               </DialogContent>
             </Dialog>
@@ -496,7 +512,7 @@ export const BookRoomTable = (props) => {
                 value={numeral(order.deposit).format("0,0 ") + "  đ"}
                 label="Tiền cọc"
               />
-              <Button variant="outlined" onClick={handleRedirect}>
+              <Button variant="outlined" onClick={handleRedirectDetail}>
                 Chi tiết
               </Button>
             </div>
@@ -511,7 +527,7 @@ export const BookRoomTable = (props) => {
                 value={numeral(order.deposit).format("0,0 ") + "  đ"}
                 label="Tiền cọc"
               />
-              <Button variant="outlined" onClick={handleRedirect}>
+              <Button variant="outlined" onClick={handleRedirectDetail}>
                 Chi tiết
               </Button>
             </div>
@@ -526,7 +542,7 @@ export const BookRoomTable = (props) => {
                 value={numeral(order.deposit).format("0,0 ") + "  đ"}
                 label="Tiền cọc"
               />
-              <Button variant="outlined" onClick={handleRedirect}>
+              <Button variant="outlined" onClick={handleRedirectDetail}>
                 Chi tiết
               </Button>
             </div>
@@ -825,6 +841,9 @@ export const BookRoomTable = (props) => {
                             </Box>
                             <br />
                             {renderButtonsBasedOnStatus()}
+                            <br />
+                            <br />
+                            <br />
                             {/* <div style={{ display: "flex", justifyContent: "flex-end" }}>
                               <TextField
                                 style={{ marginRight: 20 }}
