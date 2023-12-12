@@ -854,12 +854,12 @@ function BookRoom() {
       setDiscountPercent(discount.reduceValue);
       const total = calculateTotal();
       const totalAfterDiscount = (total * discount.reduceValue) / 100;
-      if (totalAfterDiscount <= discount.maxiumumReductionValue) {
+      if (totalAfterDiscount <= discount.maximumReductionValue) {
         setDiscountMoney(totalAfterDiscount);
         setSumAmountValue(sumAmount - totalAfterDiscount);
       } else {
         setDiscountMoney(discount.maxiumumReductionValue);
-        setSumAmountValue(sumAmount - discount.maxiumumReductionValue);
+        setSumAmountValue(sumAmount - discount.maximumReductionValue);
       }
     } else {
       setSelectedDiscount(null);
