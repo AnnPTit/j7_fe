@@ -7,6 +7,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { ToastContainer, toast } from "react-toastify";
 import Swal from "sweetalert2";
 import "react-toastify/dist/ReactToastify.css";
+// import { Toast } from "react-toastify/dist/components";
 
 const cx = classNames.bind(style);
 
@@ -108,6 +109,7 @@ function InputCustomer() {
         } else if (error.response.status === 400) {
           console.log(error.response.data);
 
+          toast.error(error.response.data);
           const isUsernameError = error.response.data.username === undefined;
           const isFullnameError = error.response.data.fullname === undefined;
           const isEmailError = error.response.data.email === undefined;
@@ -299,6 +301,7 @@ function InputCustomer() {
                 onChange={(e) => setGender(e.target.value)}
                 className="form-check-input"
                 type="radio"
+                defaultChecked
                 name="gender"
                 value="true"
               />
