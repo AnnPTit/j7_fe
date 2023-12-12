@@ -14,8 +14,6 @@ import { DatePicker, TimePicker } from "@mui/x-date-pickers";
 const cx = classNames.bind(style);
 
 function UpdateDiscountProgram() {
-  // const [serviceType, setServiceType] = useState([]);
-  // const [unit, setUnit] = useState([]);
   const router = useRouter(); // Sử dụng useRouter để truy cập router của Next.js
   const { id } = router.query; // Lấy thông tin từ URL qua router.query
 

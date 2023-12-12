@@ -41,6 +41,7 @@ export const DiscountProgramTable = (props) => {
                 <TableCell>Tên Chương Trình</TableCell>
                 <TableCell>Hóa Đơn Tối Thiểu</TableCell>
                 <TableCell>Giá Trị Giảm</TableCell>
+                <TableCell>Giá Trị Giảm Tối Đa</TableCell>
                 <TableCell>Số Lượng</TableCell>
                 <TableCell>Ngày Áp Dụng</TableCell>
                 <TableCell>Ngày Kết Thúc</TableCell>
@@ -83,6 +84,7 @@ export const DiscountProgramTable = (props) => {
                     <TableCell>{discountProgram.name}</TableCell>
                     <TableCell>{discountProgram.minimumInvoice}</TableCell>
                     <TableCell>{discountProgram.reduceValue}</TableCell>
+                    <TableCell>{discountProgram.maximumReductionValue}</TableCell>
                     <TableCell>{discountProgram.numberOfApplication}</TableCell>
                     <TableCell>{startDay}</TableCell>
                     <TableCell>{endDate}</TableCell>
