@@ -159,7 +159,7 @@ export const BookRoomTable = (props) => {
       case 8:
         return { color: "error", text: "Hết hạn thanh toán tiền cọc" };
       case 9:
-        return { color: "error", text: "Quá hạn checkin" };
+        return { color: "error", text: "Hêt hạn checkin" };
       default:
         return { color: "default", text: "Unknown" };
     }

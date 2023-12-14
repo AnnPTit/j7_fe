@@ -21,12 +21,12 @@ export const AccountPopover = (props) => {
 
   const handleSignOut = useCallback(() => {
     onClose?.();
-    auth.signOut();
+    // auth.signOut();
     router.push("/auth/login");
-    localStorage.removeItem("accessToken");
-    // localStorage.removeItem("fullName");
-    // localStorage.removeItem("idAccount");
-    // localStorage.removeItem("position");
+    // localStorage.removeItem("accessToken");
+    localStorage.removeItem("fullName");
+    localStorage.removeItem("idAccount");
+    localStorage.removeItem("position");
   }, [onClose, auth, router]);
 
   return (
