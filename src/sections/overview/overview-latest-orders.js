@@ -45,13 +45,15 @@ const getStatusButtonColor = (status) => {
     case 3:
       return { color: "success", text: "Đã trả phòng" };
     case 4:
-      return { color: "secondary", text: "Xác nhận thông tin" };
+      return { color: "secondary", text: "Đã xác nhận" };
     case 5:
       return { color: "info", text: "Thanh toán tiền cọc" };
     case 6:
       return { color: "error", text: "Từ chối" };
     case 7:
       return { color: "error", text: "Hết hạn" };
+    case 8:
+      return { color: "error", text: "Hết hạn thanh toán tiền cọc" };
     default:
       return { color: "default", text: "Unknown" };
   }
