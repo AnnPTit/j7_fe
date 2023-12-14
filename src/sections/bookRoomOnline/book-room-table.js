@@ -390,55 +390,49 @@ export const BookRoomTable = (props) => {
           <React.Fragment>
             <Dialog open={openDetail} onClose={handleCloseDetail} maxWidth="lg">
               <DialogContent>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TextField
-                        style={{ marginTop: 10 }}
-                        label="Lý do từ chối "
-                        fullWidth
-                        variant="outlined"
-                        value={refuseReason}
-                        onChange={(e) => setRefuseReason(e.target.value)}
-                      />
-                    </TableRow>
-                  </TableHead>
-                  <Button
-                    style={{ marginTop: 40 }}
-                    variant="outlined"
-                    color="error"
-                    // onClick={() => handleCancelOrder(orderId)}
-                    onClick={() => {
-                      handleCloseDetail();
-                      Swal.fire({
-                        title: "Bạn có chắc chắn muốn hủy ? ",
-                        text: "",
-                        icon: "warning",
-                        showCancelButton: true,
-                        confirmButtonColor: "#3085d6",
-                        cancelButtonColor: "#d33",
-                        confirmButtonText: "Đúng, hủy!",
-                      }).then(async (result) => {
-                        if (result.isConfirmed) {
-                          const isSubmitSuccess = await handleCancelOrder(orderId);
-                          if (isSubmitSuccess) {
-                            Swal.fire("Thêm thành công !", "success");
-                            toast.success("Thêm Thành Công !");
-                          }
+                <TextField
+                  style={{ marginTop: 10 }}
+                  label="Lý do từ chối "
+                  fullWidth
+                  variant="outlined"
+                  value={refuseReason}
+                  onChange={(e) => setRefuseReason(e.target.value)}
+                />
+                <Button
+                  style={{ marginTop: 40 }}
+                  variant="outlined"
+                  color="error"
+                  // onClick={() => handleCancelOrder(orderId)}
+                  onClick={() => {
+                    handleCloseDetail();
+                    Swal.fire({
+                      title: "Bạn có chắc chắn muốn hủy ? ",
+                      text: "",
+                      icon: "warning",
+                      showCancelButton: true,
+                      confirmButtonColor: "#3085d6",
+                      cancelButtonColor: "#d33",
+                      confirmButtonText: "Đúng, hủy!",
+                    }).then(async (result) => {
+                      if (result.isConfirmed) {
+                        const isSubmitSuccess = await handleCancelOrder(orderId);
+                        if (isSubmitSuccess) {
+                          Swal.fire("Đã hủy phòng !", "success");
+                          toast.success("Đã hủy phòng !");
                         }
-                      });
-                    }}
-                  >
-                    Hủy xác nhận
-                  </Button>
-                  {loading && (
-                    <div class="d-flex justify-content-center">
-                      <div class="spinner-border" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                      </div>
+                      }
+                    });
+                  }}
+                >
+                  Hủy xác nhận
+                </Button>
+                {loading && (
+                  <div class="d-flex justify-content-center">
+                    <div class="spinner-border" role="status">
+                      <span class="visually-hidden">Loading...</span>
                     </div>
-                  )}
-                </Table>
+                  </div>
+                )}
               </DialogContent>
             </Dialog>
             <div style={{ display: "flex", justifyContent: "flex-end" }}>
@@ -451,27 +445,7 @@ export const BookRoomTable = (props) => {
                 style={{ marginRight: 20 }}
                 variant="outlined"
                 color="error"
-                // onClick={() => handleCancelOrder(orderId)}
-                onClick={() => {
-                  handleOpenDetail();
-                  // Swal.fire({
-                  //   title: "Bạn có chắc chắn muốn hủy ? ",
-                  //   text: "",
-                  //   icon: "warning",
-                  //   showCancelButton: true,
-                  //   confirmButtonColor: "#3085d6",
-                  //   cancelButtonColor: "#d33",
-                  //   confirmButtonText: "Đúng, hủy!",
-                  // }).then(async (result) => {
-                  //   if (result.isConfirmed) {
-                  //     const isSubmitSuccess = await handleCancelOrder(orderId);
-                  //     // if (isSubmitSuccess) {
-                  //     //   Swal.fire("Thêm thành công !", "success");
-                  //     //   toast.success("Thêm Thành Công !");
-                  //     // }
-                  //   }
-                  // });
-                }}
+                onClick={handleOpenDetail}
               >
                 Hủy xác nhận
               </Button>
