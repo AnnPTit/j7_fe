@@ -14,6 +14,7 @@ import {
 import { ToastContainer, toast } from "react-toastify";
 import Swal from "sweetalert2";
 import "react-toastify/dist/ReactToastify.css";
+import { set } from "lodash";
 export const ProfileDetail = () => {
   const [accountUpdate, setAccountUpdate] = useState({
     id: "",
@@ -34,6 +35,9 @@ export const ProfileDetail = () => {
   const id = localStorage.getItem("idAccount");
   const [newPassword, setNewPassword] = useState("");
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
+
+  const [loading, setLoading] = useState(false);
+
   useEffect(() => {
     async function fetchData() {
       try {
@@ -61,12 +65,14 @@ export const ProfileDetail = () => {
 
   const handleSubmit = async () => {
     if (!newPassword.trim()) {
+      setLoading(false);
       toast.error("Mật khẩu mới không được trống!", {
         position: toast.POSITION.TOP_RIGHT,
       });
       return false;
     }
     if (confirmNewPassword !== newPassword) {
+      setLoading(false);
       toast.error("Mật khẩu nhập lại không trùng khớp!", {
         position: toast.POSITION.TOP_RIGHT,
       });
@@ -85,6 +91,7 @@ export const ProfileDetail = () => {
       const payload = {
         password: newPassword,
       };
+      setLoading(true);
       console.log(payload);
       const response = await axios.put(
         `http://localhost:2003/api/admin/account/changePassword/${id}`,
@@ -240,33 +247,42 @@ export const ProfileDetail = () => {
           </Box>
         </CardContent>
         <Divider />
-        <CardActions sx={{ justifyContent: "flex-end" }}>
-          <Button
-            type="button"
-            variant="contained"
-            onClick={() => {
-              Swal.fire({
-                title: "Bạn chắc chắn chứ?",
-                text: "Bạn sẽ không thể quay lại điều này!",
-                icon: "warning",
-                showCancelButton: true,
-                confirmButtonColor: "#3085d6",
-                cancelButtonColor: "#d33",
-                confirmButtonText: "Chắc chắn!",
-              }).then(async (result) => {
-                if (result.isConfirmed) {
-                  const success = await handleSubmit();
-                  if (success) {
-                    toast.success("Đổi mật khẩu thành công!");
+        {loading && (
+          <div class="d-flex justify-content-center">
+            <div class="spinner-border" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+          </div>
+        )}
+        {
+          <CardActions sx={{ justifyContent: "flex-end" }}>
+            <Button
+              type="button"
+              variant="contained"
+              onClick={() => {
+                Swal.fire({
+                  title: "Bạn chắc chắn chứ?",
+                  text: "Bạn sẽ không thể quay lại điều này!",
+                  icon: "warning",
+                  showCancelButton: true,
+                  confirmButtonColor: "#3085d6",
+                  cancelButtonColor: "#d33",
+                  confirmButtonText: "Chắc chắn!",
+                }).then(async (result) => {
+                  if (result.isConfirmed) {
+                    const success = await handleSubmit();
+                    if (success) {
+                      toast.success("Đổi mật khẩu thành công!");
+                    }
                   }
-                }
-              });
-            }}
-          >
-            Cập nhật
-          </Button>
-          <ToastContainer />
-        </CardActions>
+                });
+              }}
+            >
+              Cập nhật
+            </Button>
+            <ToastContainer />
+          </CardActions>
+        }
       </Card>
     </form>
   );
