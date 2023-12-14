@@ -76,6 +76,7 @@ function BookRoom() {
   const [customer, setCustomer] = useState([]);
   const [customerOrder, setCustomerOrder] = useState([]);
   const [customerOrderDetail, setCustomerOrderDetail] = useState([]);
+  const [customerDifferenceOrder, setCustomerDifferenceOrder] = useState([]);
   const [customerInfoOrder, setCustomerInfoOrder] = useState([]);
   const [floor, setFloor] = useState([]);
   const [typeRoom, setTypeRoom] = useState([]);
@@ -121,6 +122,7 @@ function BookRoom() {
   const [activeTab, setActiveTab] = useState("1");
   const [selectedCustomerAccept, setSelectedCustomerAccept] = useState("");
   const [selectedCustomerReturn, setSelectedCustomerReturn] = useState("");
+  const [selectedCustomerRepresent, setSelectedCustomerRepresent] = useState("");
   const [searchCustomer, setSearchCustomer] = useState("");
   const [idOrderDetailChange, setIdOrderDetailChange] = useState("");
   const [checkInChangeRoom, setCheckInChangeRoom] = useState("");
@@ -128,6 +130,7 @@ function BookRoom() {
   const [idRoomChoosed, setIdRoomChoosed] = useState("");
   const [roomPriceChoosed, setRoomPriceChoosed] = useState("");
   const [sumAmountValue, setSumAmountValue] = useState(0);
+  const [isCustomerAdded, setIsCustomerAdded] = useState(false);
 
   // CTGG
   const [reduceValue, setReduceValue] = useState(0);
@@ -277,6 +280,12 @@ function BookRoom() {
     setValueDateFrom(null);
     setValueDateTo(null);
   };
+
+  useEffect(() => {
+    if (order && order.customer) {
+      setSelectedCustomerRepresent(order.customer.id);
+    }
+  }, [order]);
 
   useEffect(() => {
     console.log("IdUseEffect: ", idOrderDetailChange);
@@ -445,8 +454,13 @@ function BookRoom() {
           `http://localhost:2003/api/admin/customer/getAllByOrderDetailId/${selectedOrderDetails}`
         );
         setCustomerOrderDetail(customerOrderDetail.data);
+        const customerDifferenceOrder = await axios.get(
+          `http://localhost:2003/api/general/getCustomerDifferenceOrder/${id}/${selectedOrderDetails}`
+        );
+        setCustomerDifferenceOrder(customerDifferenceOrder.data);
+        console.log("CustomerDifferenceOrder: ", customerDifferenceOrder.data);
       } catch (error) {
-        console.error("Error creating payment:", error);
+        console.error("Error:", error);
       }
     }
 
@@ -455,7 +469,7 @@ function BookRoom() {
   };
 
   const handleCloseReturnOneRoom = () => {
-    setGivenCustomerOneRoom("");
+    setSelectedCustomerReturn("");
     setNoteReturnOneRoom("");
     setOpenReturnOneRoom(false);
   };
@@ -697,7 +711,7 @@ function BookRoom() {
   const moneyReturnCustomerOneRoom = givenCustomerOneRoom - sumOrderDetail;
   const vatAmount = totalAmount * 0.1;
   const totalMoney = totalAmount + vatAmount;
-  const sumAmount = totalAmount + vatAmount - order.deposit + order.surcharge;
+  const sumAmount = totalAmount + vatAmount + order.surcharge - order.deposit;
   useEffect(() => {
     setSumAmountValue(sumAmount);
   }, [sumAmount]);
@@ -784,14 +798,14 @@ function BookRoom() {
       case 5:
         return (
           <React.Fragment>
-            <Button
+            {/* <Button
               style={{ width: 100, height: 50 }}
               onClick={handleOpenCancelOrder}
               variant="outlined"
               color="error"
             >
               Hủy
-            </Button>
+            </Button> */}
             <Button
               onClick={handleSave}
               style={{ marginLeft: 20, width: 100, height: 50 }}
@@ -840,13 +854,12 @@ function BookRoom() {
       setDiscountPercent(discount.reduceValue);
       const total = calculateTotal();
       const totalAfterDiscount = (total * discount.reduceValue) / 100;
-      if (totalAfterDiscount <= discount.maximumDiscount) {
+      if (totalAfterDiscount <= discount.maximumReductionValue) {
         setDiscountMoney(totalAfterDiscount);
         setSumAmountValue(sumAmount - totalAfterDiscount);
-      }
-      {
-        setDiscountMoney(discount.maximumDiscount);
-        setSumAmountValue(sumAmount - discount.maximumDiscount);
+      } else {
+        setDiscountMoney(discount.maxiumumReductionValue);
+        setSumAmountValue(sumAmount - discount.maximumReductionValue);
       }
     } else {
       setSelectedDiscount(null);
@@ -918,13 +931,6 @@ function BookRoom() {
 
   //Trả 1 phòng
   const handleReturnOneRoom = async () => {
-    if (!givenCustomerOneRoom || givenCustomerOneRoom < sumOrderDetail) {
-      toast.error("Số tiền khách trả không hợp lệ!", {
-        position: toast.POSITION.BOTTOM_CENTER,
-      });
-      return;
-    }
-
     if (!selectedCustomerReturn) {
       toast.error("Chưa chọn khách hàng!", {
         position: toast.POSITION.BOTTOM_CENTER,
@@ -940,15 +946,14 @@ function BookRoom() {
           customerId: selectedCustomerReturn,
           totalMoney: sumOrderDetail,
           vat: vatOrderDetail,
-          moneyGivenByCustomer: givenCustomerOneRoom,
-          excessMoney: moneyReturnCustomerOneRoom,
           note: noteReturnOneRoom,
           idReturn: id,
+          idCustomerRepresent: selectedCustomerRepresent ? selectedCustomerRepresent : null,
         }
       );
       const orderId = response.data.id;
       handleCloseReturnOneRoom();
-      toast.success("Trả phòng thành công!", {
+      toast.success("Tách phòng thành công!", {
         position: toast.POSITION.BOTTOM_CENTER,
       });
       router.push(`/order-detail?id=${orderId}`);
@@ -1475,6 +1480,23 @@ function BookRoom() {
       console.log(error);
     }
   };
+
+  useEffect(() => {
+    const hasMatchingCustomer = orderDetailData.some((orderDetail) => {
+      if (
+        orderDetail &&
+        orderDetail.id === selectedOrderDetails &&
+        orderDetail.informationCustomerList
+      ) {
+        return orderDetail.informationCustomerList.some(
+          (customer) => customer.citizenId === order.customer.citizenId
+        );
+      }
+      return false;
+    });
+
+    setIsCustomerAdded(hasMatchingCustomer);
+  }, [orderDetailData, order?.customer?.citizenId, selectedOrderDetails]);
 
   // Xóa combo sử dụng
   const handleDeleteComboUsed = async (id) => {
@@ -2658,7 +2680,7 @@ function BookRoom() {
                                   key="returnRoom"
                                   onClick={() => handleOpenReturnOneRoom(orderDetail.id)}
                                 >
-                                  Trả phòng
+                                  Tách phòng
                                 </MenuItem>
                               ) : null}
                             </Menu>
@@ -2889,7 +2911,7 @@ function BookRoom() {
       </Box>
       <Dialog open={openReturnOneRoom} onClose={handleCloseReturnOneRoom} maxWidth="md">
         <DialogTitle sx={{ m: 0, p: 2 }} id="customized-dialog-title">
-          XÁC NHẬN THANH TOÁN
+          XÁC NHẬN TÁCH PHÒNG
         </DialogTitle>
         <IconButton
           aria-label="close"
@@ -2932,19 +2954,27 @@ function BookRoom() {
           />
           <br />
           <br />
-          <TextField
-            label="Khách hàng trả"
-            value={givenCustomerOneRoom}
-            onChange={(e) => setGivenCustomerOneRoom(e.target.value)}
-            fullWidth
-            variant="outlined"
-          />
-          <br />
-          <br />
-          <div style={{ display: "flex" }}>
-            <FormControl variant="standard">
-              <InputLabel id="demo-simple-select-standard-label">Khách hàng</InputLabel>
-              {customerOrderDetail.length > 0 ? (
+
+          {isCustomerAdded ? (
+            <div style={{ display: "flex", justifyContent: "space-around" }}>
+              <FormControl variant="standard">
+                <InputLabel id="demo-simple-select-standard-label">Khách hàng</InputLabel>
+                <Select
+                  labelId="demo-simple-select-standard-label"
+                  id="demo-simple-select-standard"
+                  label="Khách hàng"
+                  style={{ width: 300 }}
+                  value={selectedCustomerRepresent}
+                  // onChange={(event) => setSelectedCustomerRepresent(event.target.value)}
+                >
+                  <MenuItem key={order.customer.id} value={order.customer.id}>
+                    {order.customer.fullname}
+                  </MenuItem>
+                </Select>
+              </FormControl>
+
+              <FormControl variant="standard">
+                <InputLabel id="demo-simple-select-standard-label">Khách hàng</InputLabel>
                 <Select
                   labelId="demo-simple-select-standard-label"
                   id="demo-simple-select-standard"
@@ -2953,27 +2983,40 @@ function BookRoom() {
                   value={selectedCustomerReturn}
                   onChange={(event) => setSelectedCustomerReturn(event.target.value)}
                 >
-                  {customerOrderDetail.map((customerOrderDetail) => (
-                    <MenuItem key={customerOrderDetail.id} value={customerOrderDetail.id}>
-                      {customerOrderDetail.fullname}
+                  {customerDifferenceOrder.map((customerDifferenceOrder) => (
+                    <MenuItem key={customerDifferenceOrder.id} value={customerDifferenceOrder.id}>
+                      {customerDifferenceOrder.fullname}
                     </MenuItem>
                   ))}
                 </Select>
-              ) : (
-                <p>Loading...</p>
-              )}
-            </FormControl>
-            <TextField
-              style={{ marginLeft: 135, width: 500 }}
-              label="Tiền trả lại"
-              value={
-                givenCustomerOneRoom - sumOrderDetail
-                  ? formatPrice(givenCustomerOneRoom - sumOrderDetail)
-                  : ""
-              }
-              variant="outlined"
-            />
-          </div>
+              </FormControl>
+            </div>
+          ) : (
+            <div style={{ display: "flex", justifyContent: "center" }}>
+              <FormControl variant="standard">
+                <InputLabel id="demo-simple-select-standard-label">Khách hàng</InputLabel>
+                {customerOrderDetail.length > 0 ? (
+                  <Select
+                    labelId="demo-simple-select-standard-label"
+                    id="demo-simple-select-standard"
+                    label="Khách hàng"
+                    style={{ width: 300 }}
+                    value={selectedCustomerReturn}
+                    onChange={(event) => setSelectedCustomerReturn(event.target.value)}
+                  >
+                    {customerOrderDetail.map((customerOrderDetail) => (
+                      <MenuItem key={customerOrderDetail.id} value={customerOrderDetail.id}>
+                        {customerOrderDetail.fullname}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                ) : (
+                  <p>Loading...</p>
+                )}
+              </FormControl>
+            </div>
+          )}
+
           <br />
           <TextareaAutosize
             className="form-control"
@@ -2987,19 +3030,11 @@ function BookRoom() {
           />
         </DialogContent>
         <DialogActions>
+          <Button onClick={handleCloseReturnOneRoom} color="error" variant="outlined">
+            Hủy
+          </Button>
           <Button onClick={handleReturnOneRoom} variant="outlined">
-            Tiền mặt
-          </Button>
-          <Button onClick={createPaymentMomo} variant="outlined" color="error">
-            Thanh toán MOMO
-          </Button>
-          <Button
-            style={{ marginRight: 20 }}
-            onClick={createPayment}
-            variant="outlined"
-            color="secondary"
-          >
-            Chuyển khoản ngân hàng
+            Xác nhận
           </Button>
         </DialogActions>
         <br />
@@ -3655,7 +3690,6 @@ function BookRoom() {
                     ))}
                   </Select>
                 </FormControl>
-
                 <br />
                 <br />
                 <TextField

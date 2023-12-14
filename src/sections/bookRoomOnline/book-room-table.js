@@ -291,13 +291,11 @@ export const BookRoomTable = (props) => {
 
     const shouldApplySurcharge =
       currentDate < checkinDateTime &&
-      (differenceInHours(checkinDateTime, currentDate) <= 24 ||
+      (differenceInHours(checkinDateTime, currentDate) <= 38 ||
         (isToday(checkinDateTime) && currentDate.getHours() < checkinDateTime.getHours()));
 
     const inTime =
-      currentDate > checkinDateTime &&
-      isToday(checkinDateTime) &&
-      currentDate.getHours() > checkinDateTime.getHours();
+      currentDate >= checkinDateTime && currentDate.getHours() >= checkinDateTime.getHours();
 
     if (shouldApplySurcharge) {
       const payload = {
@@ -352,6 +350,10 @@ export const BookRoomTable = (props) => {
       );
       return;
     }
+  };
+
+  const handleRedirectDetail = async () => {
+    router.push(`/booking?id=${orderId}`);
   };
 
   useEffect(() => {
@@ -510,7 +512,7 @@ export const BookRoomTable = (props) => {
                 value={numeral(order.deposit).format("0,0 ") + "  đ"}
                 label="Tiền cọc"
               />
-              <Button variant="outlined" onClick={handleRedirect}>
+              <Button variant="outlined" onClick={handleRedirectDetail}>
                 Chi tiết
               </Button>
             </div>
@@ -525,7 +527,7 @@ export const BookRoomTable = (props) => {
                 value={numeral(order.deposit).format("0,0 ") + "  đ"}
                 label="Tiền cọc"
               />
-              <Button variant="outlined" onClick={handleRedirect}>
+              <Button variant="outlined" onClick={handleRedirectDetail}>
                 Chi tiết
               </Button>
             </div>
@@ -540,7 +542,7 @@ export const BookRoomTable = (props) => {
                 value={numeral(order.deposit).format("0,0 ") + "  đ"}
                 label="Tiền cọc"
               />
-              <Button variant="outlined" onClick={handleRedirect}>
+              <Button variant="outlined" onClick={handleRedirectDetail}>
                 Chi tiết
               </Button>
             </div>
@@ -839,6 +841,9 @@ export const BookRoomTable = (props) => {
                             </Box>
                             <br />
                             {renderButtonsBasedOnStatus()}
+                            <br />
+                            <br />
+                            <br />
                             {/* <div style={{ display: "flex", justifyContent: "flex-end" }}>
                               <TextField
                                 style={{ marginRight: 20 }}
