@@ -858,7 +858,7 @@ function BookRoom() {
         setDiscountMoney(totalAfterDiscount);
         setSumAmountValue(sumAmount - totalAfterDiscount);
       } else {
-        setDiscountMoney(discount.maxiumumReductionValue);
+        setDiscountMoney(discount.maximumReductionValue);
         setSumAmountValue(sumAmount - discount.maximumReductionValue);
       }
     } else {
