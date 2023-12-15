@@ -24,6 +24,8 @@ function UpdateCustomer() {
   const [customerUpdate, setCustomerUpdate] = useState({
     id: "",
     customerCode: "",
+    username: "",
+    password: "",
     fullname: "",
     gender: "",
     birthday: "",
@@ -178,8 +180,6 @@ function UpdateCustomer() {
     console.log(province);
   };
 
-  useEffect(() => {}, []);
-
   const handleDistrictChange = (e) => {
     setSelectedDistrict(e.target.value);
     const district = districts.find((d) => d.district_id === e.target.value);
@@ -253,6 +253,7 @@ function UpdateCustomer() {
       ...customerUpdate,
       id: id,
       customerCode: customerUpdate.customerCode,
+      username: customerUpdate.username,
       gender: customerUpdate.gender,
       fullname: customerUpdate.fullname,
       email: customerUpdate.email,
@@ -305,6 +306,7 @@ function UpdateCustomer() {
 
           toast.error(error.response.data);
           const isCustomerCodeError = error.response.data.customerCode === undefined;
+          const isUserNameError = error.response.data.username === undefined;
           const isFullnameError = error.response.data.fullname === undefined;
           const isEmailError = error.response.data.email === undefined;
           const isPhoneNumberError = error.response.data.phoneNumber === undefined;
@@ -316,6 +318,7 @@ function UpdateCustomer() {
 
           if (
             !isCustomerCodeError &&
+            !isUserNameError &&
             !isFullnameError &&
             !isEmailError &&
             !isPhoneNumberError &&
@@ -326,6 +329,9 @@ function UpdateCustomer() {
             !isWardError
           ) {
             toast.error(error.response.data.customerCode, {
+              position: toast.POSITION.BOTTOM_RIGHT,
+            });
+            toast.error(error.response.data.username, {
               position: toast.POSITION.BOTTOM_RIGHT,
             });
             toast.error(error.response.data.fullname, {
@@ -438,6 +444,43 @@ function UpdateCustomer() {
           className="form-control"
           id="floatingPassword"
           placeholder="Password"
+          name="username"
+          value={customerUpdate.username}
+          onChange={(e) => {
+            setCustomerUpdate((prev) => ({
+              ...prev,
+              username: e.target.value,
+            }));
+          }}
+        />
+        <label htmlFor="floatingPassword">User Name</label>
+      </div>
+      <br></br>
+
+      <div className="form-floating">
+        <input
+          type="text"
+          className="form-control"
+          id="floatingPassword"
+          placeholder="Password"
+          name="password"
+          value={customerUpdate.password}
+          onChange={(e) => {
+            setCustomerUpdate((prev) => ({
+              ...prev,
+              password: e.target.value,
+            }));
+          }}
+        />
+        <label htmlFor="floatingPassword">Password</label>
+      </div>
+      <br></br>
+      <div className="form-floating">
+        <input
+          type="text"
+          className="form-control"
+          id="floatingPassword"
+          placeholder="Password"
           name="fullname"
           value={customerUpdate.fullname}
           onChange={(e) => {
@@ -503,7 +546,7 @@ function UpdateCustomer() {
           id="floatingBirthday"
           placeholder="Ngày sinh"
           name="birthday"
-          value={customerUpdate.birthday.slice(0, 10)}
+          value={customerUpdate.birthday ? customerUpdate.birthday.slice(0, 10) : null}
           onChange={(e) => {
             setCustomerUpdate((prev) => ({
               ...prev,
