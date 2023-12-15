@@ -8,7 +8,7 @@ import { ToastContainer, toast } from "react-toastify";
 import Swal from "sweetalert2";
 import { parse, format } from "date-fns";
 import "react-toastify/dist/ReactToastify.css";
-
+import CurrencyInput from "react-currency-input-field";
 import React, { Component } from "react";
 import QrReader from "react-qr-scanner";
 import {
@@ -27,10 +27,11 @@ const cx = classNames.bind(style);
 
 function inputDiscountProgram() {
   // eslint-disable-next-line react-hooks/rules-of-hooks
-  const [startDay, setStartDay] = useState();
+  const [startDay, setStartDay] = useState(new Date());
   // eslint-disable-next-line react-hooks/rules-of-hooks
-  const [endDate, setEndDate] = useState();
-
+  const [endDate, setEndDate] = useState(new Date());
+  const [minimumInvoice, setMinimumInvoice] = useState();
+  const [maximumReductionValue, setMaximumReductionValue] = useState();
   const handleDateFromChange = (date) => {
     setStartDay(date);
     if (date > endDate) {
@@ -65,18 +66,23 @@ function inputDiscountProgram() {
     const endDateInput = document.querySelector('input[name="endDate"]');
 
     const name = nameInput?.value;
-    const minimumInvoice = minimumInvoiceInput?.value;
+    // const minimumInvoice = minimumInvoiceInput?.value;
     const reduceValue = reduceValueInput?.value;
     const numberOfApplication = numberOfApplicationInput?.value;
-    const maximumReductionValue = maximumReductionValueInput?.value;
+    // const maximumReductionValue = maximumReductionValueInput?.value;
 
+    // const priceString = minimumInvoice1 + ""; // Lấy giá trị dạng chuỗi từ trường input
+    // const cleanedPriceString = priceString.replace(/[^0-9]/g, ""); // Loại bỏ các ký tự không phải số
+    // const minimumInvoice = cleanedPriceString
+
+    console.log(minimumInvoice);
     // Tạo payload dữ liệu để gửi đến API
     const payload = {
       name,
-      minimumInvoice,
+      minimumInvoice: minimumInvoice,
       reduceValue,
       numberOfApplication,
-      maximumReductionValue,
+      maximumReductionValue: maximumReductionValue,
       startDay,
       endDate,
     };
@@ -151,7 +157,9 @@ function inputDiscountProgram() {
     const options = { day: "2-digit", month: "2-digit", year: "numeric" };
     return new Intl.DateTimeFormat("en-GB", options).format(date);
   };
-
+  const formatPrice = (price) => {
+    return price.toLocaleString("vi-VN") + " VND";
+  };
   return (
     <div className={cx("wrapper")}>
       <h1>Thêm Chương Trình Giảm Giá</h1>
@@ -168,14 +176,16 @@ function inputDiscountProgram() {
       </div>
       <br />
       <div className="form-floating">
-        <input
-          type="number"
-          className="form-control"
-          id="floatingPassword"
-          placeholder="Password"
-          variant="outlined"
-          name="minimumInvoice"
-        />
+      <CurrencyInput
+        className="form-control"
+        id="input-example"
+        name="price"
+        placeholder="Please enter a number"
+        // defaultValue={0}
+        // decimalsLimit={2}
+        value={minimumInvoice}
+        onValueChange={(value) => setMinimumInvoice(value)} // Thêm event và value vào hàm
+      />
         <label htmlFor="floatingPassword">Hóa đơn tối thiểu</label>
       </div>
       <br />
@@ -192,14 +202,16 @@ function inputDiscountProgram() {
       </div>
       <br />
       <div className="form-floating">
-        <input
-          type="number"
-          className="form-control"
-          id="floatingPassword"
-          placeholder="Password"
-          variant="outlined"
-          name="maximumReductionValue"
-        />
+      <CurrencyInput
+        className="form-control"
+        id="input-example"
+        name="price"
+        placeholder="Please enter a number"
+        // defaultValue={0}
+        // decimalsLimit={2}
+        value={maximumReductionValue}
+        onValueChange={(value) => setMaximumReductionValue(value)} // Thêm event và value vào hàm
+      />
         <label htmlFor="floatingPassword">Giá trị giảm tối đa</label>
       </div>
       <br />
@@ -220,7 +232,7 @@ function inputDiscountProgram() {
         className="form-control"
         label="Ngày bắt đầu"
         disablePast
-        value={startDay}
+        value={startDay }
         onChange={handleDateFromChange}
         renderInput={(params) => (
           <TextField
@@ -242,6 +254,7 @@ function inputDiscountProgram() {
         label="Ngày kết thúc"
         value={endDate}
         onChange={handleDateToChange}
+        format="YYYY-MM-DD"
         renderInput={(params) => (
           <TextField
             style={{ marginRight: 20 }}
