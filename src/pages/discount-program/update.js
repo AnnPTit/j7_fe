@@ -122,75 +122,7 @@ function UpdateDiscountProgram() {
         } else if (error.response.status === 400) {
           console.log(error.response.data);
 
-          const isAccountCodeError = error.response.data.accountCode === undefined;
-          const isFullnameError = error.response.data.fullname === undefined;
-          const isEmailError = error.response.data.email === undefined;
-          const isPhoneNumberError = error.response.data.phoneNumber === undefined;
-          const isCitizenIdError = error.response.data.citizenId === undefined;
-          const isBirthdayError = error.response.data.birthday === undefined;
-
-          if (
-            !isAccountCodeError &&
-            !isFullnameError &&
-            !isEmailError &&
-            !isPhoneNumberError &&
-            !isCitizenIdError &&
-            !isBirthdayError
-          ) {
-            toast.error(error.response.data.accountCode, {
-              position: toast.POSITION.BOTTOM_RIGHT,
-            });
-            toast.error(error.response.data.fullname, {
-              position: toast.POSITION.BOTTOM_RIGHT,
-            });
-            toast.error(error.response.data.email, {
-              position: toast.POSITION.BOTTOM_RIGHT,
-            });
-            toast.error(error.response.data.phoneNumber, {
-              position: toast.POSITION.BOTTOM_RIGHT,
-            });
-            toast.error(error.response.data.citizenId, {
-              position: toast.POSITION.BOTTOM_RIGHT,
-            });
-            toast.error(error.response.data.birthday, {
-              position: toast.POSITION.BOTTOM_RIGHT,
-            });
-            return false;
-          } else {
-            // Nếu có ít nhất một trường bị thiếu, xóa thông báo lỗi cho trường đó nếu có
-            // và hiển thị thông báo lỗi cho các trường còn lại
-            if (!isAccountCodeError) {
-              toast.error(error.response.data.accountCode, {
-                position: toast.POSITION.BOTTOM_RIGHT,
-              });
-            }
-            if (!isFullnameError) {
-              toast.error(error.response.data.fullname, {
-                position: toast.POSITION.BOTTOM_RIGHT,
-              });
-            }
-            if (!isEmailError) {
-              toast.error(error.response.data.email, {
-                position: toast.POSITION.BOTTOM_RIGHT,
-              });
-            }
-            if (!isPhoneNumberError) {
-              toast.error(error.response.data.phoneNumber, {
-                position: toast.POSITION.BOTTOM_RIGHT,
-              });
-            }
-            if (!isCitizenIdError) {
-              toast.error(error.response.data.citizenId, {
-                position: toast.POSITION.BOTTOM_RIGHT,
-              });
-            }
-            if (!isBirthdayError) {
-              toast.error(error.response.data.birthday, {
-                position: toast.POSITION.BOTTOM_RIGHT,
-              });
-            }
-            return false;
-          }
+          toast.error(response.data);
         } else {
           alert("Có lỗi xảy ra trong quá trình gọi API");
           return false;
