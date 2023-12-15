@@ -28,7 +28,9 @@ export const DiscountProgramTable = (props) => {
   const handleDelete = (id) => {
     props.onDelete(id);
   };
-
+  const formatPrice = (price) => {
+    return price.toLocaleString("vi-VN") + " VND";
+  };
   return (
     <Card>
       <Scrollbar>
@@ -82,9 +84,9 @@ export const DiscountProgramTable = (props) => {
                     </TableCell>
                     <TableCell>{discountProgram.code}</TableCell>
                     <TableCell>{discountProgram.name}</TableCell>
-                    <TableCell>{discountProgram.minimumInvoice}</TableCell>
-                    <TableCell>{discountProgram.reduceValue}</TableCell>
-                    <TableCell>{discountProgram.maximumReductionValue}</TableCell>
+                    <TableCell>{formatPrice(discountProgram.minimumInvoice)}</TableCell>
+                    <TableCell>{discountProgram.reduceValue} %</TableCell>
+                    <TableCell>{formatPrice(discountProgram.maximumReductionValue)}</TableCell>
                     <TableCell>{discountProgram.numberOfApplication}</TableCell>
                     <TableCell>{startDay}</TableCell>
                     <TableCell>{endDate}</TableCell>
