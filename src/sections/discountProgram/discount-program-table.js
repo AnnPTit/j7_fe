@@ -42,7 +42,7 @@ export const DiscountProgramTable = (props) => {
                 <TableCell>Mã</TableCell>
                 <TableCell>Tên Chương Trình</TableCell>
                 <TableCell>Hóa Đơn Tối Thiểu</TableCell>
-                <TableCell>Giá Trị Giảm</TableCell>
+                <TableCell>Giá trị giảm (%)</TableCell>
                 <TableCell>Giá Trị Giảm Tối Đa</TableCell>
                 <TableCell>Số Lượng</TableCell>
                 <TableCell>Ngày Áp Dụng</TableCell>

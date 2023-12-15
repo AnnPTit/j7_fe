@@ -198,7 +198,7 @@ function inputDiscountProgram() {
           variant="outlined"
           name="reduceValue"
         />
-        <label htmlFor="floatingPassword">Giá trị giảm</label>
+        <label htmlFor="floatingPassword">Giá trị giảm (%)</label>
       </div>
       <br />
       <div className="form-floating">
