@@ -5,7 +5,7 @@ export const TypeRoomSearch = ({ textSearch, setTextSearch }) => (
     <OutlinedInput
       value={textSearch}
       fullWidth
-      placeholder="Search type room"
+      placeholder="Tìm kiếm loại phòng"
       sx={{ maxWidth: 500 }}
       onChange={(e) => {
         setTextSearch(e.target.value);
