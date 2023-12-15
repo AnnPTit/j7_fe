@@ -968,6 +968,12 @@ function BookRoom() {
 
   //Trả phòng
   const handleReturnRoom = async () => {
+    if (!/^\d+$/.test(givenCustomer)) {
+      toast.error("Vui lòng nhập số!", {
+        position: toast.POSITION.BOTTOM_CENTER,
+      });
+      return;
+    }
     if (!givenCustomer || givenCustomer < sumAmountValue) {
       // Xử lý khi tiền khách trả không hợp lệ, ví dụ: hiển thị thông báo lỗi
       toast.error("Số tiền khách trả không hợp lệ!", {

@@ -139,10 +139,12 @@ function OrderTimeline() {
           return;
         }
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
-        const responseCustomer = await axios.get("http://localhost:2003/api/admin/customer/getAll");
-        const responseService = await axios.get("http://localhost:2003/api/admin/service/getAll");
-        const responseRoom = await axios.get("http://localhost:2003/api/admin/room/getList");
-        const responseAccount = await axios.get("http://localhost:2003/api/admin/account/getAll");
+        const responseCustomer = await axios.get(
+          "http://localhost:2003/api/general/customer/getAll"
+        );
+        const responseService = await axios.get("http://localhost:2003/api/general/service/getAll");
+        const responseRoom = await axios.get("http://localhost:2003/api/general/room/getList");
+        const responseAccount = await axios.get("http://localhost:2003/api/general/account/getAll");
         setCustomer(responseCustomer.data);
         setService(responseService.data);
         setRoom(responseRoom.data);
@@ -215,6 +217,11 @@ function OrderTimeline() {
                   eventColor = "#FFD700";
                   eventIcon = FaSignInAlt;
                   eventTitle = "Trả phòng đi trước";
+                  break;
+                case 10:
+                  eventColor = "#FFD700";
+                  eventIcon = FaSignInAlt;
+                  eventTitle = "Khách chuyển phòng";
                   break;
                 default:
                   eventColor = "default";
@@ -291,6 +298,8 @@ function OrderTimeline() {
         return <FaSignInAlt style={{ fontSize: "50px", color: "#FFD700" }} />;
       case 8:
         return <FaSignInAlt style={{ fontSize: "50px", color: "#FFD700" }} />;
+      case 10:
+        return <FaSignInAlt style={{ fontSize: "50px", color: "#FFD700" }} />;
       default:
         return <FaBug style={{ fontSize: "50px", color: "default" }} />;
     }
@@ -316,6 +325,8 @@ function OrderTimeline() {
         return "Hết hạn";
       case 8:
         return "Hết hạn thanh toán tiền cọc";
+      case 10:
+        return "Khách chuyển phòng";
       default:
         return "Unknown Type";
     }
