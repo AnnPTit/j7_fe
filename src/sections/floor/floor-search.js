@@ -5,7 +5,7 @@ export const FloorSearch = ({ textSearch, setTextSearch }) => (
     <OutlinedInput
       value={textSearch}
       fullWidth
-      placeholder="Search Floor"
+      placeholder="Tìm kiếm tầng"
       sx={{ maxWidth: 500 }}
       onChange={(e) => {
         setTextSearch(e.target.value);

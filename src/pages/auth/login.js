@@ -110,7 +110,7 @@ const Page = () => {
                     value={formik.values.password}
                   />
                 </Stack>
-                <FormHelperText sx={{ mt: 1 }}>Optionally you can skip.</FormHelperText>
+                <FormHelperText sx={{ mt: 1 }}>Nhập email và mật khẩu để đăng nhập</FormHelperText>
                 {formik.errors.submit && (
                   <Typography color="error" sx={{ mt: 3 }} variant="body2">
                     {formik.errors.submit}

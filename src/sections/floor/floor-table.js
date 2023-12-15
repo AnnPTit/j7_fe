@@ -51,11 +51,11 @@ export const FloorTable = (props) => {
             <TableHead>
               <TableRow>
                 <TableCell padding="checkbox">STT</TableCell>
-                <TableCell>Floor Code</TableCell>
-                <TableCell>Floor Name</TableCell>
-                <TableCell>Note</TableCell>
-                <TableCell>Status</TableCell>
-                <TableCell>Actions</TableCell>
+                <TableCell>Mã tầng</TableCell>
+                <TableCell>Tên tầng</TableCell>
+                <TableCell>Ghi chú</TableCell>
+                <TableCell>Trạng thái</TableCell>
+                <TableCell>Hành động</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -96,7 +96,7 @@ export const FloorTable = (props) => {
                     <TableCell>{floor.floorCode}</TableCell>
                     <TableCell>{floor.floorName}</TableCell>
                     <TableCell>{floor.note}</TableCell>
-                    <TableCell>{floor.status == 1 ? "Active" : "Unactive"}</TableCell>
+                    <TableCell>{floor.status == 1 ? "Hoạt động" : "Không hoạt động"}</TableCell>
                     <TableCell>
                       <button className="btn btn-primary" onClick={() => handleEdit(floor.id)}>
                         <SvgIcon fontSize="small">

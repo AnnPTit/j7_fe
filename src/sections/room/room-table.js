@@ -4,6 +4,7 @@ import moment from "moment";
 import Swal from "sweetalert2";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import RotateLeftIcon from "@mui/icons-material/RotateLeft";
 import {
   Box,
   Card,
@@ -52,6 +53,10 @@ export const RoomTable = (props) => {
     props.onDelete(id);
   };
 
+  const handleChangeStatus = (id) => {
+    props.onChangeStatus(id);
+  };
+
   return (
     <Card>
       <Scrollbar>
@@ -82,12 +87,26 @@ export const RoomTable = (props) => {
                     confirmButtonText: "Chắc chắn!",
                   }).then((result) => {
                     if (result.isConfirmed) {
-                      Swal.fire("Đã xóa!", "Dữ liệu đã được xóa.", "success");
                       handleDelete(room.id);
+                      // Swal.fire("Đã xóa!", "Dữ liệu đã được xóa.", "success");
                     }
                   });
                 };
-
+                const alertResetStatus = () => {
+                  Swal.fire({
+                    title: "Bạn chắc chắn muốn khôi phục trạng thái cho phòng ?",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#3085d6",
+                    cancelButtonColor: "#d33",
+                    confirmButtonText: "Chắc chắn!",
+                  }).then((result) => {
+                    if (result.isConfirmed) {
+                      handleChangeStatus(room.id);
+                      // Swal.fire("Đã xóa!", "Dữ liệu đã được xóa.", "success");
+                    }
+                  });
+                };
                 return (
                   <TableRow hover key={room.id}>
                     <TableCell padding="checkbox">
@@ -118,7 +137,7 @@ export const RoomTable = (props) => {
                         ? "Phòng đã được đặt"
                         : room.status === 3
                         ? "Đang có người ở"
-                        : "Trạng thái khác"}
+                        : "Không hoạt động"}
                     </TableCell>
                     <TableCell>
                       <Link className="btn btn-primary m-xl-2" href={hrefUpdate}>
@@ -126,11 +145,19 @@ export const RoomTable = (props) => {
                           <PencilSquareIcon />
                         </SvgIcon>
                       </Link>
-                      <button className="btn btn-danger m-xl-2" onClick={alertDelete}>
-                        <SvgIcon fontSize="small">
-                          <TrashIcon />
-                        </SvgIcon>
-                      </button>
+                      {room.status === 0 ? (
+                        <button className="btn btn-success m-xl-2" onClick={alertResetStatus}>
+                          <SvgIcon fontSize="small">
+                            <RotateLeftIcon />
+                          </SvgIcon>
+                        </button>
+                      ) : (
+                        <button className="btn btn-danger m-xl-2" onClick={alertDelete}>
+                          <SvgIcon fontSize="small">
+                            <TrashIcon />
+                          </SvgIcon>
+                        </button>
+                      )}
                       <ToastContainer />
                     </TableCell>
                   </TableRow>

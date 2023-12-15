@@ -6,6 +6,8 @@ import WindowIcon from "@heroicons/react/24/solid/WindowIcon";
 import ScaleIcon from "@heroicons/react/24/solid/ScaleIcon";
 import BuildingLibraryIcon from "@heroicons/react/24/solid/BuildingLibraryIcon";
 import MinusSmallIcon from "@heroicons/react/24/solid/MinusSmallIcon";
+import AcademicCapIcon from "@heroicons/react/24/solid/AcademicCapIcon";
+import ArrowUturnDownIcon from "@heroicons/react/24/solid/ArrowUturnDownIcon";
 import QueueListIcon from "@heroicons/react/24/solid/QueueListIcon";
 import ClipboardIcon from "@heroicons/react/24/solid/ClipboardIcon";
 import Square3Stack3DIcon from "@heroicons/react/24/solid/Square3Stack3DIcon";
@@ -282,7 +284,7 @@ export const items = [
     path: "/blog",
     icon: (
       <SvgIcon fontSize="small">
-        <ClipboardIcon />
+        <AcademicCapIcon />
       </SvgIcon>
     ),
   },
@@ -291,7 +293,7 @@ export const items = [
     path: "/discount-program",
     icon: (
       <SvgIcon fontSize="small">
-        <ClipboardIcon />
+        <ArrowUturnDownIcon />
       </SvgIcon>
     ),
   },

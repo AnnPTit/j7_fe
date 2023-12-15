@@ -14,6 +14,8 @@ import MyPagination from "src/components/Pagination";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { SideNavItem } from "src/layouts/dashboard/side-nav-item";
 import { usePathname } from "next/navigation";
+import { toast } from "react-toastify";
+import Swal from "sweetalert2";
 
 const useRoom = (data, page, rowsPerPage) => {
   return useMemo(() => {
@@ -65,10 +67,33 @@ const Page = () => {
   // Delete room
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:2003/api/admin/room/delete/${id}`);
+      const result = await axios.delete(`http://localhost:2003/api/admin/room/delete/${id}`);
+      console.log(result);
       setDataChange(!dataChange);
+      Swal.fire("Đã xóa!", "Dữ liệu đã được xóa.", "success");
     } catch (error) {
       console.log(error);
+      if (error.code === "ERR_BAD_REQUEST") {
+        toast.error("Phòng đang nằm trong hóa đơn không thể xóa", {
+          position: toast.POSITION.BOTTOM_CENTER,
+        });
+      }
+    }
+  };
+  //change status
+  const changeStatus = async (id) => {
+    try {
+      const result = await axios.delete(`http://localhost:2003/api/admin/room/change-status/${id}`);
+      console.log(result);
+      setDataChange(!dataChange);
+      Swal.fire("Thành công!", "Dữ liệu phòng đã được cập nhật.", "success");
+    } catch (error) {
+      console.log(error);
+      if (error.code === "ERR_BAD_REQUEST") {
+        toast.error("Có lỗi xảy ra", {
+          position: toast.POSITION.BOTTOM_CENTER,
+        });
+      }
     }
   };
 
@@ -80,7 +105,7 @@ const Page = () => {
         const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
         // Kiểm tra xem accessToken có tồn tại không
         if (!accessToken) {
-         console.log("Bạn chưa đăng nhập");
+          console.log("Bạn chưa đăng nhập");
           return;
         }
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
@@ -156,8 +181,7 @@ const Page = () => {
         <Container maxWidth="xl">
           <Stack spacing={3}>
             <Stack direction="row" justifyContent="space-between" spacing={4}>
-              <Stack spacing={0}>
-              </Stack>
+              <Stack spacing={0}></Stack>
               <div>
                 <SideNavItem
                   style={{ backgroundColor: "red" }}
@@ -187,6 +211,7 @@ const Page = () => {
                 items={room}
                 selected={roomSelection.selected}
                 onDelete={handleDelete} // Thêm prop onDelete và truyền giá trị của handleDelete vào đây
+                onChangeStatus={changeStatus} // Thêm prop onDelete và truyền giá trị của handleDelete vào đây
                 setPageNumber={setPageNumber}
                 totalElements={totalElements}
                 pageNumber={pageNumber} // Thêm prop onDelete và truyền giá trị của handleDelete vào đây

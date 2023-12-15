@@ -36,7 +36,7 @@ export const BlogTable = (props) => {
                 <TableCell>Ảnh</TableCell>
                 <TableCell>Tiêu đề</TableCell>
                 <TableCell>Nội dung</TableCell>
-                <TableCell>Lượt thích</TableCell>
+                {/* <TableCell>Lượt thích</TableCell> */}
                 <TableCell>Lượt Xem</TableCell>
                 <TableCell>Ngày tạo</TableCell>
                 <TableCell>Người tạo</TableCell>
@@ -100,7 +100,7 @@ export const BlogTable = (props) => {
                     </TableCell>
                     <TableCell>{room.title}</TableCell>
                     <TableCell>{room.content}</TableCell>
-                    <TableCell>{room.countLike}</TableCell>
+                    {/* <TableCell>{room.countLike}</TableCell> */}
                     <TableCell>{room.countView}</TableCell>
                     <TableCell>{formatDate(room.createAt)}</TableCell>
                     <TableCell>{room.createBy}</TableCell>
