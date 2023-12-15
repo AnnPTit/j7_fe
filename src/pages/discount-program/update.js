@@ -121,7 +121,7 @@ function UpdateDiscountProgram() {
           window.location.href = "/auth/login"; // Chuyển hướng đến trang đăng nhập
         } else if (error.response.status === 400) {
           console.log(error.response.data);
-
+          toast.error(error.response.data);
           const isAccountCodeError = error.response.data.accountCode === undefined;
           const isFullnameError = error.response.data.fullname === undefined;
           const isEmailError = error.response.data.email === undefined;
