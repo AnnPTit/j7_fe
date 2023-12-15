@@ -1,4 +1,4 @@
-import { useCallback, useState, useEffect } from "react";
+import {  useState, useEffect } from "react";
 import axios from "axios";
 import {
   Box,
@@ -14,7 +14,6 @@ import {
 import { ToastContainer, toast } from "react-toastify";
 import Swal from "sweetalert2";
 import "react-toastify/dist/ReactToastify.css";
-import { set } from "lodash";
 export const ProfileDetail = () => {
   const [accountUpdate, setAccountUpdate] = useState({
     id: "",

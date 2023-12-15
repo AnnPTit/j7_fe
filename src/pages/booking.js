@@ -1861,7 +1861,7 @@ function BookRoom() {
         console.log("Lỗi khi thêm phòng vào hóa đơn chi tiết:", error);
         // Xử lý lỗi nếu có
         if (error.response.status === 400) {
-          toast.error("Phòng đã bị trùng. Vui lòng chọn ngày hoặc phòng khác.", {
+          toast.error("Phòng đã được đặt trong khoảng thời gian này. Vui lòng chọn ngày hoặc phòng khác.", {
             position: toast.POSITION.BOTTOM_CENTER,
           });
         } else {
@@ -1932,7 +1932,7 @@ function BookRoom() {
       console.log("Lỗi khi thêm phòng vào hóa đơn chi tiết:", error);
       // Xử lý lỗi nếu có
       if (error.response.status === 400) {
-        toast.error("Phòng đã bị trùng. Vui lòng chọn ngày hoặc phòng khác.", {
+        toast.error("Phòng đã được đặt trong khoảng thời gian này. Vui lòng chọn ngày hoặc phòng khác.", {
           position: toast.POSITION.BOTTOM_CENTER,
         });
       } else {

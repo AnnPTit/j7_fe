@@ -527,11 +527,13 @@ export const BookRoomTable = (props) => {
       case 5:
         return (
           <React.Fragment>
+            
             <div style={{ display: "flex", justifyContent: "flex-end" }}>
+           
               <TextField
                 style={{ marginRight: 20 }}
                 value={numeral(surcharge).format("0,0 ") + "  đ"}
-                label="Phụ thu"
+                label="* Phụ thu : 10.000đ /h"
               />
               <TextField
                 style={{ marginRight: 20 }}
