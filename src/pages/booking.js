@@ -326,15 +326,19 @@ function BookRoom() {
         const { customerQuantity, checkInDatetime, checkOutDatetime, room } =
           orderDetailResponse.data;
         const { typeRoom } = room;
-        const { capacity, children } = typeRoom;
+        const { id, capacity, children } = typeRoom;
 
-        let Api = `http://localhost:2003/api/admin/room/loadByCondition`;
+        let Api = `http://localhost:2003/api/general/room/loadByCondition`;
         // Add search text parameter only if there's a search text entered
         let hasQueryParams = false;
 
         // Construct the API URL based on the selected options
         if (capacity !== "") {
           Api += `?capacity=${capacity}`;
+          hasQueryParams = true;
+        }
+        if (id !== "") {
+          Api += hasQueryParams ? `&typeRoomId=${id}` : `?typeRoomId=${id}`;
           hasQueryParams = true;
         }
         if (customerQuantity !== "") {
@@ -451,7 +455,7 @@ function BookRoom() {
     } else if (selectedOrderDetails) {
       try {
         const customerOrderDetail = await axios.get(
-          `http://localhost:2003/api/admin/customer/getAllByOrderDetailId/${selectedOrderDetails}`
+          `http://localhost:2003/api/general/customer/getAllByOrderDetailId/${selectedOrderDetails}`
         );
         setCustomerOrderDetail(customerOrderDetail.data);
         const customerDifferenceOrder = await axios.get(
@@ -964,6 +968,12 @@ function BookRoom() {
 
   //Trả phòng
   const handleReturnRoom = async () => {
+    if (!/^\d+$/.test(givenCustomer)) {
+      toast.error("Vui lòng nhập số!", {
+        position: toast.POSITION.BOTTOM_CENTER,
+      });
+      return;
+    }
     if (!givenCustomer || givenCustomer < sumAmountValue) {
       // Xử lý khi tiền khách trả không hợp lệ, ví dụ: hiển thị thông báo lỗi
       toast.error("Số tiền khách trả không hợp lệ!", {
@@ -1055,7 +1065,7 @@ function BookRoom() {
     }
 
     const comboResponse = await axios.get(
-      `http://localhost:2003/api/admin/combo/detail/${selectedComboId}`
+      `http://localhost:2003/api/general/combo/detail/${selectedComboId}`
     );
     const orderDetailResponse = await axios.get(
       `http://localhost:2003/api/order-detail/detail/${selectedOrderDetails}`
@@ -1125,7 +1135,7 @@ function BookRoom() {
     }
 
     const serviceResponse = await axios.get(
-      `http://localhost:2003/api/admin/service/detail/${selectedServiceId}`
+      `http://localhost:2003/api/general/service/detail/${selectedServiceId}`
     );
     const orderDetailResponse = await axios.get(
       `http://localhost:2003/api/order-detail/detail/${selectedOrderDetails}`
@@ -1351,10 +1361,10 @@ function BookRoom() {
       );
       setCustomerInfoOrder(responseInfoCustomerOrder.data);
       const responseCustomerOrder = await axios.get(
-        `http://localhost:2003/api/admin/customer/getAllByOrderId/${id}`
+        `http://localhost:2003/api/general/customer/getAllByOrderId/${id}`
       );
       setCustomerOrder(responseCustomerOrder.data);
-      const responseCustomer = await axios.get("http://localhost:2003/api/admin/customer/getAll");
+      const responseCustomer = await axios.get("http://localhost:2003/api/general/customer/getAll");
       setCustomer(responseCustomer.data);
       toast.success("Thêm thành công!", {
         position: toast.POSITION.BOTTOM_CENTER,
@@ -1470,7 +1480,7 @@ function BookRoom() {
       );
       setCustomerInfoOrder(responseInfoCustomerOrder.data);
       const responseCustomer = await axios.get(
-        `http://localhost:2003/api/admin/customer/getAllByOrderId/${id}`
+        `http://localhost:2003/api/general/customer/getAllByOrderId/${id}`
       );
       setCustomerOrder(responseCustomer.data);
       toast.success("Xóa thành công!", {
@@ -1576,7 +1586,7 @@ function BookRoom() {
       );
       setOrderDetailData(response.data);
       const responseRoom = await axios.get(
-        "http://localhost:2003/api/admin/room/loadAndSearchBookRoom"
+        "http://localhost:2003/api/general/room/loadAndSearchBookRoom"
       );
       setRooms(responseRoom.data);
       const responseServiceUsed = await axios.get("http://localhost:2003/api/service-used/load");
@@ -1584,7 +1594,7 @@ function BookRoom() {
       const responseComboPrice = await axios.get("http://localhost:2003/api/combo-used/load");
       setComboUsedTotalPrice(responseComboPrice.data);
       const responseCustomer = await axios.get(
-        `http://localhost:2003/api/admin/customer/getAllByOrderId/${id}`
+        `http://localhost:2003/api/general/customer/getAllByOrderId/${id}`
       );
       setCustomerOrder(responseCustomer.data);
       toast.success("Hủy phòng thành công!", {
@@ -1609,7 +1619,7 @@ function BookRoom() {
         }
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
         const response = await axios.get(
-          "http://localhost:2003/api/admin/room/loadAndSearchBookRoom"
+          "http://localhost:2003/api/general/room/loadAndSearchBookRoom"
         );
         setRooms(response.data); // Cập nhật danh sách phòng từ response
       } catch (error) {
@@ -1631,7 +1641,7 @@ function BookRoom() {
           return;
         }
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
-        const response = await axios.get("http://localhost:2003/api/admin/combo/getAll");
+        const response = await axios.get("http://localhost:2003/api/general/combo/getAll");
         setCombo(response.data); // Cập nhật danh sách phòng từ response
       } catch (error) {
         console.log(error);
@@ -1652,7 +1662,7 @@ function BookRoom() {
           return;
         }
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
-        const response = await axios.get("http://localhost:2003/api/admin/service/getAll");
+        const response = await axios.get("http://localhost:2003/api/general/service/getAll");
         setService(response.data); // Cập nhật danh sách phòng từ response
       } catch (error) {
         console.log(error);
@@ -1674,11 +1684,11 @@ function BookRoom() {
           return;
         }
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
-        const response = await axios.get("http://localhost:2003/api/admin/floor/getList");
-        const response2 = await axios.get("http://localhost:2003/api/admin/type-room/getList");
-        const response3 = await axios.get("http://localhost:2003/api/admin/service-type/getAll");
-        const response4 = await axios.get("http://localhost:2003/api/admin/unit/getAll");
-        let Api = `http://localhost:2003/api/admin/customer/getAll`;
+        const response = await axios.get("http://localhost:2003/api/general/floor/getList");
+        const response2 = await axios.get("http://localhost:2003/api/general/type-room/getList");
+        const response3 = await axios.get("http://localhost:2003/api/general/service-type/getAll");
+        const response4 = await axios.get("http://localhost:2003/api/general/unit/getAll");
+        let Api = `http://localhost:2003/api/general/customer/getAll`;
         let hasQueryParams = false;
         if (searchCustomer !== "") {
           Api += `?key=${searchCustomer}`;
@@ -1689,7 +1699,7 @@ function BookRoom() {
         const response7 = await axios.get("http://localhost:2003/api/combo-used/load");
         const response9 = await axios.get("http://localhost:2003/api/information-customer/load");
         const response10 = await axios.get(
-          `http://localhost:2003/api/admin/customer/getAllByOrderDetailId/${selectedOrderDetails}`
+          `http://localhost:2003/api/general/customer/getAllByOrderDetailId/${selectedOrderDetails}`
         );
         const response11 = await axios.get(
           `http://localhost:2003/api/information-customer/load/order/${id}`
@@ -1760,7 +1770,7 @@ function BookRoom() {
     async function fetchData() {
       try {
         const response = await axios.get(
-          `http://localhost:2003/api/admin/customer/getAllByOrderId/${id}`
+          `http://localhost:2003/api/general/customer/getAllByOrderId/${id}`
         );
         console.log("CustomerOrder:", response.data);
         if (response.data) {
@@ -1842,7 +1852,7 @@ function BookRoom() {
         );
         setOrderDetailData(responseOrderDetail.data);
         const responseRoom = await axios.get(
-          "http://localhost:2003/api/admin/room/loadAndSearchBookRoom"
+          "http://localhost:2003/api/general/room/loadAndSearchBookRoom"
         );
         setRooms(responseRoom.data);
         // router.push(`/booking?id=${id}`);
@@ -1908,11 +1918,11 @@ function BookRoom() {
       );
       setOrderDetailData(responseOrderDetail.data);
       const responseRoom = await axios.get(
-        "http://localhost:2003/api/admin/room/loadAndSearchBookRoom"
+        "http://localhost:2003/api/general/room/loadAndSearchBookRoom"
       );
       setRooms(responseRoom.data);
       const responseRoomByCondition = await axios.get(
-        "http://localhost:2003/api/admin/room/loadByCondition"
+        "http://localhost:2003/api/general/room/loadByCondition"
       );
       setRooms(responseRoomByCondition.data);
       // router.push(`/booking?id=${id}`);
@@ -1951,7 +1961,7 @@ function BookRoom() {
         }
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
 
-        let Api = `http://localhost:2003/api/admin/room/loadAndSearchBookRoom`;
+        let Api = `http://localhost:2003/api/general/room/loadAndSearchBookRoom`;
         // Add search text parameter only if there's a search text entered
         let hasQueryParams = false;
 
