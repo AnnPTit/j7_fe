@@ -414,6 +414,7 @@ export const BookRoomTable = (props) => {
                       showCancelButton: true,
                       confirmButtonColor: "#3085d6",
                       cancelButtonColor: "#d33",
+                      cancelButtonText: "Hủy",
                       confirmButtonText: "Đúng, hủy!",
                     }).then(async (result) => {
                       if (result.isConfirmed) {
@@ -462,6 +463,7 @@ export const BookRoomTable = (props) => {
                     showCancelButton: true,
                     confirmButtonColor: "#3085d6",
                     cancelButtonColor: "#d33",
+                    cancelButtonText: "Hủy",
                     confirmButtonText: "Xác nhận",
                   }).then(async (result) => {
                     if (result.isConfirmed) {

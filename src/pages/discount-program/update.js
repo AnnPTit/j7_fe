@@ -312,13 +312,13 @@ function UpdateDiscountProgram() {
         className={(cx("input-btn"), "btn btn-primary")}
         onClick={() => {
           Swal.fire({
-            title: "Are you sure?",
-            text: "You won't be able to revert this!",
+            title: "Bạn chắc chắn muốn cập nhật?",
             icon: "warning",
             showCancelButton: true,
             confirmButtonColor: "#3085d6",
             cancelButtonColor: "#d33",
-            confirmButtonText: "Yes, Update it!",
+            cancelButtonText: "Hủy",
+            confirmButtonText: "Cập nhật",
           }).then(async (result) => {
             if (result.isConfirmed) {
               const isSubmitSuccess = await handleSubmit(event, id, discountProgramUpdate);

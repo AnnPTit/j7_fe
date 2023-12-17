@@ -64,18 +64,18 @@ export const FloorTable = (props) => {
                 // const created = moment(floor.createAt).format("DD/MM/YYYY - HH:mm:ss");
                 const alertDelete = () => {
                   Swal.fire({
-                    title: "Are you sure?",
-                    text: "You won't be able to revert this!",
+                    title: "Bạn chắc chắn muốn xóa?",
                     icon: "warning",
                     showCancelButton: true,
                     confirmButtonColor: "#3085d6",
                     cancelButtonColor: "#d33",
-                    confirmButtonText: "Yes, delete it!",
+                    cancelButtonText: "Hủy",
+                    confirmButtonText: "xóa thành công!",
                   }).then((result) => {
                     if (result.isConfirmed) {
-                      Swal.fire("Deleted!", "Your data has been deleted.", "success");
+                      Swal.fire("Xóa!", "Xóa thành công.", "success");
                       handleDelete(floor.id);
-                      toast.success("Delete Successfully!");
+                      toast.success("Xóa thành công!");
                     }
                   });
                 };

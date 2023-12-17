@@ -56,18 +56,18 @@ export const CustomerTable = (props) => {
                 const hrefUpdate = `/update/updateCustomer/updateCustomer?id=${customer.id}`;
                 const alertDelete = () => {
                   Swal.fire({
-                    title: "Are you sure?",
-                    text: "You won't be able to revert this!",
+                    title: "Bạn chắc chắn muốn xóa?",
                     icon: "warning",
                     showCancelButton: true,
                     confirmButtonColor: "#3085d6",
                     cancelButtonColor: "#d33",
-                    confirmButtonText: "Yes, delete it!",
+                    cancelButtonText: "Hủy",
+                    confirmButtonText: "Xóa!",
                   }).then((result) => {
                     if (result.isConfirmed) {
-                      Swal.fire("Deleted!", "Your data has been deleted.", "success");
+                      Swal.fire("Xóa!", "Xóa thành công.", "success");
                       handleDelete(customer.id);
-                      toast.success("Delete Successfully!");
+                      toast.success("Xóa thành công!");
                     }
                   });
                 };

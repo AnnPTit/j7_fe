@@ -79,6 +79,7 @@ export const RoomTable = (props) => {
                     showCancelButton: true,
                     confirmButtonColor: "#3085d6",
                     cancelButtonColor: "#d33",
+                    cancelButtonText: "Hủy",
                     confirmButtonText: "Chắc chắn!",
                   }).then((result) => {
                     if (result.isConfirmed) {

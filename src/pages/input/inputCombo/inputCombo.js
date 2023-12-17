@@ -251,12 +251,12 @@ function InputCombo() {
         onClick={() => {
           Swal.fire({
             title: "Bạn có chắc chắn muốn thêm ?",
-            text: "",
             icon: "warning",
             showCancelButton: true,
             confirmButtonColor: "#3085d6",
             cancelButtonColor: "#d33",
-            confirmButtonText: "Yes, Add it!",
+            cancelButtonText: "Hủy",
+            confirmButtonText: "Thêm",
           }).then(async (result) => {
             if (result.isConfirmed) {
               const isSubmitSuccess = await handleSubmit(event, selectedServiceCodes);
