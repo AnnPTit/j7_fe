@@ -6,7 +6,6 @@ import { useEffect, useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { ToastContainer, toast } from "react-toastify";
 import Swal from "sweetalert2";
-import { parse, format } from "date-fns";
 import "react-toastify/dist/ReactToastify.css";
 import CurrencyInput from "react-currency-input-field";
 import React, { Component } from "react";
@@ -30,7 +29,9 @@ function inputDiscountProgram() {
   const [startDay, setStartDay] = useState(new Date());
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const [endDate, setEndDate] = useState(new Date());
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const [minimumInvoice, setMinimumInvoice] = useState();
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const [maximumReductionValue, setMaximumReductionValue] = useState();
   const handleDateFromChange = (date) => {
     setStartDay(date);
@@ -76,6 +77,10 @@ function inputDiscountProgram() {
     // const minimumInvoice = cleanedPriceString
 
     console.log(minimumInvoice);
+    if (startDay === endDate) {
+      toast.error("Ngày kết thúc phải lớn hơn ngày bắt đầu ");
+      return;
+    }
     // Tạo payload dữ liệu để gửi đến API
     const payload = {
       name,
@@ -176,16 +181,16 @@ function inputDiscountProgram() {
       </div>
       <br />
       <div className="form-floating">
-      <CurrencyInput
-        className="form-control"
-        id="input-example"
-        name="price"
-        placeholder="Please enter a number"
-        // defaultValue={0}
-        // decimalsLimit={2}
-        value={minimumInvoice}
-        onValueChange={(value) => setMinimumInvoice(value)} // Thêm event và value vào hàm
-      />
+        <CurrencyInput
+          className="form-control"
+          id="input-example"
+          name="price"
+          placeholder="Please enter a number"
+          // defaultValue={0}
+          // decimalsLimit={2}
+          value={minimumInvoice}
+          onValueChange={(value) => setMinimumInvoice(value)} // Thêm event và value vào hàm
+        />
         <label htmlFor="floatingPassword">Hóa đơn tối thiểu</label>
       </div>
       <br />
@@ -202,16 +207,16 @@ function inputDiscountProgram() {
       </div>
       <br />
       <div className="form-floating">
-      <CurrencyInput
-        className="form-control"
-        id="input-example"
-        name="price"
-        placeholder="Please enter a number"
-        // defaultValue={0}
-        // decimalsLimit={2}
-        value={maximumReductionValue}
-        onValueChange={(value) => setMaximumReductionValue(value)} // Thêm event và value vào hàm
-      />
+        <CurrencyInput
+          className="form-control"
+          id="input-example"
+          name="price"
+          placeholder="Please enter a number"
+          // defaultValue={0}
+          // decimalsLimit={2}
+          value={maximumReductionValue}
+          onValueChange={(value) => setMaximumReductionValue(value)} // Thêm event và value vào hàm
+        />
         <label htmlFor="floatingPassword">Giá trị giảm tối đa</label>
       </div>
       <br />
@@ -232,7 +237,7 @@ function inputDiscountProgram() {
         className="form-control"
         label="Ngày bắt đầu"
         disablePast
-        value={startDay }
+        value={startDay}
         onChange={handleDateFromChange}
         renderInput={(params) => (
           <TextField
