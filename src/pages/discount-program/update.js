@@ -26,19 +26,26 @@ function UpdateDiscountProgram() {
   const [maximumReductionValue, setMaximumReductionValue] = useState();
 
   const handleDateFromChange = (date) => {
+    const selectedDate = new Date(date);
+    const endDay = new Date(endDate);
     setStartDay(date);
-    if (date > endDate) {
+    if (selectedDate > endDay) {
       setEndDate(date);
     }
     console.log(date);
   };
 
   const handleDateToChange = (date) => {
-    setEndDate(date);
-    if (date < startDay) {
+    // Chuyển đổi date về đối tượng Date
+    const selectedDate = new Date(date);
+    const startDay2 = new Date(startDay);
+
+    if (selectedDate < startDay2) {
       toast.error("Ngày kết thúc không được trước ngày bắt đầu", {
         position: toast.POSITION.TOP_RIGHT,
       });
+    } else {
+      setEndDate(date);
       setStartDay(date);
     }
     console.log(date);
@@ -67,7 +74,7 @@ function UpdateDiscountProgram() {
   const formatDate2 = (inputDateString) => {
     const inputDate = new Date(inputDateString);
 
-    const day =(inputDate.getUTCDate()).toString().padStart(2, "0");
+    const day = inputDate.getUTCDate().toString().padStart(2, "0");
     const month = (inputDate.getUTCMonth() + 1).toString().padStart(2, "0");
     const year = inputDate.getUTCFullYear();
 
