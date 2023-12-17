@@ -308,12 +308,13 @@ function InputService() {
             showCancelButton: true,
             confirmButtonColor: "#3085d6",
             cancelButtonColor: "#d33",
-            confirmButtonText: "Yes, Add it!",
+            cancelButtonText: "Hủy",
+            confirmButtonText: "Thêm",
           }).then(async (result) => {
             if (result.isConfirmed) {
               const isSubmitSuccess = await handleSubmit(event, price);
               if (isSubmitSuccess) {
-                Swal.fire("Thêm thành công !", "Thêm thành công !", "success");
+                Swal.fire("Thêm!", "Thêm thành công !", "success");
                 toast.success("Thêm Thành Công !");
               }
             }

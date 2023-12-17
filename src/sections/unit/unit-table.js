@@ -61,7 +61,8 @@ export const Unit = (props) => {
                     showCancelButton: true,
                     confirmButtonColor: "#3085d6",
                     cancelButtonColor: "#d33",
-                    confirmButtonText: "Yes, delete it!",
+                    cancelButtonText: "Hủy",
+                    confirmButtonText: "Xóa!",
                   }).then((result) => {
                     if (result.isConfirmed) {
                       Swal.fire("Xóa thành công !", "Xóa thành công !", "success");
@@ -132,7 +133,8 @@ export const Unit = (props) => {
                       showCancelButton: true,
                       confirmButtonColor: "#3085d6",
                       cancelButtonColor: "#d33",
-                      confirmButtonText: "Yes, edit it!",
+                      cancelButtonText: "Hủy",
+                      confirmButtonText: "Cập nhật!",
                     }).then((result) => {
                       if (result.isConfirmed) {
                         Swal.fire("Cập nhật thành công !", "Cập nhật thành công !", "success");
