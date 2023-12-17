@@ -6,7 +6,6 @@ import { useEffect, useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { ToastContainer, toast } from "react-toastify";
 import Swal from "sweetalert2";
-import { parse, format } from "date-fns";
 import "react-toastify/dist/ReactToastify.css";
 import CurrencyInput from "react-currency-input-field";
 import React, { Component } from "react";
@@ -78,6 +77,10 @@ function inputDiscountProgram() {
     // const minimumInvoice = cleanedPriceString
 
     console.log(minimumInvoice);
+    if (startDay === endDate) {
+      toast.error("Ngày kết thúc phải lớn hơn ngày bắt đầu ");
+      return;
+    }
     // Tạo payload dữ liệu để gửi đến API
     const payload = {
       name,
