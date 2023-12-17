@@ -535,19 +535,19 @@ function InputAccount() {
           className={(cx("input-btn"), "btn btn-primary")}
           onClick={() => {
             Swal.fire({
-              title: "Are you sure?",
-              text: "You won't be able to revert this!",
+              title: "Bạn chắc chắn muốn thêm?",
               icon: "warning",
               showCancelButton: true,
               confirmButtonColor: "#3085d6",
               cancelButtonColor: "#d33",
-              confirmButtonText: "Yes, Add it!",
+              cancelButtonText: "Hủy",
+              confirmButtonText: "Thêm",
             }).then(async (result) => {
               if (result.isConfirmed) {
                 const isSubmitSuccess = await handleSubmit(event);
                 if (isSubmitSuccess) {
-                  Swal.fire("Add!", "Your data has been Add.", "success");
-                  toast.success("Add Successfully!");
+                  Swal.fire("Thêm!", "Đã thêm vào danh sách.", "success");
+                  toast.success("Thêm thành công!");
                 }
               }
             });
