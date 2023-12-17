@@ -1811,13 +1811,13 @@ function BookRoom() {
         });
         return;
       }
-      const adult = parseInt(numberOfPeople);
-      const children = parseInt(
-        rooms.find((r) => r.id === selectedRoomId)?.typeRoom?.children || 0
-      );
-      const totalPeople = parseInt(adult + children);
+      // const adult = parseInt(numberOfPeople);
+      // const children = parseInt(
+      //   rooms.find((r) => r.id === selectedRoomId)?.typeRoom?.children || 0
+      // );
+      // const totalPeople = parseInt(adult + children);
       const capacity = rooms.find((r) => r.id === selectedRoomId)?.typeRoom?.capacity || 0;
-      if (totalPeople > capacity) {
+      if (numberOfPeople > capacity) {
         toast.error("Số người không được vượt quá sức chứa!", {
           position: toast.POSITION.BOTTOM_CENTER,
         });

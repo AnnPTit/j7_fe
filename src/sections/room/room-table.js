@@ -20,6 +20,7 @@ import { Scrollbar } from "src/components/scrollbar";
 import TrashIcon from "@heroicons/react/24/solid/TrashIcon";
 import PencilSquareIcon from "@heroicons/react/24/solid/PencilSquareIcon";
 import Link from "next/link";
+import { SeverityPill } from "src/components/severity-pill";
 
 export const RoomTable = (props) => {
   const { items = [], selected = [] } = props;
@@ -57,6 +58,19 @@ export const RoomTable = (props) => {
     props.onChangeStatus(id);
   };
 
+  const getStatusButtonColor = (status) => {
+    switch (status) {
+      case 0:
+        return { color: "error", text: "Phòng đang sữa chữa" };
+      case 1:
+        return { color: "success", text: "Phòng trống" };
+      case 2:
+        return { color: "warning", text: "Phòng đã được đặt" };
+      default:
+        return { color: "default", text: "Unknown" };
+    }
+  };
+
   return (
     <Card>
       <Scrollbar>
@@ -76,6 +90,8 @@ export const RoomTable = (props) => {
             </TableHead>
             <TableBody>
               {items.map((room, index) => {
+                const statusData = getStatusButtonColor(room.status);
+                const statusText = statusData.text;
                 const hrefUpdate = `/update/updateRoom/updateRoom?id=${room.id}`;
                 const alertDelete = () => {
                   Swal.fire({
@@ -131,35 +147,40 @@ export const RoomTable = (props) => {
                     <TableCell>{room.typeRoom.typeRoomName}</TableCell>
                     <TableCell>{room.floor.floorName}</TableCell>
                     <TableCell>
-                      {room.status === 1
-                        ? "Phòng trống"
-                        : room.status === 2
-                        ? "Phòng đã được đặt"
-                        : room.status === 3
-                        ? "Đang có người ở"
-                        : "Không hoạt động"}
+                      <SeverityPill variant="contained" color={statusData.color}>
+                        {statusText}
+                      </SeverityPill>
                     </TableCell>
                     <TableCell>
-                      <Link className="btn btn-primary m-xl-2" href={hrefUpdate}>
-                        <SvgIcon fontSize="small">
-                          <PencilSquareIcon />
-                        </SvgIcon>
-                      </Link>
                       {room.status === 0 ? (
-                        <button className="btn btn-success m-xl-2" onClick={alertResetStatus}>
-                          <SvgIcon fontSize="small">
-                            <RotateLeftIcon />
-                          </SvgIcon>
-                        </button>
-                      ) : (
-                        <button className="btn btn-danger m-xl-2" onClick={alertDelete}>
-                          <SvgIcon fontSize="small">
-                            <TrashIcon />
-                          </SvgIcon>
-                        </button>
-                      )}
-                      <ToastContainer />
+                        <>
+                          <Link className="btn btn-primary m-xl-2" href={hrefUpdate}>
+                            <SvgIcon fontSize="small">
+                              <PencilSquareIcon />
+                            </SvgIcon>
+                          </Link>
+                          <button className="btn btn-success m-xl-2" onClick={alertResetStatus}>
+                            <SvgIcon fontSize="small">
+                              <RotateLeftIcon />
+                            </SvgIcon>
+                          </button>
+                        </>
+                      ) : room.status !== 2 ? (
+                        <>
+                          <Link className="btn btn-primary m-xl-2" href={hrefUpdate}>
+                            <SvgIcon fontSize="small">
+                              <PencilSquareIcon />
+                            </SvgIcon>
+                          </Link>
+                          <button className="btn btn-danger m-xl-2" onClick={alertDelete}>
+                            <SvgIcon fontSize="small">
+                              <TrashIcon />
+                            </SvgIcon>
+                          </button>
+                        </>
+                      ) : null}
                     </TableCell>
+                    <ToastContainer />
                   </TableRow>
                 );
               })}

@@ -47,6 +47,7 @@ const Page = () => {
   const [typeRoom, setTypeRoom] = useState([]);
   const [floorChose, setFloorChose] = useState("");
   const [typeRoomChose, setTypeRoomChose] = useState("");
+  const [statusChoose, setStatusChoose] = useState("");
 
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
@@ -142,6 +143,9 @@ const Page = () => {
         if (typeRoomChose !== "") {
           Api = Api + `&typeRoomId=${typeRoomChose}`;
         }
+        if (statusChoose !== "") {
+          Api = Api + `&status=${statusChoose}`;
+        }
         // console.warn(Api);
         const response = await axios.get(Api); // Thay đổi URL API của bạn tại đây
         console.log(response.data);
@@ -164,7 +168,7 @@ const Page = () => {
     };
 
     fetchData();
-  }, [pageNumber, dataChange, textSearch, floorChose, typeRoomChose]);
+  }, [pageNumber, dataChange, textSearch, floorChose, typeRoomChose, statusChoose]);
 
   return (
     <>
@@ -202,10 +206,12 @@ const Page = () => {
               typeRoom={typeRoom}
               floorChose={floorChose}
               typeRoomChose={typeRoomChose}
+              statusChoose={statusChoose}
               setFloorChose={setFloorChose}
               setTypeRoomChose={setTypeRoomChose}
+              setStatusChoose={setStatusChoose}
             />
-            <div style={{ minHeight: 500 }}>
+            <div style={{ minHeight: 500, marginBottom: 20 }}>
               {" "}
               <RoomTable
                 items={room}
