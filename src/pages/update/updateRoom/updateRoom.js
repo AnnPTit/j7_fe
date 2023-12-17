@@ -389,7 +389,7 @@ function UpdateRoom() {
         onChange={(e) => {
           setRoomUpdate((prev) => ({
             ...prev,
-            typeRoom: e.target.value,
+            typeRoom: { id: e.target.value },
           }));
         }}
       >
@@ -409,7 +409,7 @@ function UpdateRoom() {
         onChange={(e) => {
           setRoomUpdate((prev) => ({
             ...prev,
-            floor: e.target.value,
+            floor: { id: e.target.value },
           }));
         }}
       >
