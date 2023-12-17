@@ -177,12 +177,12 @@ function UpdateServiceType() {
         onClick={() => {
           Swal.fire({
             title: "Bạn có chắc muốn cập nhật ?",
-            text: "",
             icon: "warning",
             showCancelButton: true,
             confirmButtonColor: "#3085d6",
             cancelButtonColor: "#d33",
-            confirmButtonText: "Yes, Update it!",
+            cancelButtonText: "Hủy",
+            confirmButtonText: "Cập nhật!",
           }).then(async (result) => {
             if (result.isConfirmed) {
               const isSubmitSuccess = await handleSubmit(event, id, serviceTypeUpdate);

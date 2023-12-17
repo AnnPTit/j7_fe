@@ -443,6 +443,7 @@ function UpdateBlog() {
             showCancelButton: true,
             confirmButtonColor: "#3085d6",
             cancelButtonColor: "#d33",
+            cancelButtonText: "Hủy",
             confirmButtonText: "Cập nhật!",
           }).then(async (result) => {
             if (result.isConfirmed) {
@@ -517,12 +518,12 @@ function UpdateBlog() {
                   handleCloseDateDialog();
                   Swal.fire({
                     title: "Bạn có chắc chắn muốn xóa ? ",
-                    text: "",
                     icon: "warning",
                     showCancelButton: true,
                     confirmButtonColor: "#3085d6",
                     cancelButtonColor: "#d33",
-                    confirmButtonText: "Vâng !",
+                    cancelButtonText: "Hủy",
+                    confirmButtonText: "Xóa!",
                   }).then(async (result) => {
                     if (result.isConfirmed) {
                       const isSubmitSuccess = await handleDeleteComent(commentItem.id);

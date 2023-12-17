@@ -535,6 +535,7 @@ function UpdateRoom() {
             showCancelButton: true,
             confirmButtonColor: "#3085d6",
             cancelButtonColor: "#d33",
+            cancelButtonText: "Hủy",
             confirmButtonText: "Cập nhật!",
           }).then(async (result) => {
             if (result.isConfirmed) {

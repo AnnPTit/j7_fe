@@ -61,35 +61,35 @@ export const AccountTable = (props) => {
                 const hrefUpdate = `/update/updateAccount/updateAccount?id=${account.id}`;
                 const alertDelete = () => {
                   Swal.fire({
-                    title: "Are you sure?",
-                    text: "You won't be able to revert this!",
+                    title: "Bạn chắc chắn muốn xóa?",
                     icon: "warning",
                     showCancelButton: true,
                     confirmButtonColor: "#3085d6",
                     cancelButtonColor: "#d33",
-                    confirmButtonText: "Yes, delete it!",
+                    cancelButtonText: "Hủy",
+                    confirmButtonText: "Xóa!",
                   }).then((result) => {
                     if (result.isConfirmed) {
-                      Swal.fire("Deleted!", "Your data has been deleted.", "success");
+                      Swal.fire("Xóa!", "Xóa thành công.", "success");
                       handleDelete(account.id);
-                      toast.success("Delete Successfully!");
+                      toast.success("Xóa thành công!");
                     }
                   });
                 };
                 const alertResetPassword = () => {
                   Swal.fire({
-                    title: "Are you sure?",
-                    text: "You won't be able to revert this!",
+                    title: "Bạn chắc chắn muốn đặt lại mật khẩu?",
                     icon: "warning",
                     showCancelButton: true,
                     confirmButtonColor: "#3085d6",
                     cancelButtonColor: "#d33",
-                    confirmButtonText: "Yes, delete it!",
+                    cancelButtonText: "Hủy",
+                    confirmButtonText: "Đặt lại!",
                   }).then((result) => {
                     if (result.isConfirmed) {
-                      Swal.fire("Reset Password!", "Your data has been reset.", "success");
+                      Swal.fire("Đặt lại mật khẩu!", "Đặt lại mật khẩu thành công.", "success");
                       handleResetPassword(account.id);
-                      toast.success("Reset Successfully!");
+                      toast.success("Đặt lại mật khẩu thành công!");
                     }
                   });
                 };

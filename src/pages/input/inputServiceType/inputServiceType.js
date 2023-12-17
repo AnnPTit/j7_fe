@@ -123,17 +123,17 @@ function InputServiceType() {
         onClick={() => {
           Swal.fire({
             title: "Bạn có chắc chắn muốn thêm ? ",
-            text: "",
             icon: "warning",
             showCancelButton: true,
             confirmButtonColor: "#3085d6",
             cancelButtonColor: "#d33",
+            cancelButtonText: "Hủy",
             confirmButtonText: "Yes, Add it!",
           }).then(async (result) => {
             if (result.isConfirmed) {
               const isSubmitSuccess = await handleSubmit(event);
               if (isSubmitSuccess) {
-                Swal.fire("Thêm thành công !", "Thêm thành công !", "success");
+                Swal.fire("Thêm!", "Thêm thành công !", "success");
               }
             }
           });
