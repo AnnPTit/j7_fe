@@ -14,6 +14,9 @@ import InputTypeRoom from "src/components/InputTypeRoom/InputTypeRoom";
 import Swal from "sweetalert2";
 import Card from "react-bootstrap/Card";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import Backdrop from "@mui/material/Backdrop";
+import CircularProgress from "@mui/material/CircularProgress";
+import React from "react";
 
 const cx = classNames.bind(style);
 
@@ -33,6 +36,8 @@ function InputRoom() {
   const handleCloseTypeRoom = () => setShowTypeRoom(false);
   const handleShowTypeRoom = () => setShowTypeRoom(true);
   const fileInputRef = useRef(null);
+
+  const [open, setOpen] = React.useState(false);
 
   const handleSubmit = async (event) => {
     event.preventDefault(); // Ngăn chặn sự kiện submit mặc định
@@ -90,7 +95,7 @@ function InputRoom() {
       const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
       // Kiểm tra xem accessToken có tồn tại không
       if (!accessToken) {
-       console.log("Bạn chưa đăng nhập");
+        console.log("Bạn chưa đăng nhập");
         return;
       }
 
@@ -104,6 +109,7 @@ function InputRoom() {
         return;
       }
 
+      setOpen(true);
       const response = await axios.post("http://localhost:2003/api/admin/room/save", formData); // Gọi API /api/room-type/save với payload và access token
       toast.success("Thêm thành công!", {
         position: toast.POSITION.BOTTOM_CENTER,
@@ -122,6 +128,7 @@ function InputRoom() {
         // Thực hiện các hành động khác khi gọi API thất bại
       }
     } catch (error) {
+      setOpen(false);
       // Xử lý khi có lỗi xảy ra trong quá trình gọi API
       if (error.response) {
         // Xử lý response lỗi
@@ -157,7 +164,7 @@ function InputRoom() {
         const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
         // Kiểm tra xem accessToken có tồn tại không
         if (!accessToken) {
-         console.log("Bạn chưa đăng nhập");
+          console.log("Bạn chưa đăng nhập");
           return;
         }
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
@@ -434,6 +441,9 @@ function InputRoom() {
         >
           Thêm
         </button>
+        <Backdrop sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }} open={open}>
+          <CircularProgress color="inherit" />
+        </Backdrop>
         <br />
         <br />
         <ToastContainer />
