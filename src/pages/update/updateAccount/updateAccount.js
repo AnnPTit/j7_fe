@@ -570,19 +570,18 @@ function UpdateAccount() {
         className={(cx("input-btn"), "btn btn-primary")}
         onClick={() => {
           Swal.fire({
-            title: "Are you sure?",
-            text: "You won't be able to revert this!",
+            title: "Bạn chắc chắn muốn cập nhật?",
             icon: "warning",
             showCancelButton: true,
             confirmButtonColor: "#3085d6",
             cancelButtonColor: "#d33",
-            confirmButtonText: "Yes, Update it!",
+            confirmButtonText: "Cập nhật",
           }).then(async (result) => {
             if (result.isConfirmed) {
               const isSubmitSuccess = await handleSubmit(event, id, accountUpdate);
               if (isSubmitSuccess) {
-                Swal.fire("Update!", "Your data has been Update.", "success");
-                toast.success("Update Successfully!");
+                Swal.fire("Cập nhật!", "Cập nhật thành công", "success");
+                toast.success("Cập nhật thành công!");
               }
             }
           });
