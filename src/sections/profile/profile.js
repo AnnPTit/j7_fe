@@ -14,7 +14,6 @@ import {
     city: 'Ha noi ',
     country: 'Viet Nam',
     jobTitle: 'Senior Developer',
-    name: 'Admin',
     timezone: 'GTM+7'
   };
   
@@ -36,12 +35,6 @@ import {
               width: 80
             }}
           />
-          <Typography
-            gutterBottom
-            variant="h5"
-          >
-            {user.name}
-          </Typography>
           <Typography
             color="text.secondary"
             variant="body2"
