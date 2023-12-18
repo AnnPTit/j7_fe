@@ -36,6 +36,8 @@ import Swal from "sweetalert2";
 import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
 import "bootstrap/dist/css/bootstrap.min.css";
+import Backdrop from "@mui/material/Backdrop";
+import CircularProgress from "@mui/material/CircularProgress";
 
 const numeral = require("numeral");
 
@@ -60,6 +62,7 @@ export const BookRoomTable = (props) => {
   const [refuseReason, setRefuseReason] = React.useState("");
   const [isNewCustom, SetIsNewCustom] = React.useState(true);
   const [surcharge, setSurcharge] = useState(0);
+  const [openLoading, setOpenLoading] = React.useState(false);
 
   const [open, setOpen] = useState(false);
   const showDrawer = async (orderId) => {
@@ -272,12 +275,14 @@ export const BookRoomTable = (props) => {
           position: toast.POSITION.TOP_RIGHT,
         });
       } else {
+        setOpenLoading(true);
         toast.success("Xác nhận thành công !", {
           position: toast.POSITION.TOP_RIGHT,
         });
         window.location.href = "/book-room-online";
       }
     } catch (error) {
+      setOpenLoading(false);
       console.log(error);
       toast.error("Có lỗi xảy ra !");
     }
@@ -317,8 +322,10 @@ export const BookRoomTable = (props) => {
           `http://localhost:2003/api/order/update-surcharge`,
           payload
         );
+        setOpenLoading(true);
         router.push(`/booking?id=${orderId}`);
       } catch (error) {
+        setOpenLoading(false);
         console.log(error);
         toast.error("Có lỗi xảy ra !");
       }
@@ -339,8 +346,10 @@ export const BookRoomTable = (props) => {
           `http://localhost:2003/api/order/update-surcharge`,
           payload
         );
+        setOpenLoading(true);
         router.push(`/booking?id=${orderId}`);
       } catch (error) {
+        setOpenLoading(false);
         console.log(error);
         toast.error("Có lỗi xảy ra !");
       }
@@ -479,6 +488,12 @@ export const BookRoomTable = (props) => {
               >
                 Xác nhận
               </Button>
+              <Backdrop
+                sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+                open={openLoading}
+              >
+                <CircularProgress color="inherit" />
+              </Backdrop>
             </div>
           </React.Fragment>
         );
@@ -544,6 +559,12 @@ export const BookRoomTable = (props) => {
               <Button variant="outlined" onClick={handleRedirect}>
                 Tiến hành nhận phòng
               </Button>
+              <Backdrop
+                sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+                open={openLoading}
+              >
+                <CircularProgress color="inherit" />
+              </Backdrop>
             </div>
           </React.Fragment>
         );
