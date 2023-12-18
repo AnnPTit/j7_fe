@@ -230,10 +230,11 @@ export const BookRoomTable = (props) => {
       }
     }
     if (gender === null) {
-      toast.error("Giới tính không được để trống !", {
-        position: toast.POSITION.TOP_RIGHT,
-      });
-      return;
+      // toast.error("Giới tính không được để trống !", {
+      //   position: toast.POSITION.TOP_RIGHT,
+      // });
+      // return;
+      setGender(true);
     }
     if (address === null) {
       toast.error("Địa chỉ không được để trống !", {
@@ -529,9 +530,7 @@ export const BookRoomTable = (props) => {
       case 5:
         return (
           <React.Fragment>
-            
             <div style={{ display: "flex", justifyContent: "flex-end" }}>
-           
               <TextField
                 style={{ marginRight: 20 }}
                 value={numeral(surcharge).format("0,0 ") + "  đ"}
