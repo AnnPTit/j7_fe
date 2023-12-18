@@ -18,16 +18,18 @@ import { Logo } from "src/components/logo";
 import { Scrollbar } from "src/components/scrollbar";
 import { items } from "./config";
 import { SideNavItem } from "./side-nav-item";
+import { useRouter } from "next/router";
 
 export const SideNav = (props) => {
   const { open, onClose } = props;
   const pathname = usePathname();
   const lgUp = useMediaQuery((theme) => theme.breakpoints.up("lg"));
+  const router = useRouter();
 
   const getUserRole = () => {
     return localStorage.getItem("position");
   };
-  
+
   const userRole = getUserRole();
 
   const content = (
@@ -105,8 +107,16 @@ export const SideNav = (props) => {
             }}
           >
             {items.map((item) => {
+              const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
+              //Kiểm tra xem accessToken có tồn tại không
+              if (accessToken === null) {
+                // window.location.href = "http://localhost:3000/auth/login";
+                router.push("/auth/login")
+                return;
+              }
+
               const active = item.path ? pathname === item.path : false;
-              
+
               if (userRole === "ROLE_USER" && item.title === "Thống kê") {
                 return null;
               } else if (userRole === "ROLE_USER" && item.title === "") {
