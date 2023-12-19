@@ -378,7 +378,7 @@ export const BookRoomTable = (props) => {
 
       const shouldApplySurcharge =
         currentDate < checkinDateTime &&
-        (differenceInHours(checkinDateTime, currentDate) <= 24 ||
+        (differenceInHours(checkinDateTime, currentDate) <= 38 ||
           (isToday(checkinDateTime) && currentDate.getHours() < checkinDateTime.getHours()));
 
       console.log("ABC: ", shouldApplySurcharge);

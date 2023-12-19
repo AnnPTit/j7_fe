@@ -29,6 +29,8 @@ import React from "react";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/router";
+import Backdrop from "@mui/material/Backdrop";
+import CircularProgress from "@mui/material/CircularProgress";
 
 export const BookRoomTable = (props) => {
   const { items = [], selected = [] } = props;
@@ -49,6 +51,7 @@ export const BookRoomTable = (props) => {
 
   const [orderBy, setOrderBy] = useState(""); // Column to be sorted
   const [sort, setSort] = useState("asc");
+  const [openLoading, setOpenLoading] = React.useState(false);
 
   const handleSort = (column) => {
     const isAsc = orderBy === column && sort === "asc";
@@ -132,6 +135,27 @@ export const BookRoomTable = (props) => {
       router.push(`/order-detail?id=${orderId}`);
     } catch (error) {
       console.log(error);
+    }
+  };
+
+  // Update Checkout hóa đơn
+  const handleUpdateOrder = async (orderId) => {
+    try {
+      const accessToken = localStorage.getItem("accessToken");
+      if (!accessToken) {
+        console.log("Bạn chưa đăng nhập");
+        return;
+      }
+      axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+      const response = await axios.put(
+        `http://localhost:2003/api/order/update-checkout/${orderId}`
+      );
+      setOpenLoading(true);
+      router.push(`/booking?id=${orderId}`);
+    } catch (error) {
+      setOpenLoading(false);
+      console.log(error);
+      toast.error("Có lỗi xảy ra !");
     }
   };
 
@@ -249,11 +273,20 @@ export const BookRoomTable = (props) => {
                       ) : null}
                       {order.status === 2 ? (
                         <>
-                          <Link className="btn btn-primary m-xl-2" href={hrefUpdate}>
+                          <button
+                            onClick={() => handleUpdateOrder(order.id)}
+                            className="btn btn-primary m-xl-2"
+                          >
                             <SvgIcon fontSize="small">
                               <PencilSquareIcon />
                             </SvgIcon>
-                          </Link>
+                          </button>
+                          <Backdrop
+                            sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+                            open={openLoading}
+                          >
+                            <CircularProgress color="inherit" />
+                          </Backdrop>
                         </>
                       ) : null}
                       {order.status === 3 ? (
