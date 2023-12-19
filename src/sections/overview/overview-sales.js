@@ -162,7 +162,7 @@ export const OverviewSales = (props) => {
                 </SvgIcon>
               }
             >
-              Export Excel
+              Xuất Excel
             </Button>
             {loading && (
               <div className="d-flex justify-content-center">
