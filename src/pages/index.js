@@ -78,7 +78,7 @@ const Page = () => {
         const revenue = await axios.get("http://localhost:2003/api/order/getRevenue");
         setRevenue(revenue.data);
       } catch (error) {
-        window.location.href = "/login";
+        // window.location.href = "/login";
         console.log(error);
       }
     }

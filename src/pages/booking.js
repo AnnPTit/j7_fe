@@ -105,11 +105,11 @@ function BookRoom() {
   const [numberOfDays, setNumberOfDays] = useState(0); // Add this state
   const [numberOfHours, setNumberOfHours] = useState(0); // Add this state
   const [valueFrom, setValueFrom] = useState(new Date());
-  const [valueTo, setValueTo] = useState(null);
+  const [valueTo, setValueTo] = useState(addDays(new Date(), 1));
   const [numberOfPeople, setNumberOfPeople] = useState(0);
   // const defaultCheckInTime = setMinutes(setHours(new Date(), 14), 0);
   const [valueTimeFrom, setValueTimeFrom] = useState(new Date());
-  const [valueTimeTo, setValueTimeTo] = useState(null);
+  const [valueTimeTo, setValueTimeTo] = useState(setMinutes(setHours(new Date(), 12), 0));
   const [totalAmount, setTotalAmount] = useState(0);
   const [noteOrder, setNoteOrder] = useState("");
   const [noteReturnRoom, setNoteReturnRoom] = useState("");
@@ -230,25 +230,26 @@ function BookRoom() {
   };
 
   const handleToDateChange = (newValue) => {
-    console.log(typeRental + "C");
-  
-    if (newValue > valueFrom) {
+    console.log(newValue + "C");
+    console.log(valueFrom + "C");
+    const tomorrow = addDays(new Date(), 1);
+    if (newValue === valueFrom) {
+      setValueTo(tomorrow);
+    } else if (newValue > valueFrom) {
       setValueTo(newValue);
     } else if (newValue < valueFrom && typeRental === 1) {
-      const tomorrow = addDays(new Date(), 1);
-        // Nếu ngày mới nhỏ hơn ngày hiện tại, sử dụng ngày hiện tại
-        setValueTo(tomorrow);
-        toast.warning("Ngày checkout không thể nhỏ hơn ngày hiện tại!", {
-          position: toast.POSITION.BOTTOM_CENTER,
-        });
-        return;
+      // Nếu ngày mới nhỏ hơn ngày hiện tại, sử dụng ngày hiện tại
+      setValueTo(tomorrow);
+      toast.warning("Ngày checkout không thể nhỏ hơn ngày hiện tại!", {
+        position: toast.POSITION.BOTTOM_CENTER,
+      });
+      return;
     }
-  
+
     const timeDiff = Math.abs(newValue - valueFrom);
     const numberOfDays = timeDiff === 0 ? 1 : Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
     setNumberOfDays(numberOfDays);
   };
-  
 
   const handleValueTimeFromChange = (newValue) => {
     setValueTimeFrom(newValue);
@@ -308,11 +309,11 @@ function BookRoom() {
         const timeDiff = Math.abs(minimumCheckoutTime - valueTimeFrom);
         const numberOfHours = timeDiff === 0 ? 1 : Math.ceil(timeDiff / (1000 * 60 * 60));
         setNumberOfHours(numberOfHours);
+        console.log(numberOfHours);
       }
     } else if (selectedTypeRental === 1) {
       const tomorrow = addDays(new Date(), 1);
       setValueTo(tomorrow);
-      
       const defaultCheckOutTime = setMinutes(setHours(new Date(), 12), 0);
       setValueTimeTo(defaultCheckOutTime);
       const timeDiff = Math.abs(valueTo - valueFrom);
@@ -2009,6 +2010,15 @@ function BookRoom() {
     fetchData();
   }, [id]);
 
+  const disableToday = (date) => {
+    const today = new Date();
+    return (
+      date.getDate() === today.getDate() &&
+      date.getMonth() === today.getMonth() &&
+      date.getFullYear() === today.getFullYear()
+    );
+  };
+
   const handleRoomSelect = (roomId) => {
     setSelectedRoomId(roomId);
     handleOpenDateDialog();
@@ -2509,6 +2519,7 @@ function BookRoom() {
                 label="Đến ngày"
                 value={valueDateTo}
                 onChange={handleDateToChange}
+                disableDate={new Date()}
                 renderInput={(params) => (
                   <TextField
                     {...params}
