@@ -104,11 +104,10 @@ function BookRoom() {
   const [orderDetailData, setOrderDetailData] = useState([]);
   const [numberOfDays, setNumberOfDays] = useState(0); // Add this state
   const [numberOfHours, setNumberOfHours] = useState(0); // Add this state
-  const [valueTo, setValueTo] = useState(null);
   const [valueFrom, setValueFrom] = useState(new Date());
+  const [valueTo, setValueTo] = useState(null);
   const [numberOfPeople, setNumberOfPeople] = useState(0);
   // const defaultCheckInTime = setMinutes(setHours(new Date(), 14), 0);
-  // const defaultCheckOutTime = setMinutes(setHours(new Date(), 12), 0);
   const [valueTimeFrom, setValueTimeFrom] = useState(new Date());
   const [valueTimeTo, setValueTimeTo] = useState(null);
   const [totalAmount, setTotalAmount] = useState(0);
@@ -231,24 +230,25 @@ function BookRoom() {
   };
 
   const handleToDateChange = (newValue) => {
-    // setValueTo(newValue);
+    console.log(typeRental + "C");
+  
     if (newValue > valueFrom) {
       setValueTo(newValue);
-      if (typeRental === 2) {
-        const today = new Date();
-        setValueTo(today);
-      }
-    } else {
-      toast.warning("Ngày checkout lớn hơn ngày hiện tại!", {
-        position: toast.POSITION.BOTTOM_CENTER,
-      });
-      return;
+    } else if (newValue < valueFrom && typeRental === 1) {
+      const tomorrow = addDays(new Date(), 1);
+        // Nếu ngày mới nhỏ hơn ngày hiện tại, sử dụng ngày hiện tại
+        setValueTo(tomorrow);
+        toast.warning("Ngày checkout không thể nhỏ hơn ngày hiện tại!", {
+          position: toast.POSITION.BOTTOM_CENTER,
+        });
+        return;
     }
-
+  
     const timeDiff = Math.abs(newValue - valueFrom);
     const numberOfDays = timeDiff === 0 ? 1 : Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
     setNumberOfDays(numberOfDays);
   };
+  
 
   const handleValueTimeFromChange = (newValue) => {
     setValueTimeFrom(newValue);
@@ -285,6 +285,9 @@ function BookRoom() {
         });
         return;
       }
+    } else if (typeRental === 1) {
+      const defaultCheckOutTime = setMinutes(setHours(new Date(), 12), 0);
+      setValueTimeTo(defaultCheckOutTime);
     }
 
     const timeDiff = Math.abs(newValue - valueTimeFrom);
@@ -309,6 +312,9 @@ function BookRoom() {
     } else if (selectedTypeRental === 1) {
       const tomorrow = addDays(new Date(), 1);
       setValueTo(tomorrow);
+      
+      const defaultCheckOutTime = setMinutes(setHours(new Date(), 12), 0);
+      setValueTimeTo(defaultCheckOutTime);
       const timeDiff = Math.abs(valueTo - valueFrom);
       const numberOfDays = timeDiff === 0 ? 1 : Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
       setNumberOfDays(numberOfDays);
@@ -325,8 +331,9 @@ function BookRoom() {
     return `${day}/${month}/${year}`;
   };
 
-  const formatTime = (date) => {
-    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  // Hàm định dạng giờ mà không có giây
+  const formatTimeWithoutSeconds = (date) => {
+    return date ? date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "";
   };
   // Kết thúc xử lí ngày đặt phòng
 
@@ -795,11 +802,11 @@ function BookRoom() {
   const moneyReturnCustomerOneRoom = givenCustomerOneRoom - sumOrderDetail;
   const vatAmount = totalAmount * 0.1;
   const totalMoney = totalAmount + vatAmount;
-  const sumAmount = totalAmount + vatAmount + order.surcharge - order.deposit;
+  const sumAmount = totalAmount + vatAmount + order.surcharge + order.deposit - order.deposit;
   useEffect(() => {
     setSumAmountValue(sumAmount);
   }, [sumAmount]);
-  const moneyReturnCustomer = givenCustomer - sumAmount;
+  const moneyReturnCustomer = givenCustomer - sumAmountValue;
 
   useEffect(() => {
     const newTotal = calculateTotal();
@@ -1427,9 +1434,9 @@ function BookRoom() {
   useEffect(() => {
     const fetchDiscount = async () => {
       try {
-        const total = calculateTotal();
+        // const total = calculateTotal();
         const response = await axios.get(
-          `http://localhost:2003/api/order/discount-program?totalMoney=${total}`
+          `http://localhost:2003/api/order/discount-program?totalMoney=${sumAmountValue}`
         );
         console.log("ABC: ", response.data);
         setDiscountProgram(response.data);
@@ -2661,7 +2668,7 @@ function BookRoom() {
                 style={{ width: 375 }}
                 {...params}
                 inputProps={{
-                  value: valueTimeFrom ? valueTimeFrom.toLocaleTimeString() : "",
+                  value: valueTimeFrom ? formatTimeWithoutSeconds(valueTimeFrom) : "",
                   readOnly: true,
                 }}
               />
@@ -2688,7 +2695,7 @@ function BookRoom() {
             )}
           />
           <TimePicker
-            // disabled
+            disabled={typeRental === 1}
             label="Giờ check-out"
             value={valueTimeTo}
             onChange={handleValueTimeToChange}
@@ -2697,7 +2704,7 @@ function BookRoom() {
                 style={{ width: 375 }}
                 {...params}
                 inputProps={{
-                  value: valueTimeTo ? valueTimeTo.toLocaleTimeString() : "",
+                  value: valueTimeTo ? formatTimeWithoutSeconds(valueTimeTo) : "",
                   readOnly: true,
                 }}
               />
@@ -2778,7 +2785,7 @@ function BookRoom() {
             fullWidth
             value={numberOfPeople}
             onChange={(e) => setNumberOfPeople(e.target.value)}
-            label="Người lớn"
+            label="Số người"
             variant="outlined"
           />
           <br />
@@ -2846,7 +2853,22 @@ function BookRoom() {
                   <TableCell>Sức chứa</TableCell>
                   <TableCell>Số người</TableCell>
                   <TableCell>Ngày check-in</TableCell>
-                  <TableCell>Ngày check-out</TableCell>
+                  {order.status === 1 || order.status === 5 ? (
+                    <TableCell>Ngày check out</TableCell>
+                  ) : (
+                    ""
+                  )}
+                  {order.status === 2 ? <TableCell>Ngày check out</TableCell> : ""}
+                  {order.status === 2 ? <TableCell>Ngày check out dự kiến</TableCell> : ""}
+                  {order.status === 3 ? (
+                    <>
+                      <TableCell>Ngày check out</TableCell>
+                      <TableCell>Ngày check out dự kiến</TableCell>
+                    </>
+                  ) : (
+                    // <TableCell>Ngày check-out</TableCell>
+                    ""
+                  )}
                   <TableCell>Thành tiền</TableCell>
                   <TableCell>
                     {order.status === 1 || order.status === 5 ? <>Thao tác</> : null}
@@ -2883,11 +2905,59 @@ function BookRoom() {
                           orderDetail.checkIn &&
                           format(new Date(orderDetail.checkIn), "dd/MM/yyyy HH:mm")}
                       </TableCell>
-                      <TableCell>
-                        {orderDetail &&
-                          orderDetail.checkOut &&
-                          format(new Date(orderDetail.checkOut), "dd/MM/yyyy HH:mm")}
-                      </TableCell>
+                      {order.status === 1 || order.status === 5 ? (
+                        <TableCell>
+                          {orderDetail &&
+                            orderDetail.checkOut &&
+                            format(new Date(orderDetail.checkOut), "dd/MM/yyyy HH:mm")}
+                        </TableCell>
+                      ) : (
+                        ""
+                      )}
+                      {order.status === 2 ? (
+                        <TableCell>
+                          {orderDetail &&
+                            orderDetail.checkOutReal &&
+                            format(new Date(orderDetail.checkOutReal), "dd/MM/yyyy HH:mm")}
+                        </TableCell>
+                      ) : (
+                        ""
+                      )}
+                      {order.status === 2 ? (
+                        <TableCell>
+                          {orderDetail &&
+                            orderDetail.checkOut &&
+                            format(new Date(orderDetail.checkOut), "dd/MM/yyyy HH:mm")}
+                        </TableCell>
+                      ) : (
+                        // <TableCell>
+                        //   {orderDetail &&
+                        //     orderDetail.checkOut &&
+                        //     format(new Date(orderDetail.checkOut), "dd/MM/yyyy HH:mm")}
+                        // </TableCell>
+                        ""
+                      )}
+                      {order.status === 3 ? (
+                        <>
+                          <TableCell>
+                            {orderDetail &&
+                              orderDetail.checkOutReal &&
+                              format(new Date(orderDetail.checkOutReal), "dd/MM/yyyy HH:mm")}
+                          </TableCell>
+                          <TableCell>
+                            {orderDetail &&
+                              orderDetail.checkOut &&
+                              format(new Date(orderDetail.checkOut), "dd/MM/yyyy HH:mm")}
+                          </TableCell>
+                        </>
+                      ) : (
+                        // <TableCell>
+                        //   {orderDetail &&
+                        //     orderDetail.checkOut &&
+                        //     format(new Date(orderDetail.checkOut), "dd/MM/yyyy HH:mm")}
+                        // </TableCell>
+                        ""
+                      )}
                       <TableCell>
                         {orderDetail.roomPrice ? formatPrice(orderDetail.roomPrice) : ""}
                       </TableCell>
@@ -3884,13 +3954,27 @@ function BookRoom() {
             justifyContent: "flex-end",
           }}
         >
-          <div style={{ marginLeft: 150, marginRight: 250, color: "red" }}>
+          <div style={{ marginRight: 50, color: "red" }}>
             <TextField
-              style={{ marginRight: 20 }}
+              style={{ marginRight: 20, width: 150 }}
               label="Tạm tính"
-              value={formatPrice(totalAmount)}
+              value={formatPrice(sumAmountValue)}
             />
-            <TextField label="VAT" value={formatPrice(vatAmount)} />
+            <TextField
+              style={{ marginRight: 20, width: 150 }}
+              label="VAT"
+              value={formatPrice(vatAmount)}
+            />
+            <TextField
+              style={{ marginRight: 20, width: 150 }}
+              label="Phụ thu"
+              value={order.surcharge ? formatPrice(order.surcharge) : "0 VND"}
+            />
+            <TextField
+              style={{ marginRight: 20, width: 150 }}
+              label="Tiền cọc"
+              value={order.deposit ? formatPrice(order.deposit) : "0 VND"}
+            />
           </div>
           {renderButtonsBasedOnStatus()}
           <Dialog open={openAcceptOrder} maxWidth="md">
@@ -4028,8 +4112,8 @@ function BookRoom() {
               <div style={{ display: "flex" }}>
                 <TextField
                   style={{ width: 520, marginRight: 30 }}
-                  label="Tổng tiền"
-                  value={sumAmountValue ? formatPrice(sumAmountValue) : "0 VND"}
+                  label="Thành tiền (Tiền phòng + Dịch vụ + VAT)"
+                  value={totalMoney ? formatPrice(totalMoney) : "0 VND"}
                   fullWidth
                   variant="outlined"
                 />
@@ -4037,6 +4121,23 @@ function BookRoom() {
                   style={{ width: 550 }}
                   label="Tiền cọc"
                   value={order.deposit ? formatPrice(order.deposit) : "0 VND"}
+                  fullWidth
+                  variant="outlined"
+                />
+              </div>
+              <br />
+              <div style={{ display: "flex" }}>
+                <TextField
+                  style={{ width: 520, marginRight: 30 }}
+                  label="Phụ thu"
+                  value={order.surcharge ? formatPrice(order.surcharge) : "0 VND"}
+                  fullWidth
+                  variant="outlined"
+                />
+                <TextField
+                  style={{ width: 550 }}
+                  label="Tổng tiền khách phải trả"
+                  value={sumAmountValue ? formatPrice(sumAmountValue) : "0 VND"}
                   fullWidth
                   variant="outlined"
                 />
@@ -4053,23 +4154,16 @@ function BookRoom() {
                 />
                 <TextField
                   style={{ width: 550 }}
-                  label="Phụ thu"
-                  value={order.surcharge ? formatPrice(order.surcharge) : "0 VND"}
+                  label="Tiền trả lại"
+                  value={
+                    givenCustomer - sumAmountValue
+                      ? formatPrice(givenCustomer - sumAmountValue)
+                      : "0 VND"
+                  }
                   fullWidth
                   variant="outlined"
                 />
               </div>
-              <br />
-              <TextField
-                label="Tiền trả lại"
-                value={
-                  givenCustomer - sumAmountValue
-                    ? formatPrice(givenCustomer - sumAmountValue)
-                    : "0 VND"
-                }
-                fullWidth
-                variant="outlined"
-              />
               <br />
               <br />
               <TextareaAutosize
