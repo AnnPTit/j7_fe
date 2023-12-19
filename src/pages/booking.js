@@ -28,6 +28,7 @@ import {
   Slider,
   Divider,
   IconButton,
+  Input,
 } from "@mui/material";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
@@ -57,6 +58,8 @@ import PriceRangeSlider from "src/sections/room/price-slider";
 import { SeverityPill } from "src/components/severity-pill";
 import QrCodeScannerIcon from "@mui/icons-material/QrCodeScanner";
 import { CustomerSearch } from "src/sections/bookRoomOffline/customer-search";
+import Backdrop from "@mui/material/Backdrop";
+import CircularProgress from "@mui/material/CircularProgress";
 function BookRoom() {
   const router = useRouter(); // Sử dụng useRouter để truy cập router của Next.js
   const { id } = router.query;
@@ -100,13 +103,14 @@ function BookRoom() {
   const [comboUsedTotalPrice, setComboUsedTotalPrice] = useState([]);
   const [orderDetailData, setOrderDetailData] = useState([]);
   const [numberOfDays, setNumberOfDays] = useState(0); // Add this state
+  const [numberOfHours, setNumberOfHours] = useState(0); // Add this state
   const [valueTo, setValueTo] = useState(null);
   const [valueFrom, setValueFrom] = useState(new Date());
   const [numberOfPeople, setNumberOfPeople] = useState(0);
-  const defaultCheckInTime = setMinutes(setHours(new Date(), 14), 0);
-  const defaultCheckOutTime = setMinutes(setHours(new Date(), 12), 0);
-  const [valueTimeFrom, setValueTimeFrom] = useState(defaultCheckInTime);
-  const [valueTimeTo, setValueTimeTo] = useState(defaultCheckOutTime);
+  // const defaultCheckInTime = setMinutes(setHours(new Date(), 14), 0);
+  // const defaultCheckOutTime = setMinutes(setHours(new Date(), 12), 0);
+  const [valueTimeFrom, setValueTimeFrom] = useState(new Date());
+  const [valueTimeTo, setValueTimeTo] = useState(null);
   const [totalAmount, setTotalAmount] = useState(0);
   const [noteOrder, setNoteOrder] = useState("");
   const [noteReturnRoom, setNoteReturnRoom] = useState("");
@@ -119,6 +123,7 @@ function BookRoom() {
   const [isLoading, setIsLoading] = useState(true);
   const [priceRange, setPriceRange] = useState([0, 3000000]);
   const [roomPricePerDay, setRoomPricePerDay] = useState(0); // Thêm state để lưu giá theo ngày của phòng
+  const [roomPricePerHours, setRoomPricePerHours] = useState(0); // Thêm state để lưu giá theo ngày của phòng
   const [activeTab, setActiveTab] = useState("1");
   const [selectedCustomerAccept, setSelectedCustomerAccept] = useState("");
   const [selectedCustomerReturn, setSelectedCustomerReturn] = useState("");
@@ -131,6 +136,8 @@ function BookRoom() {
   const [roomPriceChoosed, setRoomPriceChoosed] = useState("");
   const [sumAmountValue, setSumAmountValue] = useState(0);
   const [isCustomerAdded, setIsCustomerAdded] = useState(false);
+  const [typeRental, setTypeRental] = useState(1);
+  const [openLoading, setOpenLoading] = React.useState(false);
 
   // CTGG
   const [reduceValue, setReduceValue] = useState(0);
@@ -215,6 +222,7 @@ function BookRoom() {
     setValueFrom(newValue);
     if (newValue > valueTo) {
       setValueTo(newValue);
+    } else {
     }
 
     const timeDiff = Math.abs(valueTo - newValue);
@@ -226,6 +234,10 @@ function BookRoom() {
     // setValueTo(newValue);
     if (newValue > valueFrom) {
       setValueTo(newValue);
+      if (typeRental === 2) {
+        const today = new Date();
+        setValueTo(today);
+      }
     } else {
       toast.warning("Ngày checkout lớn hơn ngày hiện tại!", {
         position: toast.POSITION.BOTTOM_CENTER,
@@ -236,6 +248,71 @@ function BookRoom() {
     const timeDiff = Math.abs(newValue - valueFrom);
     const numberOfDays = timeDiff === 0 ? 1 : Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
     setNumberOfDays(numberOfDays);
+  };
+
+  const handleValueTimeFromChange = (newValue) => {
+    setValueTimeFrom(newValue);
+    if (newValue > valueTimeTo) {
+      setValueTimeTo(newValue);
+    }
+
+    const timeDiff = Math.abs(valueTimeTo - newValue);
+    const numberOfHours = timeDiff === 0 ? 1 : Math.ceil(timeDiff / (1000 * 60 * 60));
+    setNumberOfHours(numberOfHours);
+  };
+
+  const handleValueTimeToChange = (newValue) => {
+    setValueTimeTo(newValue);
+    if (typeRental === 2) {
+      const minimumCheckoutTime = new Date(valueTimeFrom.getTime() + 60 * 60 * 1000);
+      const timeCheckOut = new Date(valueTimeFrom);
+      timeCheckOut.setHours(24, 0, 0, 0);
+      if (newValue < minimumCheckoutTime) {
+        setValueTimeTo(minimumCheckoutTime);
+        const timeDiff = Math.abs(minimumCheckoutTime - valueTimeFrom);
+        const numberOfHours = timeDiff === 0 ? 1 : Math.ceil(timeDiff / (1000 * 60 * 60));
+        setNumberOfHours(numberOfHours);
+      } else if (newValue > timeCheckOut) {
+        setValueTimeTo(timeCheckOut);
+        toast.warning("Thời gian thuê theo giờ chỉ được đến 24h PM.", {
+          position: toast.POSITION.BOTTOM_CENTER,
+        });
+        return;
+      } else if (newValue < new Date(valueTimeFrom.getTime())) {
+        setValueTimeTo(minimumCheckoutTime);
+        toast.warning("Thời gian thuê phải ở tương lai.", {
+          position: toast.POSITION.BOTTOM_CENTER,
+        });
+        return;
+      }
+    }
+
+    const timeDiff = Math.abs(newValue - valueTimeFrom);
+    const numberOfHours = timeDiff === 0 ? 1 : Math.ceil(timeDiff / (1000 * 60 * 60));
+    setNumberOfHours(numberOfHours);
+  };
+
+  const handleTypeRentalChange = (event) => {
+    const selectedTypeRental = event.target.value;
+    setTypeRental(selectedTypeRental);
+
+    if (selectedTypeRental === 2) {
+      const today = new Date();
+      setValueTo(today);
+      const minimumCheckoutTime = new Date(valueTimeFrom.getTime() + 60 * 60 * 1000);
+      if (valueTimeTo < minimumCheckoutTime) {
+        setValueTimeTo(minimumCheckoutTime);
+        const timeDiff = Math.abs(minimumCheckoutTime - valueTimeFrom);
+        const numberOfHours = timeDiff === 0 ? 1 : Math.ceil(timeDiff / (1000 * 60 * 60));
+        setNumberOfHours(numberOfHours);
+      }
+    } else if (selectedTypeRental === 1) {
+      const tomorrow = addDays(new Date(), 1);
+      setValueTo(tomorrow);
+      const timeDiff = Math.abs(valueTo - valueFrom);
+      const numberOfDays = timeDiff === 0 ? 1 : Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+      setNumberOfDays(numberOfDays);
+    }
   };
 
   const formatDate = (date) => {
@@ -531,6 +608,9 @@ function BookRoom() {
   const handleCloseDateDialog = () => {
     setValueFrom(new Date());
     setValueTo(null);
+    setValueTimeFrom(new Date());
+    setValueTimeTo(null);
+    setTypeRental(1);
     setNumberOfDays(0);
     setNumberOfPeople();
     setOpenDateDialog(false);
@@ -640,11 +720,11 @@ function BookRoom() {
 
     if (orderDetail) {
       orderDetail.comboUsedList.forEach((comboUsed) => {
-        totalComboCost += comboUsed.combo.price * comboUsed.quantity;
+        totalComboCost += comboUsed?.combo?.price * comboUsed?.quantity;
       });
 
       orderDetail.serviceUsedList.forEach((serviceUsed) => {
-        totalServiceCost += serviceUsed.service.price * serviceUsed.quantity;
+        totalServiceCost += serviceUsed?.service?.price * serviceUsed?.quantity;
       });
 
       totalRoomCost = orderDetail.roomPrice;
@@ -674,7 +754,7 @@ function BookRoom() {
     let total = 0;
     comboUsedTotalPrice.forEach((comboUsed) => {
       if (comboUsed.orderDetail.order.id === id) {
-        total += comboUsed.quantity * comboUsed.combo.price;
+        total += comboUsed?.quantity * comboUsed?.combo?.price;
       }
     });
     return total;
@@ -684,7 +764,7 @@ function BookRoom() {
     let total = 0;
     serviceUsedTotalPrice.forEach((serviceUsed) => {
       if (serviceUsed.orderDetail.order.id === id) {
-        total += serviceUsed.quantity * serviceUsed.service.price;
+        total += serviceUsed?.quantity * serviceUsed?.service?.price;
       }
     });
     return total;
@@ -693,7 +773,7 @@ function BookRoom() {
   const calculateTotalAmountCombo = () => {
     let total = 0;
     comboUsed.forEach((comboUsed) => {
-      total += comboUsed.quantity * comboUsed.combo.price;
+      total += comboUsed?.quantity * comboUsed?.combo?.price;
     });
     return total;
   };
@@ -701,7 +781,7 @@ function BookRoom() {
   const calculateTotalAmount = () => {
     let total = 0;
     serviceUsed.forEach((serviceUsed) => {
-      total += serviceUsed.quantity * serviceUsed.service.price;
+      total += serviceUsed?.quantity * serviceUsed?.service?.price;
     });
     return total;
   };
@@ -739,6 +819,114 @@ function BookRoom() {
     setAddress("");
   };
 
+  const handleQuantityChange = (serviceId, newQuantity) => {
+    const updatedServiceUsed = serviceUsed.map((service) => {
+      if (service.id === serviceId) {
+        return { ...service, quantity: newQuantity };
+      }
+      return service;
+    });
+
+    setServiceUsed(updatedServiceUsed);
+  };
+
+  const handleQuantityChangeApi = async (serviceId, newQuantity) => {
+    if (newQuantity > 10) {
+      toast.error("Số lượng không được quá 10!", {
+        position: toast.POSITION.BOTTOM_CENTER,
+      });
+      return;
+    } else if (newQuantity < 1) {
+      const updatedServiceUsed = serviceUsed.map((service) => {
+        if (service.id === serviceId) {
+          return { ...service, quantity: 1 };
+        }
+        return service;
+      });
+
+      setServiceUsed(updatedServiceUsed);
+      toast.error("Số lượng phải lớn hơn 0!", {
+        position: toast.POSITION.BOTTOM_CENTER,
+      });
+      return;
+    }
+    try {
+      const response = await axios.put("http://localhost:2003/api/service-used/update", {
+        id: serviceId,
+        quantity: newQuantity,
+      });
+
+      if (response.status === 200) {
+        handleQuantityChange(serviceId, newQuantity);
+        setServiceUsed([...serviceUsed, response.data]);
+        const responseServicePrice = await axios.get("http://localhost:2003/api/service-used/load");
+        setServiceUsedTotalPrice(responseServicePrice.data);
+        const responseServiceUsed = await axios.get(
+          `http://localhost:2003/api/service-used/load/${selectedOrderDetails}`
+        );
+        setServiceUsed(responseServiceUsed.data);
+      } else {
+        console.error("Update không thành công.");
+      }
+    } catch (error) {
+      console.error("Đã có lỗi xảy ra khi gọi API update:", error);
+    }
+  };
+
+  const handleQuantityComboChange = (comboId, newQuantity) => {
+    const updatedComboUsed = comboUsed.map((combo) => {
+      if (combo.id === comboId) {
+        return { ...combo, quantity: newQuantity };
+      }
+      return combo;
+    });
+
+    setComboUsed(updatedComboUsed);
+  };
+
+  const handleQuantityComboChangeApi = async (comboId, newQuantity) => {
+    if (newQuantity > 10) {
+      toast.error("Số lượng không được quá 10!", {
+        position: toast.POSITION.BOTTOM_CENTER,
+      });
+      return;
+    } else if (newQuantity < 1) {
+      const updatedComboUsed = comboUsed.map((combo) => {
+        if (combo.id === comboId) {
+          return { ...combo, quantity: 1 };
+        }
+        return combo;
+      });
+
+      setComboUsed(updatedComboUsed);
+      toast.error("Số lượng phải lớn hơn 0!", {
+        position: toast.POSITION.BOTTOM_CENTER,
+      });
+      return;
+    }
+    try {
+      const response = await axios.put("http://localhost:2003/api/combo-used/update", {
+        id: comboId,
+        quantity: newQuantity,
+      });
+
+      if (response.status === 200) {
+        handleQuantityComboChange(comboId, newQuantity);
+        setComboUsed([...comboUsed, response.data]);
+        const responseComboPrice = await axios.get("http://localhost:2003/api/combo-used/load");
+        setComboUsedTotalPrice(responseComboPrice.data);
+        const responseComboUsed = await axios.get(
+          `http://localhost:2003/api/combo-used/load/${selectedOrderDetails}`
+        );
+        setComboUsed(responseComboUsed.data);
+      } else {
+        console.error("Update không thành công.");
+      }
+    } catch (error) {
+      console.error("Đã có lỗi xảy ra khi gọi API update:", error);
+    }
+  };
+
   const renderButtonsBasedOnStatus = () => {
     switch (order.status) {
       case 1:
@@ -771,6 +959,12 @@ function BookRoom() {
             >
               Nhận phòng
             </Button>
+            <Backdrop
+              sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+              open={openLoading}
+            >
+              <CircularProgress color="inherit" />
+            </Backdrop>
           </React.Fragment>
         );
       case 2:
@@ -795,6 +989,12 @@ function BookRoom() {
             >
               Thanh toán
             </Button>
+            <Backdrop
+              sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+              open={openLoading}
+            >
+              <CircularProgress color="inherit" />
+            </Backdrop>
           </React.Fragment>
         );
       case 3:
@@ -829,6 +1029,12 @@ function BookRoom() {
             >
               Nhận phòng
             </Button>
+            <Backdrop
+              sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+              open={openLoading}
+            >
+              <CircularProgress color="inherit" />
+            </Backdrop>
           </React.Fragment>
         );
       default:
@@ -915,7 +1121,7 @@ function BookRoom() {
         return;
       }
       axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
-
+      setOpenLoading(true);
       await axios.put(`http://localhost:2003/api/order/update-accept/${id}`, {
         customerId: selectedCustomerAccept,
         totalMoney: sumAmountValue,
@@ -929,6 +1135,7 @@ function BookRoom() {
       });
       router.push(`/order-detail?id=${id}`);
     } catch (error) {
+      setOpenLoading(false);
       console.log(error);
     }
   };
@@ -943,6 +1150,14 @@ function BookRoom() {
     }
 
     try {
+      const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
+      // Kiểm tra xem accessToken có tồn tại không
+      if (!accessToken) {
+        console.log("Bạn chưa đăng nhập");
+        return;
+      }
+      axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+      setOpenLoading(true);
       const response = await axios.post(
         `http://localhost:2003/api/order/return/${selectedOrderDetails}`,
         {
@@ -962,6 +1177,7 @@ function BookRoom() {
       });
       router.push(`/order-detail?id=${orderId}`);
     } catch (error) {
+      setOpenLoading(false);
       console.log(error);
     }
   };
@@ -989,7 +1205,7 @@ function BookRoom() {
         return;
       }
       axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
-
+      setOpenLoading(true);
       await axios.put(`http://localhost:2003/api/order/update-return/${id}`, {
         totalMoney: sumAmountValue,
         vat: vatAmount,
@@ -1006,6 +1222,7 @@ function BookRoom() {
       });
       router.push(`/order-detail?id=${id}`);
     } catch (error) {
+      setOpenLoading(false);
       console.log(error);
     }
   };
@@ -1021,9 +1238,10 @@ function BookRoom() {
       }
       axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
       // Make an API call to update the order status to "Đã xác nhận" (status: 2)
+      setOpenLoading(true);
       await axios.put(`http://localhost:2003/api/order/delete/${id}`, {
         note: noteCancelRoom,
-        deleted: fullname,
+        // deleted: fullname,
       });
       setOrder({ ...order, status: 0 });
       handleCloseCancelOrder();
@@ -1032,6 +1250,7 @@ function BookRoom() {
       });
       router.push(`/order-detail?id=${id}`);
     } catch (error) {
+      setOpenLoading(false);
       console.log(error);
     }
   };
@@ -1793,6 +2012,7 @@ function BookRoom() {
     const selectedRoom = rooms.find((r) => r.id === selectedRoomId);
     if (selectedRoom) {
       setRoomPricePerDay(selectedRoom.typeRoom.pricePerDay);
+      setRoomPricePerHours(selectedRoom.typeRoom.pricePerHours);
     }
   }, [selectedRoomId, rooms]);
 
@@ -1823,7 +2043,13 @@ function BookRoom() {
         });
         return false;
       }
-      const totalAmount = numberOfDays * roomPricePerDay;
+      let totalAmount;
+
+      if (typeRental === 1) {
+        totalAmount = numberOfDays * roomPricePerDay;
+      } else {
+        totalAmount = numberOfHours * roomPricePerHours;
+      }
       try {
         const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
         // Kiểm tra xem accessToken có tồn tại không
@@ -1840,10 +2066,9 @@ function BookRoom() {
             valueFrom.setHours(valueTimeFrom.getHours(), valueTimeFrom.getMinutes())
           ),
           checkOut: new Date(valueTo.setHours(valueTimeTo.getHours(), valueTimeTo.getMinutes())),
+          timeIn: typeRental,
           roomPrice: totalAmount,
           customerQuantity: numberOfPeople,
-          createBy: fullname,
-          updatedBy: fullname,
         });
 
         setOrderDetailData([...orderDetailData, response.data]);
@@ -1867,9 +2092,12 @@ function BookRoom() {
         console.log("Lỗi khi thêm phòng vào hóa đơn chi tiết:", error);
         // Xử lý lỗi nếu có
         if (error.response.status === 400) {
-          toast.error("Phòng đã được đặt trong khoảng thời gian này. Vui lòng chọn ngày hoặc phòng khác.", {
-            position: toast.POSITION.BOTTOM_CENTER,
-          });
+          toast.error(
+            "Phòng đã được đặt trong khoảng thời gian này. Vui lòng chọn ngày hoặc phòng khác.",
+            {
+              position: toast.POSITION.BOTTOM_CENTER,
+            }
+          );
         } else {
           toast.error("Lỗi không xác định. Vui lòng thử lại sau.", {
             position: toast.POSITION.BOTTOM_CENTER,
@@ -1938,9 +2166,12 @@ function BookRoom() {
       console.log("Lỗi khi thêm phòng vào hóa đơn chi tiết:", error);
       // Xử lý lỗi nếu có
       if (error.response.status === 400) {
-        toast.error("Phòng đã được đặt trong khoảng thời gian này. Vui lòng chọn ngày hoặc phòng khác.", {
-          position: toast.POSITION.BOTTOM_CENTER,
-        });
+        toast.error(
+          "Phòng đã được đặt trong khoảng thời gian này. Vui lòng chọn ngày hoặc phòng khác.",
+          {
+            position: toast.POSITION.BOTTOM_CENTER,
+          }
+        );
       } else {
         toast.error("Lỗi không xác định. Vui lòng thử lại sau.", {
           position: toast.POSITION.BOTTOM_CENTER,
@@ -2224,7 +2455,7 @@ function BookRoom() {
         fullWidth
         PaperProps={{
           style: {
-            maxWidth: "80%",
+            maxWidth: "90%",
             maxHeight: "90%",
           },
         }}
@@ -2318,6 +2549,7 @@ function BookRoom() {
                     <TableCell>Tầng</TableCell>
                     <TableCell>Sức chứa</TableCell>
                     <TableCell>Giá theo ngày</TableCell>
+                    <TableCell>Giá theo giờ</TableCell>
                     <TableCell>Trạng thái</TableCell>
                     <TableCell>Thao tác</TableCell>
                   </TableRow>
@@ -2348,6 +2580,11 @@ function BookRoom() {
                           {room.typeRoom.pricePerDay ? formatPrice(room.typeRoom.pricePerDay) : ""}
                         </TableCell>
                         <TableCell>
+                          {room.typeRoom.pricePerHours
+                            ? formatPrice(room.typeRoom.pricePerHours)
+                            : ""}
+                        </TableCell>
+                        <TableCell>
                           <SeverityPill variant="contained" color={statusData.color}>
                             {statusText}
                           </SeverityPill>
@@ -2373,7 +2610,7 @@ function BookRoom() {
         fullWidth
         PaperProps={{
           style: {
-            maxWidth: "35%",
+            maxWidth: "50%",
           },
         }}
       >
@@ -2405,7 +2642,7 @@ function BookRoom() {
             onChange={handleFromDateChange}
             renderInput={(params) => (
               <TextField
-                style={{ marginRight: 25 }}
+                style={{ marginRight: 25, width: 375 }}
                 {...params}
                 inputProps={{
                   value: formatDate(valueFrom),
@@ -2417,13 +2654,14 @@ function BookRoom() {
           <TimePicker
             disabled
             label="Giờ check-in"
-            onChange={handleFromDateChange}
+            onChange={handleValueTimeFromChange}
             value={valueTimeFrom}
             renderInput={(params) => (
               <TextField
+                style={{ width: 375 }}
                 {...params}
                 inputProps={{
-                  value: formatTime(valueTimeFrom),
+                  value: valueTimeFrom ? valueTimeFrom.toLocaleTimeString() : "",
                   readOnly: true,
                 }}
               />
@@ -2440,7 +2678,7 @@ function BookRoom() {
             onChange={handleToDateChange}
             renderInput={(params) => (
               <TextField
-                style={{ marginRight: 25 }}
+                style={{ marginRight: 25, width: 375 }}
                 {...params}
                 inputProps={{
                   value: formatDate(valueTo),
@@ -2450,20 +2688,36 @@ function BookRoom() {
             )}
           />
           <TimePicker
-            disabled
+            // disabled
             label="Giờ check-out"
             value={valueTimeTo}
-            onChange={handleToDateChange}
+            onChange={handleValueTimeToChange}
             renderInput={(params) => (
               <TextField
+                style={{ width: 375 }}
                 {...params}
                 inputProps={{
-                  value: formatTime(valueTimeTo),
+                  value: valueTimeTo ? valueTimeTo.toLocaleTimeString() : "",
                   readOnly: true,
                 }}
               />
             )}
           />
+          <br />
+          <br />
+          <FormControl variant="standard" style={{ width: 200, marginLeft: 300 }}>
+            <InputLabel id="demo-simple-select-standard-label">Loại hình thuê</InputLabel>
+            <Select
+              labelId="demo-simple-select-standard-label"
+              id="demo-simple-select-standard"
+              label="Khách hàng"
+              value={typeRental}
+              onChange={handleTypeRentalChange}
+            >
+              <MenuItem value={1}>Theo ngày</MenuItem>
+              <MenuItem value={2}>Theo giờ</MenuItem>
+            </Select>
+          </FormControl>
           <br />
           <br />
           <TextField
@@ -2477,22 +2731,47 @@ function BookRoom() {
           />
           <br />
           <br />
-          <TextField fullWidth label="Số ngày" variant="outlined" disabled value={numberOfDays} />
+          {typeRental === 1 && (
+            <TextField fullWidth label="Số ngày" variant="outlined" disabled value={numberOfDays} />
+          )}
+          {typeRental === 2 && (
+            <TextField fullWidth label="Số giờ" variant="outlined" disabled value={numberOfHours} />
+          )}
           <br />
           <br />
-          <TextField
-            fullWidth
-            label="Giá"
-            variant="outlined"
-            disabled
-            value={
-              selectedRoomId
-                ? formatPrice(
-                    rooms.find((r) => r.id === selectedRoomId)?.typeRoom?.pricePerDay * numberOfDays
-                  )
-                : ""
-            }
-          />
+
+          {typeRental === 1 && (
+            <TextField
+              fullWidth
+              label="Giá"
+              variant="outlined"
+              disabled
+              value={
+                selectedRoomId
+                  ? formatPrice(
+                      rooms.find((r) => r.id === selectedRoomId)?.typeRoom?.pricePerDay *
+                        numberOfDays
+                    )
+                  : ""
+              }
+            />
+          )}
+          {typeRental === 2 && (
+            <TextField
+              fullWidth
+              label="Giá"
+              variant="outlined"
+              disabled
+              value={
+                selectedRoomId
+                  ? formatPrice(
+                      rooms.find((r) => r.id === selectedRoomId)?.typeRoom?.pricePerHours *
+                        numberOfHours
+                    )
+                  : ""
+              }
+            />
+          )}
           <br />
           <br />
           <TextField
@@ -2563,9 +2842,9 @@ function BookRoom() {
                   <TableCell>Phòng</TableCell>
                   <TableCell>Tầng</TableCell>
                   <TableCell>Loại phòng</TableCell>
+                  <TableCell>Loại hình thuê</TableCell>
                   <TableCell>Sức chứa</TableCell>
-                  <TableCell>Người lớn</TableCell>
-                  <TableCell>Trẻ em</TableCell>
+                  <TableCell>Số người</TableCell>
                   <TableCell>Ngày check-in</TableCell>
                   <TableCell>Ngày check-out</TableCell>
                   <TableCell>Thành tiền</TableCell>
@@ -2587,7 +2866,7 @@ function BookRoom() {
                       <TableCell>
                         {orderDetail && orderDetail.roomImages && orderDetail.roomImages[0] && (
                           <img
-                            style={{ objectFit: "cover", width: "100%" }}
+                            style={{ objectFit: "cover", width: "100px" }}
                             src={orderDetail.roomImages[0]}
                             alt={`Room ${index + 1} Image 1`}
                           />
@@ -2596,18 +2875,18 @@ function BookRoom() {
                       <TableCell>{orderDetail.room.roomName}</TableCell>
                       <TableCell>{orderDetail.room.floor.floorName}</TableCell>
                       <TableCell>{orderDetail.room.typeRoom.typeRoomName}</TableCell>
+                      <TableCell>{orderDetail.timeIn === 1 ? "Theo ngày" : "Theo giờ"}</TableCell>
                       <TableCell>{orderDetail.room.typeRoom.capacity}</TableCell>
                       <TableCell>{orderDetail.customerQuantity}</TableCell>
-                      <TableCell>{orderDetail.room.typeRoom.children}</TableCell>
                       <TableCell>
                         {orderDetail &&
                           orderDetail.checkIn &&
-                          format(new Date(orderDetail.checkIn), "dd/MM/yyyy")}
+                          format(new Date(orderDetail.checkIn), "dd/MM/yyyy HH:mm")}
                       </TableCell>
                       <TableCell>
                         {orderDetail &&
                           orderDetail.checkOut &&
-                          format(new Date(orderDetail.checkOut), "dd/MM/yyyy")}
+                          format(new Date(orderDetail.checkOut), "dd/MM/yyyy HH:mm")}
                       </TableCell>
                       <TableCell>
                         {orderDetail.roomPrice ? formatPrice(orderDetail.roomPrice) : ""}
@@ -2803,11 +3082,24 @@ function BookRoom() {
                           {serviceUsed.length > 0 ? (
                             serviceUsed.map((serviceUsed, index) => (
                               <TableRow key={index}>
-                                <TableCell>{serviceUsed.service.serviceName}</TableCell>
-                                <TableCell>{serviceUsed.orderDetail.room.roomName}</TableCell>
-                                <TableCell>{serviceUsed.quantity}</TableCell>
+                                <TableCell>{serviceUsed?.service?.serviceName}</TableCell>
+                                <TableCell>{serviceUsed?.orderDetail?.room?.roomName}</TableCell>
                                 <TableCell>
-                                  {formatPrice(serviceUsed.quantity * serviceUsed.service.price)}
+                                  <Input
+                                    type="number"
+                                    value={serviceUsed.quantity}
+                                    onChange={(e) => {
+                                      // Giữ giá trị số nguyên dương
+                                      const newValue = Math.max(
+                                        1,
+                                        parseInt(e.target.value, 10) || 0
+                                      );
+                                      handleQuantityChangeApi(serviceUsed.id, newValue);
+                                    }}
+                                  />
+                                </TableCell>
+                                <TableCell>
+                                  {formatPrice(serviceUsed?.quantity * serviceUsed?.service?.price)}
                                 </TableCell>
                                 <TableCell>
                                   {order.status === 1 || order.status === 5 ? (
@@ -2866,11 +3158,24 @@ function BookRoom() {
                           {comboUsed.length > 0 ? (
                             comboUsed.map((comboUsed, index) => (
                               <TableRow key={index}>
-                                <TableCell>{comboUsed.combo.comboName}</TableCell>
-                                <TableCell>{comboUsed.orderDetail.room.roomName}</TableCell>
-                                <TableCell>{comboUsed.quantity}</TableCell>
+                                <TableCell>{comboUsed?.combo?.comboName}</TableCell>
+                                <TableCell>{comboUsed?.orderDetail?.room?.roomName}</TableCell>
                                 <TableCell>
-                                  {formatPrice(comboUsed.quantity * comboUsed.combo.price)}
+                                  <Input
+                                    type="number"
+                                    value={comboUsed.quantity}
+                                    onChange={(e) => {
+                                      // Giữ giá trị số nguyên dương
+                                      const newValue = Math.max(
+                                        1,
+                                        parseInt(e.target.value, 10) || 0
+                                      );
+                                      handleQuantityComboChangeApi(comboUsed.id, newValue);
+                                    }}
+                                  />
+                                </TableCell>
+                                <TableCell>
+                                  {formatPrice(comboUsed?.quantity * comboUsed?.combo?.price)}
                                 </TableCell>
                                 <TableCell>
                                   {order.status === 1 || order.status === 5 ? (

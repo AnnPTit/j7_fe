@@ -21,6 +21,8 @@ const Page = () => {
   const [countWait, setCountWait] = useState("");
   const [countConfirm, setCountConfirm] = useState("");
   const [countAccept, setCountAccept] = useState("");
+  const [countConfirmInfo, setCountConfirmInfo] = useState("");
+  const [countPaymentDeposit, setCountPaymentDeposit] = useState("");
   const [revenueMonth, setRevenueMonth] = useState("");
   const [revenueYear, setRevenueYear] = useState("");
   const [revenue, setRevenue] = useState([]);
@@ -55,6 +57,14 @@ const Page = () => {
         setCountConfirm(countConfirm.data);
         const countAccept = await axios.get("http://localhost:2003/api/order/countByAccept");
         setCountAccept(countAccept.data);
+        const countConfirmInfo = await axios.get(
+          "http://localhost:2003/api/order/countByConfirmInfo"
+        );
+        setCountConfirmInfo(countConfirmInfo.data);
+        const countPaymentDeposit = await axios.get(
+          "http://localhost:2003/api/order/countByPaymentDeposit"
+        );
+        setCountPaymentDeposit(countPaymentDeposit.data);
         const revenueMonth = await axios.get("http://localhost:2003/api/order/getRevenueMonth");
         setRevenueMonth(revenueMonth.data);
         const revenueYear = await axios.get("http://localhost:2003/api/order/getRevenueYear");
@@ -68,6 +78,7 @@ const Page = () => {
         const revenue = await axios.get("http://localhost:2003/api/order/getRevenue");
         setRevenue(revenue.data);
       } catch (error) {
+        window.location.href = "/login";
         console.log(error);
       }
     }
@@ -96,24 +107,14 @@ const Page = () => {
           <Grid container spacing={3}>
             <Grid xs={12} sm={6} lg={3}>
               {revenueYear === "" ? (
-                <OverviewBudget difference={0} positive sx={{ height: "100%" }} value="0" />
+                <OverviewBudget sx={{ height: "100%" }} value="0" />
               ) : (
-                <OverviewBudget
-                  difference={12}
-                  positive
-                  sx={{ height: "100%" }}
-                  value={formatPrice(revenueYear)}
-                />
+                <OverviewBudget sx={{ height: "100%" }} value={formatPrice(revenueYear)} />
               )}
             </Grid>
             <Grid xs={12} sm={6} lg={3}>
               {isNaN(countCustomer) ? null : (
-                <OverviewTotalCustomers
-                  difference={16}
-                  positive={false}
-                  sx={{ height: "100%" }}
-                  value={countCustomer.toString()}
-                />
+                <OverviewTotalCustomers sx={{ height: "100%" }} value={countCustomer.toString()} />
               )}
             </Grid>
             <Grid xs={12} sm={6} lg={3}>
@@ -123,14 +124,9 @@ const Page = () => {
             </Grid>
             <Grid xs={12} sm={6} lg={3}>
               {revenueMonth === "" ? (
-                <OverviewTotalProfit difference={1} positive sx={{ height: "100%" }} value="0" />
+                <OverviewTotalProfit sx={{ height: "100%" }} value="0" />
               ) : (
-                <OverviewTotalProfit
-                  difference={12}
-                  positive
-                  sx={{ height: "100%" }}
-                  value={formatPrice(revenueMonth)}
-                />
+                <OverviewTotalProfit sx={{ height: "100%" }} value={formatPrice(revenueMonth)} />
               )}
             </Grid>
             <Grid xs={12} lg={8}>
@@ -146,8 +142,22 @@ const Page = () => {
             </Grid>
             <Grid xs={12} md={6} lg={4}>
               <OverviewTraffic
-                chartSeries={[countConfirm, countAccept, countWait, countCancel]}
-                labels={["Đã nhận phòng", "Đã trả phòng", "Chờ xác nhận", "Đã hủy"]}
+                chartSeries={[
+                  countWait,
+                  countConfirm,
+                  countAccept,
+                  countConfirmInfo,
+                  countPaymentDeposit,
+                  countCancel,
+                ]}
+                labels={[
+                  "Chờ xác nhận",
+                  "Đã nhận phòng",
+                  "Đã trả phòng",
+                  "Xác nhận thông tin",
+                  "Thanh toán tiền cọc",
+                  "Chưa hoàn thành",
+                ]}
                 sx={{ height: "100%" }}
               />
             </Grid>
