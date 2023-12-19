@@ -35,6 +35,8 @@ import Link from "next/link";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import PDFDocument from "./update/pdf-document";
 import Head from "next/head";
+import Backdrop from "@mui/material/Backdrop";
+import CircularProgress from "@mui/material/CircularProgress";
 
 // Thêm state để theo dõi khi nút "In hóa đơn" được nhấp
 
@@ -66,6 +68,7 @@ function OrderTimeline() {
   let totalServiceCost = 0;
   let totalComboCost = 0;
   const [openDetail, setOpenDetail] = React.useState(false);
+  const [openLoading, setOpenLoading] = React.useState(false);
   const [isPrinting, setIsPrinting] = useState(false);
 
   const handleCloseDetail = () => {
@@ -431,6 +434,25 @@ function OrderTimeline() {
     fetchServiceUsed();
   }, [orderDetail]);
 
+  // Update Checkout hóa đơn
+  const handleUpdateOrder = async () => {
+    try {
+      const accessToken = localStorage.getItem("accessToken");
+      if (!accessToken) {
+        console.log("Bạn chưa đăng nhập");
+        return;
+      }
+      axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+      const response = await axios.put(`http://localhost:2003/api/order/update-checkout/${id}`);
+      setOpenLoading(true);
+      router.push(`/booking?id=${id}`);
+    } catch (error) {
+      setOpenLoading(false);
+      console.log(error);
+      toast.error("Có lỗi xảy ra !");
+    }
+  };
+
   const hrefReturnRoom = `/booking?id=${id}`;
 
   return (
@@ -474,11 +496,22 @@ function OrderTimeline() {
           )}
           <div style={{ display: "flex", justifyContent: "flex-end" }}>
             {order.status === 2 && (
-              <Link href={hrefReturnRoom}>
-                <Button style={{ height: 50, width: 130 }} variant="outlined" color="error">
+              <>
+                <Button
+                  onClick={handleUpdateOrder}
+                  style={{ height: 50, width: 130 }}
+                  variant="outlined"
+                  color="error"
+                >
                   Trả phòng
                 </Button>
-              </Link>
+                <Backdrop
+                  sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+                  open={openLoading}
+                >
+                  <CircularProgress color="inherit" />
+                </Backdrop>
+              </>
             )}
             {order.status === 3 && (
               <Button
@@ -563,9 +596,15 @@ function OrderTimeline() {
             <label style={{ marginLeft: 135 }}>{order.orderCode}</label>
             <br />
             <br />
-            <label>Tổng tiền + VAT</label>
-            <span style={{ marginLeft: 105, color: "red" }}>
+            <label>Tổng tiền</label>
+            <span style={{ marginLeft: 155, color: "red" }}>
               {order.totalMoney ? formatPrice(order.totalMoney) : "0 VND"}
+            </span>
+            <br />
+            <br />
+            <label>VAT</label>
+            <span style={{ marginLeft: 195, color: "red" }}>
+              {order.vat ? formatPrice(order.vat) : "0 VND"}
             </span>
             <br />
             <br />
@@ -578,6 +617,12 @@ function OrderTimeline() {
             <label>Giảm giá</label>
             <span style={{ marginLeft: 157, color: "red" }}>
               {order.discount ? formatPrice(order.discount) : "0 VND"}
+            </span>
+            <br />
+            <br />
+            <label>Tiền khách trả</label>
+            <span style={{ marginLeft: 117, color: "red" }}>
+              {order.moneyGivenByCustomer ? formatPrice(order.moneyGivenByCustomer) : "0 VND"}
             </span>
             <br />
             <br />
@@ -605,6 +650,10 @@ function OrderTimeline() {
             </span>
             <br />
             <br />
+            <label>Tiền trả lại</label>
+            <span style={{ marginLeft: 140, color: "red" }}>
+              {order.excessMoney ? formatPrice(order.excessMoney) : "0 VND"}
+            </span>
           </div>
         </div>
       </Box>
@@ -714,6 +763,7 @@ function OrderTimeline() {
                   <span>{orderDetail.room.floor.floorName}</span>
                   <br />
                   <br />
+                  Thành tiền: {" "}
                   <span style={{ color: "red" }}>{formatPrice(orderDetail.roomPrice)}</span>
                   <br />
                   <br />
@@ -769,10 +819,10 @@ function OrderTimeline() {
                     )}
                   </ul>
                 </div>
-                <div style={{ marginLeft: 850 }}>
-                  <h6>Check in: {format(new Date(orderDetail.checkIn), "dd/MM/yyyy - HH:mm")}</h6>
-                  <br />
-                  <h6>Check out: {format(new Date(orderDetail.checkOut), "dd/MM/yyyy - HH:mm")}</h6>
+                <div style={{ marginLeft: 800 }}>
+                  <h6>Ngày Check in: {format(new Date(orderDetail.checkIn), "dd/MM/yyyy - HH:mm")}</h6>
+                  {orderDetail.checkOutReal ? <h6>Ngày Check out: {format(new Date(orderDetail.checkOutReal), "dd/MM/yyyy - HH:mm")}</h6> : ""}
+                  <h6>Ngày Check out dự kiến: {format(new Date(orderDetail.checkOut), "dd/MM/yyyy - HH:mm")}</h6>
                 </div>
               </Grid>
               <hr />
