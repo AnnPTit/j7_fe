@@ -166,14 +166,14 @@ function UpdateAccount() {
         );
         setWards(response.data.results);
         const ward = response.data.results.find((w) => w.ward_name === accountUpdate.wards);
-        console.log(ward);
         setSelectedWards(ward?.ward_id);
         const name = ward ? ward.ward_name : "";
         setSelectedWards(name);
+        setSelectedWardName(name);
       };
       fetchWards();
     }
-  }, [accountUpdate.wards, idDistrict, selectedWards]);
+  }, [accountUpdate.wards, idDistrict]);
 
   const handleProvinceChange = (e) => {
     setSelectedProvince(e.target.value);
@@ -570,19 +570,19 @@ function UpdateAccount() {
         className={(cx("input-btn"), "btn btn-primary")}
         onClick={() => {
           Swal.fire({
-            title: "Are you sure?",
-            text: "You won't be able to revert this!",
+            title: "Bạn chắc chắn muốn cập nhật?",
             icon: "warning",
             showCancelButton: true,
             confirmButtonColor: "#3085d6",
             cancelButtonColor: "#d33",
-            confirmButtonText: "Yes, Update it!",
+            cancelButtonText: "Hủy",
+            confirmButtonText: "Cập nhật",
           }).then(async (result) => {
             if (result.isConfirmed) {
               const isSubmitSuccess = await handleSubmit(event, id, accountUpdate);
               if (isSubmitSuccess) {
-                Swal.fire("Update!", "Your data has been Update.", "success");
-                toast.success("Update Successfully!");
+                Swal.fire("Cập nhật!", "Cập nhật thành công", "success");
+                toast.success("Cập nhật thành công!");
               }
             }
           });

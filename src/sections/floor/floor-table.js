@@ -51,11 +51,11 @@ export const FloorTable = (props) => {
             <TableHead>
               <TableRow>
                 <TableCell padding="checkbox">STT</TableCell>
-                <TableCell>Floor Code</TableCell>
-                <TableCell>Floor Name</TableCell>
-                <TableCell>Note</TableCell>
-                <TableCell>Status</TableCell>
-                <TableCell>Actions</TableCell>
+                <TableCell>Mã tầng</TableCell>
+                <TableCell>Tên tầng</TableCell>
+                <TableCell>Ghi chú</TableCell>
+                <TableCell>Trạng thái</TableCell>
+                <TableCell>Hành động</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -64,18 +64,18 @@ export const FloorTable = (props) => {
                 // const created = moment(floor.createAt).format("DD/MM/YYYY - HH:mm:ss");
                 const alertDelete = () => {
                   Swal.fire({
-                    title: "Are you sure?",
-                    text: "You won't be able to revert this!",
+                    title: "Bạn chắc chắn muốn xóa?",
                     icon: "warning",
                     showCancelButton: true,
                     confirmButtonColor: "#3085d6",
                     cancelButtonColor: "#d33",
-                    confirmButtonText: "Yes, delete it!",
+                    cancelButtonText: "Hủy",
+                    confirmButtonText: "xóa thành công!",
                   }).then((result) => {
                     if (result.isConfirmed) {
-                      Swal.fire("Deleted!", "Your data has been deleted.", "success");
+                      Swal.fire("Xóa!", "Xóa thành công.", "success");
                       handleDelete(floor.id);
-                      toast.success("Delete Successfully!");
+                      toast.success("Xóa thành công!");
                     }
                   });
                 };
@@ -96,7 +96,7 @@ export const FloorTable = (props) => {
                     <TableCell>{floor.floorCode}</TableCell>
                     <TableCell>{floor.floorName}</TableCell>
                     <TableCell>{floor.note}</TableCell>
-                    <TableCell>{floor.status == 1 ? "Active" : "Unactive"}</TableCell>
+                    <TableCell>{floor.status == 1 ? "Hoạt động" : "Không hoạt động"}</TableCell>
                     <TableCell>
                       <button className="btn btn-primary" onClick={() => handleEdit(floor.id)}>
                         <SvgIcon fontSize="small">

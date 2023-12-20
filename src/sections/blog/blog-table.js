@@ -36,7 +36,7 @@ export const BlogTable = (props) => {
                 <TableCell>Ảnh</TableCell>
                 <TableCell>Tiêu đề</TableCell>
                 <TableCell>Nội dung</TableCell>
-                <TableCell>Lượt thích</TableCell>
+                {/* <TableCell>Lượt thích</TableCell> */}
                 <TableCell>Lượt Xem</TableCell>
                 <TableCell>Ngày tạo</TableCell>
                 <TableCell>Người tạo</TableCell>
@@ -62,18 +62,18 @@ export const BlogTable = (props) => {
                 };
                 const alertDelete = () => {
                   Swal.fire({
-                    title: "Are you sure?",
-                    text: "You won't be able to revert this!",
+                    title: "Bạn chắc chắn muốn xóa?",
                     icon: "warning",
                     showCancelButton: true,
                     confirmButtonColor: "#3085d6",
                     cancelButtonColor: "#d33",
-                    confirmButtonText: "Yes, delete it!",
+                    cancelButtonText: "Hủy",
+                    confirmButtonText: "Xóa!",
                   }).then((result) => {
                     if (result.isConfirmed) {
-                      Swal.fire("Deleted!", "Your data has been deleted.", "success");
+                      Swal.fire("Xóa!", "Xóa thành công.", "success");
                       handleDelete(room.id);
-                      toast.success("Delete Successfully!");
+                      toast.success("Xóa thành công!");
                     }
                   });
                 };
@@ -100,7 +100,7 @@ export const BlogTable = (props) => {
                     </TableCell>
                     <TableCell>{room.title}</TableCell>
                     <TableCell>{room.content}</TableCell>
-                    <TableCell>{room.countLike}</TableCell>
+                    {/* <TableCell>{room.countLike}</TableCell> */}
                     <TableCell>{room.countView}</TableCell>
                     <TableCell>{formatDate(room.createAt)}</TableCell>
                     <TableCell>{room.createBy}</TableCell>

@@ -36,6 +36,8 @@ import Swal from "sweetalert2";
 import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
 import "bootstrap/dist/css/bootstrap.min.css";
+import Backdrop from "@mui/material/Backdrop";
+import CircularProgress from "@mui/material/CircularProgress";
 
 const numeral = require("numeral");
 
@@ -60,6 +62,7 @@ export const BookRoomTable = (props) => {
   const [refuseReason, setRefuseReason] = React.useState("");
   const [isNewCustom, SetIsNewCustom] = React.useState(true);
   const [surcharge, setSurcharge] = useState(0);
+  const [openLoading, setOpenLoading] = React.useState(false);
 
   const [open, setOpen] = useState(false);
   const showDrawer = async (orderId) => {
@@ -158,6 +161,8 @@ export const BookRoomTable = (props) => {
         return { color: "error", text: "Hết hạn" };
       case 8:
         return { color: "error", text: "Hết hạn thanh toán tiền cọc" };
+      case 9:
+        return { color: "error", text: "Hết hạn checkin" };
       default:
         return { color: "default", text: "Unknown" };
     }
@@ -228,10 +233,11 @@ export const BookRoomTable = (props) => {
       }
     }
     if (gender === null) {
-      toast.error("Giới tính không được để trống !", {
-        position: toast.POSITION.TOP_RIGHT,
-      });
-      return;
+      // toast.error("Giới tính không được để trống !", {
+      //   position: toast.POSITION.TOP_RIGHT,
+      // });
+      // return;
+      setGender(true);
     }
     if (address === null) {
       toast.error("Địa chỉ không được để trống !", {
@@ -269,12 +275,14 @@ export const BookRoomTable = (props) => {
           position: toast.POSITION.TOP_RIGHT,
         });
       } else {
+        setOpenLoading(true);
         toast.success("Xác nhận thành công !", {
           position: toast.POSITION.TOP_RIGHT,
         });
         window.location.href = "/book-room-online";
       }
     } catch (error) {
+      setOpenLoading(false);
       console.log(error);
       toast.error("Có lỗi xảy ra !");
     }
@@ -291,13 +299,11 @@ export const BookRoomTable = (props) => {
 
     const shouldApplySurcharge =
       currentDate < checkinDateTime &&
-      (differenceInHours(checkinDateTime, currentDate) <= 24 ||
+      (differenceInHours(checkinDateTime, currentDate) <= 38 ||
         (isToday(checkinDateTime) && currentDate.getHours() < checkinDateTime.getHours()));
 
     const inTime =
-      currentDate > checkinDateTime &&
-      isToday(checkinDateTime) &&
-      currentDate.getHours() > checkinDateTime.getHours();
+      currentDate >= checkinDateTime && currentDate.getHours() >= checkinDateTime.getHours();
 
     if (shouldApplySurcharge) {
       const payload = {
@@ -316,8 +322,10 @@ export const BookRoomTable = (props) => {
           `http://localhost:2003/api/order/update-surcharge`,
           payload
         );
+        setOpenLoading(true);
         router.push(`/booking?id=${orderId}`);
       } catch (error) {
+        setOpenLoading(false);
         console.log(error);
         toast.error("Có lỗi xảy ra !");
       }
@@ -338,8 +346,10 @@ export const BookRoomTable = (props) => {
           `http://localhost:2003/api/order/update-surcharge`,
           payload
         );
+        setOpenLoading(true);
         router.push(`/booking?id=${orderId}`);
       } catch (error) {
+        setOpenLoading(false);
         console.log(error);
         toast.error("Có lỗi xảy ra !");
       }
@@ -354,6 +364,10 @@ export const BookRoomTable = (props) => {
     }
   };
 
+  const handleRedirectDetail = async () => {
+    router.push(`/booking?id=${orderId}`);
+  };
+
   useEffect(() => {
     const calculateSurcharge = () => {
       const { bookingDateStart } = order;
@@ -364,7 +378,7 @@ export const BookRoomTable = (props) => {
 
       const shouldApplySurcharge =
         currentDate < checkinDateTime &&
-        (differenceInHours(checkinDateTime, currentDate) <= 24 ||
+        (differenceInHours(checkinDateTime, currentDate) <= 38 ||
           (isToday(checkinDateTime) && currentDate.getHours() < checkinDateTime.getHours()));
 
       console.log("ABC: ", shouldApplySurcharge);
@@ -388,55 +402,50 @@ export const BookRoomTable = (props) => {
           <React.Fragment>
             <Dialog open={openDetail} onClose={handleCloseDetail} maxWidth="lg">
               <DialogContent>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TextField
-                        style={{ marginTop: 10 }}
-                        label="Lý do từ chối "
-                        fullWidth
-                        variant="outlined"
-                        value={refuseReason}
-                        onChange={(e) => setRefuseReason(e.target.value)}
-                      />
-                    </TableRow>
-                  </TableHead>
-                  <Button
-                    style={{ marginTop: 40 }}
-                    variant="outlined"
-                    color="error"
-                    // onClick={() => handleCancelOrder(orderId)}
-                    onClick={() => {
-                      handleCloseDetail();
-                      Swal.fire({
-                        title: "Bạn có chắc chắn muốn hủy ? ",
-                        text: "",
-                        icon: "warning",
-                        showCancelButton: true,
-                        confirmButtonColor: "#3085d6",
-                        cancelButtonColor: "#d33",
-                        confirmButtonText: "Đúng, hủy!",
-                      }).then(async (result) => {
-                        if (result.isConfirmed) {
-                          const isSubmitSuccess = await handleCancelOrder(orderId);
-                          if (isSubmitSuccess) {
-                            Swal.fire("Thêm thành công !", "success");
-                            toast.success("Thêm Thành Công !");
-                          }
+                <TextField
+                  style={{ marginTop: 10 }}
+                  label="Lý do từ chối "
+                  fullWidth
+                  variant="outlined"
+                  value={refuseReason}
+                  onChange={(e) => setRefuseReason(e.target.value)}
+                />
+                <Button
+                  style={{ marginTop: 40 }}
+                  variant="outlined"
+                  color="error"
+                  // onClick={() => handleCancelOrder(orderId)}
+                  onClick={() => {
+                    handleCloseDetail();
+                    Swal.fire({
+                      title: "Bạn có chắc chắn muốn hủy ? ",
+                      text: "",
+                      icon: "warning",
+                      showCancelButton: true,
+                      confirmButtonColor: "#3085d6",
+                      cancelButtonColor: "#d33",
+                      cancelButtonText: "Hủy",
+                      confirmButtonText: "Đúng, hủy!",
+                    }).then(async (result) => {
+                      if (result.isConfirmed) {
+                        const isSubmitSuccess = await handleCancelOrder(orderId);
+                        if (isSubmitSuccess) {
+                          Swal.fire("Đã hủy phòng !", "success");
+                          toast.success("Đã hủy phòng !");
                         }
-                      });
-                    }}
-                  >
-                    Hủy xác nhận
-                  </Button>
-                  {loading && (
-                    <div class="d-flex justify-content-center">
-                      <div class="spinner-border" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                      </div>
+                      }
+                    });
+                  }}
+                >
+                  Hủy xác nhận
+                </Button>
+                {loading && (
+                  <div class="d-flex justify-content-center">
+                    <div class="spinner-border" role="status">
+                      <span class="visually-hidden">Loading...</span>
                     </div>
-                  )}
-                </Table>
+                  </div>
+                )}
               </DialogContent>
             </Dialog>
             <div style={{ display: "flex", justifyContent: "flex-end" }}>
@@ -449,27 +458,7 @@ export const BookRoomTable = (props) => {
                 style={{ marginRight: 20 }}
                 variant="outlined"
                 color="error"
-                // onClick={() => handleCancelOrder(orderId)}
-                onClick={() => {
-                  handleOpenDetail();
-                  // Swal.fire({
-                  //   title: "Bạn có chắc chắn muốn hủy ? ",
-                  //   text: "",
-                  //   icon: "warning",
-                  //   showCancelButton: true,
-                  //   confirmButtonColor: "#3085d6",
-                  //   cancelButtonColor: "#d33",
-                  //   confirmButtonText: "Đúng, hủy!",
-                  // }).then(async (result) => {
-                  //   if (result.isConfirmed) {
-                  //     const isSubmitSuccess = await handleCancelOrder(orderId);
-                  //     // if (isSubmitSuccess) {
-                  //     //   Swal.fire("Thêm thành công !", "success");
-                  //     //   toast.success("Thêm Thành Công !");
-                  //     // }
-                  //   }
-                  // });
-                }}
+                onClick={handleOpenDetail}
               >
                 Hủy xác nhận
               </Button>
@@ -484,6 +473,7 @@ export const BookRoomTable = (props) => {
                     showCancelButton: true,
                     confirmButtonColor: "#3085d6",
                     cancelButtonColor: "#d33",
+                    cancelButtonText: "Hủy",
                     confirmButtonText: "Xác nhận",
                   }).then(async (result) => {
                     if (result.isConfirmed) {
@@ -498,6 +488,12 @@ export const BookRoomTable = (props) => {
               >
                 Xác nhận
               </Button>
+              <Backdrop
+                sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+                open={openLoading}
+              >
+                <CircularProgress color="inherit" />
+              </Backdrop>
             </div>
           </React.Fragment>
         );
@@ -510,7 +506,7 @@ export const BookRoomTable = (props) => {
                 value={numeral(order.deposit).format("0,0 ") + "  đ"}
                 label="Tiền cọc"
               />
-              <Button variant="outlined" onClick={handleRedirect}>
+              <Button variant="outlined" onClick={handleRedirectDetail}>
                 Chi tiết
               </Button>
             </div>
@@ -525,7 +521,7 @@ export const BookRoomTable = (props) => {
                 value={numeral(order.deposit).format("0,0 ") + "  đ"}
                 label="Tiền cọc"
               />
-              <Button variant="outlined" onClick={handleRedirect}>
+              <Button variant="outlined" onClick={handleRedirectDetail}>
                 Chi tiết
               </Button>
             </div>
@@ -540,7 +536,7 @@ export const BookRoomTable = (props) => {
                 value={numeral(order.deposit).format("0,0 ") + "  đ"}
                 label="Tiền cọc"
               />
-              <Button variant="outlined" onClick={handleRedirect}>
+              <Button variant="outlined" onClick={handleRedirectDetail}>
                 Chi tiết
               </Button>
             </div>
@@ -553,7 +549,7 @@ export const BookRoomTable = (props) => {
               <TextField
                 style={{ marginRight: 20 }}
                 value={numeral(surcharge).format("0,0 ") + "  đ"}
-                label="Phụ thu"
+                label="* Phụ thu : 10.000đ /h"
               />
               <TextField
                 style={{ marginRight: 20 }}
@@ -563,6 +559,12 @@ export const BookRoomTable = (props) => {
               <Button variant="outlined" onClick={handleRedirect}>
                 Tiến hành nhận phòng
               </Button>
+              <Backdrop
+                sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+                open={openLoading}
+              >
+                <CircularProgress color="inherit" />
+              </Backdrop>
             </div>
           </React.Fragment>
         );
@@ -839,6 +841,9 @@ export const BookRoomTable = (props) => {
                             </Box>
                             <br />
                             {renderButtonsBasedOnStatus()}
+                            <br />
+                            <br />
+                            <br />
                             {/* <div style={{ display: "flex", justifyContent: "flex-end" }}>
                               <TextField
                                 style={{ marginRight: 20 }}

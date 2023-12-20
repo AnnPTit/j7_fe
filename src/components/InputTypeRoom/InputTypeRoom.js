@@ -52,7 +52,7 @@ const handleSubmit = async (event) => {
       // Xử lý khi API thành công
       console.log("API call successful");
       window.location.href = "/input/inputRoom/inputRoom";
-      toast.success("Add Successfully!");
+      toast.success("Thêm thành công!");
       // Thực hiện các hành động khác sau khi API thành công
     } else {
       // Xử lý khi API gặp lỗi

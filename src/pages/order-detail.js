@@ -35,6 +35,8 @@ import Link from "next/link";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import PDFDocument from "./update/pdf-document";
 import Head from "next/head";
+import Backdrop from "@mui/material/Backdrop";
+import CircularProgress from "@mui/material/CircularProgress";
 
 // Thêm state để theo dõi khi nút "In hóa đơn" được nhấp
 
@@ -66,6 +68,7 @@ function OrderTimeline() {
   let totalServiceCost = 0;
   let totalComboCost = 0;
   const [openDetail, setOpenDetail] = React.useState(false);
+  const [openLoading, setOpenLoading] = React.useState(false);
   const [isPrinting, setIsPrinting] = useState(false);
 
   const handleCloseDetail = () => {
@@ -139,10 +142,12 @@ function OrderTimeline() {
           return;
         }
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
-        const responseCustomer = await axios.get("http://localhost:2003/api/admin/customer/getAll");
-        const responseService = await axios.get("http://localhost:2003/api/admin/service/getAll");
-        const responseRoom = await axios.get("http://localhost:2003/api/admin/room/getList");
-        const responseAccount = await axios.get("http://localhost:2003/api/admin/account/getAll");
+        const responseCustomer = await axios.get(
+          "http://localhost:2003/api/general/customer/getAll"
+        );
+        const responseService = await axios.get("http://localhost:2003/api/general/service/getAll");
+        const responseRoom = await axios.get("http://localhost:2003/api/general/room/getList");
+        const responseAccount = await axios.get("http://localhost:2003/api/general/account/getAll");
         setCustomer(responseCustomer.data);
         setService(responseService.data);
         setRoom(responseRoom.data);
@@ -204,17 +209,22 @@ function OrderTimeline() {
                 case 4:
                   eventColor = "#6959CD";
                   eventIcon = FaCheck;
-                  eventTitle = "Xác nhận thông tin khách";
+                  eventTitle = "Xác nhận thông tin";
                   break;
                 case 5:
                   eventColor = "#00CCCC";
                   eventIcon = FaWallet;
-                  eventTitle = "Khách hàng thanh toán tiền cọc";
+                  eventTitle = "Thanh toán tiền cọc";
                   break;
                 case 7:
                   eventColor = "#FFD700";
                   eventIcon = FaSignInAlt;
                   eventTitle = "Trả phòng đi trước";
+                  break;
+                case 10:
+                  eventColor = "#FFD700";
+                  eventIcon = FaSignInAlt;
+                  eventTitle = "Khách chuyển phòng";
                   break;
                 default:
                   eventColor = "default";
@@ -285,7 +295,13 @@ function OrderTimeline() {
         return <FaCheck style={{ fontSize: "50px", color: "#6959CD" }} />;
       case 5:
         return <FaWallet style={{ fontSize: "50px", color: "#00CCCC" }} />;
+      case 6:
+        return <FaSignInAlt style={{ fontSize: "50px", color: "#FFD700" }} />;
       case 7:
+        return <FaSignInAlt style={{ fontSize: "50px", color: "#FFD700" }} />;
+      case 8:
+        return <FaSignInAlt style={{ fontSize: "50px", color: "#FFD700" }} />;
+      case 10:
         return <FaSignInAlt style={{ fontSize: "50px", color: "#FFD700" }} />;
       default:
         return <FaBug style={{ fontSize: "50px", color: "default" }} />;
@@ -303,11 +319,17 @@ function OrderTimeline() {
       case 3:
         return "Khách hàng trả phòng";
       case 4:
-        return "Xác nhận thông tin khách hàng";
+        return "Xác nhận thông tin";
       case 5:
-        return "Khách hàng thanh toán tiền cọc";
+        return "Thanh toán tiền cọc";
+      case 6:
+        return "Từ chối";
       case 7:
-        return "Trả phòng đi trước";
+        return "Hết hạn";
+      case 8:
+        return "Hết hạn thanh toán tiền cọc";
+      case 10:
+        return "Khách chuyển phòng";
       default:
         return "Unknown Type";
     }
@@ -412,6 +434,24 @@ function OrderTimeline() {
     fetchServiceUsed();
   }, [orderDetail]);
 
+  // Update Checkout hóa đơn
+  const handleUpdateOrder = async () => {
+    try {
+      const accessToken = localStorage.getItem("accessToken");
+      if (!accessToken) {
+        console.log("Bạn chưa đăng nhập");
+        return;
+      }
+      axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+      const response = await axios.put(`http://localhost:2003/api/order/update-checkout/${id}`);
+      setOpenLoading(true);
+      router.push(`/booking?id=${id}`);
+    } catch (error) {
+      setOpenLoading(false);
+      console.log(error);
+    }
+  };
+
   const hrefReturnRoom = `/booking?id=${id}`;
 
   return (
@@ -455,11 +495,22 @@ function OrderTimeline() {
           )}
           <div style={{ display: "flex", justifyContent: "flex-end" }}>
             {order.status === 2 && (
-              <Link href={hrefReturnRoom}>
-                <Button style={{ height: 50, width: 130 }} variant="outlined" color="error">
+              <>
+                <Button
+                  onClick={handleUpdateOrder}
+                  style={{ height: 50, width: 130 }}
+                  variant="outlined"
+                  color="error"
+                >
                   Trả phòng
                 </Button>
-              </Link>
+                <Backdrop
+                  sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+                  open={openLoading}
+                >
+                  <CircularProgress color="inherit" />
+                </Backdrop>
+              </>
             )}
             {order.status === 3 && (
               <Button
@@ -544,9 +595,15 @@ function OrderTimeline() {
             <label style={{ marginLeft: 135 }}>{order.orderCode}</label>
             <br />
             <br />
-            <label>Tổng tiền + VAT</label>
-            <span style={{ marginLeft: 105, color: "red" }}>
+            <label>Tổng tiền</label>
+            <span style={{ marginLeft: 155, color: "red" }}>
               {order.totalMoney ? formatPrice(order.totalMoney) : "0 VND"}
+            </span>
+            <br />
+            <br />
+            <label>VAT</label>
+            <span style={{ marginLeft: 195, color: "red" }}>
+              {order.vat ? formatPrice(order.vat) : "0 VND"}
             </span>
             <br />
             <br />
@@ -562,10 +619,16 @@ function OrderTimeline() {
             </span>
             <br />
             <br />
+            <label>Tiền khách trả</label>
+            <span style={{ marginLeft: 117, color: "red" }}>
+              {order.moneyGivenByCustomer ? formatPrice(order.moneyGivenByCustomer) : "0 VND"}
+            </span>
+            <br />
+            <br />
           </div>
           <div style={{ marginLeft: 150, fontFamily: "inherit", fontSize: "17px" }}>
-            <label>Họ và tên</label>
-            <label style={{ marginLeft: 150 }}>{order.customer.fullname}</label>
+            <label>Khách hàng</label>
+            <label style={{ marginLeft: 130 }}>{order.customer.fullname}</label>
             <br />
             <br />
             <label>Số điện thoại</label>
@@ -586,6 +649,10 @@ function OrderTimeline() {
             </span>
             <br />
             <br />
+            <label>Tiền trả lại</label>
+            <span style={{ marginLeft: 140, color: "red" }}>
+              {order.excessMoney ? formatPrice(order.excessMoney) : "0 VND"}
+            </span>
           </div>
         </div>
       </Box>
@@ -695,6 +762,7 @@ function OrderTimeline() {
                   <span>{orderDetail.room.floor.floorName}</span>
                   <br />
                   <br />
+                  Thành tiền: {" "}
                   <span style={{ color: "red" }}>{formatPrice(orderDetail.roomPrice)}</span>
                   <br />
                   <br />
@@ -750,10 +818,10 @@ function OrderTimeline() {
                     )}
                   </ul>
                 </div>
-                <div style={{ marginLeft: 850 }}>
-                  <h6>Check in: {format(new Date(orderDetail.checkIn), "dd/MM/yyyy - HH:mm")}</h6>
-                  <br />
-                  <h6>Check out: {format(new Date(orderDetail.checkOut), "dd/MM/yyyy - HH:mm")}</h6>
+                <div style={{ marginLeft: 800 }}>
+                  <h6>Ngày Check in: {format(new Date(orderDetail.checkIn), "dd/MM/yyyy - HH:mm")}</h6>
+                  {orderDetail.checkOutReal ? <h6>Ngày Check out: {format(new Date(orderDetail.checkOutReal), "dd/MM/yyyy - HH:mm")}</h6> : ""}
+                  <h6>Ngày Check out dự kiến: {format(new Date(orderDetail.checkOut), "dd/MM/yyyy - HH:mm")}</h6>
                 </div>
               </Grid>
               <hr />

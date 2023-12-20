@@ -6,9 +6,8 @@ import { useEffect, useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { ToastContainer, toast } from "react-toastify";
 import Swal from "sweetalert2";
-import { parse, format } from "date-fns";
 import "react-toastify/dist/ReactToastify.css";
-
+import CurrencyInput from "react-currency-input-field";
 import React, { Component } from "react";
 import QrReader from "react-qr-scanner";
 import {
@@ -27,10 +26,13 @@ const cx = classNames.bind(style);
 
 function inputDiscountProgram() {
   // eslint-disable-next-line react-hooks/rules-of-hooks
-  const [startDay, setStartDay] = useState();
+  const [startDay, setStartDay] = useState(new Date());
   // eslint-disable-next-line react-hooks/rules-of-hooks
-  const [endDate, setEndDate] = useState();
-
+  const [endDate, setEndDate] = useState(new Date());
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const [minimumInvoice, setMinimumInvoice] = useState();
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const [maximumReductionValue, setMaximumReductionValue] = useState();
   const handleDateFromChange = (date) => {
     setStartDay(date);
     if (date > endDate) {
@@ -65,18 +67,27 @@ function inputDiscountProgram() {
     const endDateInput = document.querySelector('input[name="endDate"]');
 
     const name = nameInput?.value;
-    const minimumInvoice = minimumInvoiceInput?.value;
+    // const minimumInvoice = minimumInvoiceInput?.value;
     const reduceValue = reduceValueInput?.value;
     const numberOfApplication = numberOfApplicationInput?.value;
-    const maximumReductionValue = maximumReductionValueInput?.value;
+    // const maximumReductionValue = maximumReductionValueInput?.value;
 
+    // const priceString = minimumInvoice1 + ""; // Lấy giá trị dạng chuỗi từ trường input
+    // const cleanedPriceString = priceString.replace(/[^0-9]/g, ""); // Loại bỏ các ký tự không phải số
+    // const minimumInvoice = cleanedPriceString
+
+    console.log(minimumInvoice);
+    if (startDay === endDate) {
+      toast.error("Ngày kết thúc phải lớn hơn ngày bắt đầu ");
+      return;
+    }
     // Tạo payload dữ liệu để gửi đến API
     const payload = {
       name,
-      minimumInvoice,
+      minimumInvoice: minimumInvoice,
       reduceValue,
       numberOfApplication,
-      maximumReductionValue,
+      maximumReductionValue: maximumReductionValue,
       startDay,
       endDate,
     };
@@ -123,89 +134,6 @@ function inputDiscountProgram() {
         } else if (error.response.status === 400) {
           console.log(error.response.data);
           toast.error(error.response.data);
-          // const isFullnameError = error.response.data.fullname === undefined;
-          // const isEmailError = error.response.data.email === undefined;
-          // const isPhoneNumberError = error.response.data.phoneNumber === undefined;
-          // const isCitizenIdError = error.response.data.citizenId === undefined;
-          // const isBirthdayError = error.response.data.birthday === undefined;
-          // const isProvinceError = error.response.data.provinces === undefined;
-          // const isDistrictError = error.response.data.districts === undefined;
-          // const isWardError = error.response.data.wards === undefined;
-
-          // if (
-          //   !isFullnameError &&
-          //   !isEmailError &&
-          //   !isPhoneNumberError &&
-          //   !isCitizenIdError &&
-          //   !isBirthdayError &&
-          //   !isWardError
-          // ) {
-          //   toast.error(error.response.data.fullname, {
-          //     position: toast.POSITION.BOTTOM_RIGHT,
-          //   });
-          //   toast.error(error.response.data.email, {
-          //     position: toast.POSITION.BOTTOM_RIGHT,
-          //   });
-          //   toast.error(error.response.data.phoneNumber, {
-          //     position: toast.POSITION.BOTTOM_RIGHT,
-          //   });
-          //   toast.error(error.response.data.citizenId, {
-          //     position: toast.POSITION.BOTTOM_RIGHT,
-          //   });
-          //   toast.error(error.response.data.birthday, {
-          //     position: toast.POSITION.BOTTOM_RIGHT,
-          //   });
-          //   toast.error(error.response.data.wards, {
-          //     position: toast.POSITION.BOTTOM_RIGHT,
-          //   });
-          //   return false;
-          // } else {
-          // Nếu có ít nhất một trường bị thiếu, xóa thông báo lỗi cho trường đó nếu có
-          // và hiển thị thông báo lỗi cho các trường còn lại
-          // if (!isFullnameError) {
-          //   toast.error(error.response.data.fullname, {
-          //     position: toast.POSITION.BOTTOM_RIGHT,
-          //   });
-          // }
-          // if (!isEmailError) {
-          //   toast.error(error.response.data.email, {
-          //     position: toast.POSITION.BOTTOM_RIGHT,
-          //   });
-          // }
-          // if (!isPhoneNumberError) {
-          //   toast.error(error.response.data.phoneNumber, {
-          //     position: toast.POSITION.BOTTOM_RIGHT,
-          //   });
-          // }
-          // if (!isCitizenIdError) {
-          //   toast.error(error.response.data.citizenId, {
-          //     position: toast.POSITION.BOTTOM_RIGHT,
-          //   });
-          // }
-          // if (!isBirthdayError) {
-          //   toast.error(error.response.data.birthday, {
-          //     position: toast.POSITION.BOTTOM_RIGHT,
-          //   });
-          // }
-          // if (!isWardError) {
-          //   toast.error(error.response.data.wards, {
-          //     position: toast.POSITION.BOTTOM_RIGHT,
-          //   });
-          // }
-          // toast.error(error.response.data.email, {
-          //   position: toast.POSITION.BOTTOM_RIGHT,
-          // });
-          // if (error.response.data.email) {
-          //   // API trả về lỗi cho trường email
-          //   toast.error("Email này đã tồn tại!");
-          // }
-
-          // if (error.response.data.citizenId) {
-          //   // API trả về lỗi cho trường số căn cước công dân
-          //   toast.error("Số căn cước công dân này đã tồn tại!");
-          // }
-          // return false;
-          // }
         } else {
           alert("Có lỗi xảy ra trong quá trình gọi API");
           return false;
@@ -234,7 +162,9 @@ function inputDiscountProgram() {
     const options = { day: "2-digit", month: "2-digit", year: "numeric" };
     return new Intl.DateTimeFormat("en-GB", options).format(date);
   };
-
+  const formatPrice = (price) => {
+    return price.toLocaleString("vi-VN") + " VND";
+  };
   return (
     <div className={cx("wrapper")}>
       <h1>Thêm Chương Trình Giảm Giá</h1>
@@ -251,13 +181,15 @@ function inputDiscountProgram() {
       </div>
       <br />
       <div className="form-floating">
-        <input
-          type="number"
+        <CurrencyInput
           className="form-control"
-          id="floatingPassword"
-          placeholder="Password"
-          variant="outlined"
-          name="minimumInvoice"
+          id="input-example"
+          name="price"
+          placeholder="Please enter a number"
+          // defaultValue={0}
+          // decimalsLimit={2}
+          value={minimumInvoice}
+          onValueChange={(value) => setMinimumInvoice(value)} // Thêm event và value vào hàm
         />
         <label htmlFor="floatingPassword">Hóa đơn tối thiểu</label>
       </div>
@@ -271,17 +203,19 @@ function inputDiscountProgram() {
           variant="outlined"
           name="reduceValue"
         />
-        <label htmlFor="floatingPassword">Giá trị giảm</label>
+        <label htmlFor="floatingPassword">Giá trị giảm (%)</label>
       </div>
       <br />
       <div className="form-floating">
-        <input
-          type="number"
+        <CurrencyInput
           className="form-control"
-          id="floatingPassword"
-          placeholder="Password"
-          variant="outlined"
-          name="maximumReductionValue"
+          id="input-example"
+          name="price"
+          placeholder="Please enter a number"
+          // defaultValue={0}
+          // decimalsLimit={2}
+          value={maximumReductionValue}
+          onValueChange={(value) => setMaximumReductionValue(value)} // Thêm event và value vào hàm
         />
         <label htmlFor="floatingPassword">Giá trị giảm tối đa</label>
       </div>
@@ -325,6 +259,7 @@ function inputDiscountProgram() {
         label="Ngày kết thúc"
         value={endDate}
         onChange={handleDateToChange}
+        format="YYYY-MM-DD"
         renderInput={(params) => (
           <TextField
             style={{ marginRight: 20 }}
@@ -342,19 +277,19 @@ function inputDiscountProgram() {
         className={(cx("input-btn"), "btn btn-primary")}
         onClick={() => {
           Swal.fire({
-            title: "Are you sure?",
-            text: "You won't be able to revert this!",
+            title: "Bạn chắc chắn muốn thêm?",
             icon: "warning",
             showCancelButton: true,
             confirmButtonColor: "#3085d6",
             cancelButtonColor: "#d33",
-            confirmButtonText: "Yes, Add it!",
+            cancelButtonText: "Hủy",
+            confirmButtonText: "Thêm",
           }).then(async (result) => {
             if (result.isConfirmed) {
               const isSubmitSuccess = await handleSubmit(event);
               if (isSubmitSuccess) {
-                Swal.fire("Add!", "Your data has been Add.", "success");
-                toast.success("Add Successfully!");
+                Swal.fire("Thêm!", "Đã thêm vào danh sách.", "success");
+                toast.success("Thêm thành công!");
               }
             }
           });

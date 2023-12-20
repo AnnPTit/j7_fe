@@ -7,6 +7,8 @@ function RoomFilter({
   typeRoomChose,
   setFloorChose,
   setTypeRoomChose,
+  statusChoose,
+  setStatusChoose,
 }) {
   return (
     <div >
@@ -50,6 +52,20 @@ function RoomFilter({
       ) : (
         <p>Loading...</p>
       )}
+      <label style={{marginLeft: 50}}>Trạng thái:</label>
+      <Select
+          style={{
+            width: 200,
+            marginLeft: 20,
+          }}
+          value={statusChoose}
+          onChange={(e) => setStatusChoose(e.target.value)}
+        >
+          <MenuItem value="">Tất cả</MenuItem>
+          <MenuItem value={0}>Phòng đang sửa chữa</MenuItem>
+          <MenuItem value={1}>Phòng trống</MenuItem>
+          <MenuItem value={2}>Phòng đã được đặt</MenuItem>
+        </Select>
     </div>
   );
 }

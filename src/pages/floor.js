@@ -12,6 +12,7 @@ import { applyPagination } from "src/utils/apply-pagination";
 import InputFloor from "src/components/InputFloor/InputFloor";
 import MyPagination from "src/components/Pagination";
 import "bootstrap/dist/css/bootstrap.min.css";
+import Swal from "sweetalert2";
 
 const useFloor = (data, page, rowsPerPage) => {
   return useMemo(() => {
@@ -51,7 +52,10 @@ const Page = () => {
       setDataChange(!dataChange);
     } catch (error) {
       console.log(error);
+      Swal.fire("Xóa!", "Xóa thất bại.", "error");
+      return;
     }
+    // Swal.fire("Xóa!", "Xóa thành công.", "success");
   };
 
   // Tim kiem

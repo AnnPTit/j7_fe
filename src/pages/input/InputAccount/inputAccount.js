@@ -26,6 +26,8 @@ import { DatePicker, TimePicker } from "@mui/x-date-pickers";
 const cx = classNames.bind(style);
 
 function InputAccount() {
+  const [loading, setLoading] = useState(false);
+
   // call api địa chỉ
   const [provinces, setProvinces] = useState([]);
   const [districts, setDistricts] = useState([]);
@@ -146,10 +148,10 @@ function InputAccount() {
       const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
       // Kiểm tra xem accessToken có tồn tại không
       if (!accessToken) {
-       console.log("Bạn chưa đăng nhập");
+        console.log("Bạn chưa đăng nhập");
         return false;
       }
-
+      setLoading(true);
       axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
 
       const response = await axios.post("http://localhost:2003/api/admin/account/save", payload); // Gọi API /api/service-type/save với payload và access token
@@ -166,6 +168,7 @@ function InputAccount() {
         // Thực hiện các hành động khác sau khi API thành công
       } else {
         // Xử lý khi API gặp lỗi
+        setLoading(false);
         console.log("API call failed");
         return false;
         // Thực hiện các hành động khác khi gọi API thất bại
@@ -178,6 +181,7 @@ function InputAccount() {
           alert("Bạn không có quyền truy cập vào trang này");
           window.location.href = "/auth/login"; // Chuyển hướng đến trang đăng nhập
         } else if (error.response.status === 400) {
+          setLoading(false);
           console.log(error.response.data);
           toast.error(error.response.data);
           const isFullnameError = error.response.data.fullname === undefined;
@@ -411,23 +415,18 @@ function InputAccount() {
       </div>
       <br></br>
       <div className="form-floating sm-1">
-          <FormLabel
-          class="form-label"
-          >
-            Giới tính
-          </FormLabel>
-          <RadioGroup
-            style={{ display: "flex", justifyContent: "center" }}
-            row
-            aria-labelledby="demo-row-radio-buttons-group-label"
-            name="gender"
-            value={gender || ""}
-            onChange={(e) => setGender(e.target.value)}
-          >
-            <FormControlLabel value="true" control={<Radio />} label="Nam" />
-            <FormControlLabel value="false" control={<Radio />} label="Nữ" />
-          </RadioGroup>
-
+        <FormLabel class="form-label">Giới tính</FormLabel>
+        <RadioGroup
+          style={{ display: "flex", justifyContent: "center" }}
+          row
+          aria-labelledby="demo-row-radio-buttons-group-label"
+          name="gender"
+          value={gender || ""}
+          onChange={(e) => setGender(e.target.value)}
+        >
+          <FormControlLabel value="true" control={<Radio />} label="Nam" />
+          <FormControlLabel value="false" control={<Radio />} label="Nữ" />
+        </RadioGroup>
       </div>
       <br></br>
       <DatePicker
@@ -446,8 +445,8 @@ function InputAccount() {
           />
         )}
       />
-      <br/>
-      <br/>
+      <br />
+      <br />
       <div className="form-floating mb-3">
         <input
           type="text"
@@ -481,20 +480,20 @@ function InputAccount() {
         />
         <label htmlFor="floatingPassword">Căn cước công dân</label>
       </div>
-      <br/>
-        <select
-          className="form-select"
-          name="provinces"
-          value={selectedProvince}
-          onChange={handleProvinceChange}
-        >
-          <option value="">Chọn tỉnh thành</option>
-          {provinces.map((province) => (
-            <option key={province.province_id} value={province.province_id}>
-              {province.province_name}
-            </option>
-          ))}
-        </select>
+      <br />
+      <select
+        className="form-select"
+        name="provinces"
+        value={selectedProvince}
+        onChange={handleProvinceChange}
+      >
+        <option value="">Chọn tỉnh thành</option>
+        {provinces.map((province) => (
+          <option key={province.province_id} value={province.province_id}>
+            {province.province_name}
+          </option>
+        ))}
+      </select>
       <br />
       <select
         className="form-select"
@@ -524,31 +523,39 @@ function InputAccount() {
         ))}
       </select>
       <br></br>
-
-      <button
-        className={(cx("input-btn"), "btn btn-primary")}
-        onClick={() => {
-          Swal.fire({
-            title: "Are you sure?",
-            text: "You won't be able to revert this!",
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonColor: "#3085d6",
-            cancelButtonColor: "#d33",
-            confirmButtonText: "Yes, Add it!",
-          }).then(async (result) => {
-            if (result.isConfirmed) {
-              const isSubmitSuccess = await handleSubmit(event);
-              if (isSubmitSuccess) {
-                Swal.fire("Add!", "Your data has been Add.", "success");
-                toast.success("Add Successfully!");
+      {loading && (
+        <div class="d-flex justify-content-center">
+          <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </div>
+      )}
+      {
+        <button
+          className={(cx("input-btn"), "btn btn-primary")}
+          onClick={() => {
+            Swal.fire({
+              title: "Bạn chắc chắn muốn thêm?",
+              icon: "warning",
+              showCancelButton: true,
+              confirmButtonColor: "#3085d6",
+              cancelButtonColor: "#d33",
+              cancelButtonText: "Hủy",
+              confirmButtonText: "Thêm",
+            }).then(async (result) => {
+              if (result.isConfirmed) {
+                const isSubmitSuccess = await handleSubmit(event);
+                if (isSubmitSuccess) {
+                  Swal.fire("Thêm!", "Đã thêm vào danh sách.", "success");
+                  toast.success("Thêm thành công!");
+                }
               }
-            }
-          });
-        }}
-      >
-        Thêm mới
-      </button>
+            });
+          }}
+        >
+          Thêm mới
+        </button>
+      }
       <ToastContainer />
     </div>
   );

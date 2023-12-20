@@ -28,6 +28,7 @@ import {
   Slider,
   Divider,
   IconButton,
+  Input,
 } from "@mui/material";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
@@ -57,6 +58,8 @@ import PriceRangeSlider from "src/sections/room/price-slider";
 import { SeverityPill } from "src/components/severity-pill";
 import QrCodeScannerIcon from "@mui/icons-material/QrCodeScanner";
 import { CustomerSearch } from "src/sections/bookRoomOffline/customer-search";
+import Backdrop from "@mui/material/Backdrop";
+import CircularProgress from "@mui/material/CircularProgress";
 function BookRoom() {
   const router = useRouter(); // Sử dụng useRouter để truy cập router của Next.js
   const { id } = router.query;
@@ -76,6 +79,7 @@ function BookRoom() {
   const [customer, setCustomer] = useState([]);
   const [customerOrder, setCustomerOrder] = useState([]);
   const [customerOrderDetail, setCustomerOrderDetail] = useState([]);
+  const [customerDifferenceOrder, setCustomerDifferenceOrder] = useState([]);
   const [customerInfoOrder, setCustomerInfoOrder] = useState([]);
   const [floor, setFloor] = useState([]);
   const [typeRoom, setTypeRoom] = useState([]);
@@ -99,13 +103,13 @@ function BookRoom() {
   const [comboUsedTotalPrice, setComboUsedTotalPrice] = useState([]);
   const [orderDetailData, setOrderDetailData] = useState([]);
   const [numberOfDays, setNumberOfDays] = useState(0); // Add this state
-  const [valueTo, setValueTo] = useState(null);
+  const [numberOfHours, setNumberOfHours] = useState(0); // Add this state
   const [valueFrom, setValueFrom] = useState(new Date());
+  const [valueTo, setValueTo] = useState(addDays(new Date(), 1));
   const [numberOfPeople, setNumberOfPeople] = useState(0);
-  const defaultCheckInTime = setMinutes(setHours(new Date(), 14), 0);
-  const defaultCheckOutTime = setMinutes(setHours(new Date(), 12), 0);
-  const [valueTimeFrom, setValueTimeFrom] = useState(defaultCheckInTime);
-  const [valueTimeTo, setValueTimeTo] = useState(defaultCheckOutTime);
+  // const defaultCheckInTime = setMinutes(setHours(new Date(), 14), 0);
+  const [valueTimeFrom, setValueTimeFrom] = useState(new Date());
+  const [valueTimeTo, setValueTimeTo] = useState(setMinutes(setHours(new Date(), 12), 0));
   const [totalAmount, setTotalAmount] = useState(0);
   const [noteOrder, setNoteOrder] = useState("");
   const [noteReturnRoom, setNoteReturnRoom] = useState("");
@@ -118,9 +122,11 @@ function BookRoom() {
   const [isLoading, setIsLoading] = useState(true);
   const [priceRange, setPriceRange] = useState([0, 3000000]);
   const [roomPricePerDay, setRoomPricePerDay] = useState(0); // Thêm state để lưu giá theo ngày của phòng
+  const [roomPricePerHours, setRoomPricePerHours] = useState(0); // Thêm state để lưu giá theo ngày của phòng
   const [activeTab, setActiveTab] = useState("1");
   const [selectedCustomerAccept, setSelectedCustomerAccept] = useState("");
   const [selectedCustomerReturn, setSelectedCustomerReturn] = useState("");
+  const [selectedCustomerRepresent, setSelectedCustomerRepresent] = useState("");
   const [searchCustomer, setSearchCustomer] = useState("");
   const [idOrderDetailChange, setIdOrderDetailChange] = useState("");
   const [checkInChangeRoom, setCheckInChangeRoom] = useState("");
@@ -128,6 +134,9 @@ function BookRoom() {
   const [idRoomChoosed, setIdRoomChoosed] = useState("");
   const [roomPriceChoosed, setRoomPriceChoosed] = useState("");
   const [sumAmountValue, setSumAmountValue] = useState(0);
+  const [isCustomerAdded, setIsCustomerAdded] = useState(false);
+  const [typeRental, setTypeRental] = useState(1);
+  const [openLoading, setOpenLoading] = React.useState(false);
 
   // CTGG
   const [reduceValue, setReduceValue] = useState(0);
@@ -212,6 +221,7 @@ function BookRoom() {
     setValueFrom(newValue);
     if (newValue > valueTo) {
       setValueTo(newValue);
+    } else {
     }
 
     const timeDiff = Math.abs(valueTo - newValue);
@@ -220,11 +230,17 @@ function BookRoom() {
   };
 
   const handleToDateChange = (newValue) => {
-    // setValueTo(newValue);
-    if (newValue > valueFrom) {
+    console.log(newValue + "C");
+    console.log(valueFrom + "C");
+    const tomorrow = addDays(new Date(), 1);
+    if (newValue === valueFrom) {
+      setValueTo(tomorrow);
+    } else if (newValue > valueFrom) {
       setValueTo(newValue);
-    } else {
-      toast.warning("Ngày checkout lớn hơn ngày hiện tại!", {
+    } else if (newValue < valueFrom && typeRental === 1) {
+      // Nếu ngày mới nhỏ hơn ngày hiện tại, sử dụng ngày hiện tại
+      setValueTo(tomorrow);
+      toast.warning("Ngày checkout không thể nhỏ hơn ngày hiện tại!", {
         position: toast.POSITION.BOTTOM_CENTER,
       });
       return;
@@ -233,6 +249,77 @@ function BookRoom() {
     const timeDiff = Math.abs(newValue - valueFrom);
     const numberOfDays = timeDiff === 0 ? 1 : Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
     setNumberOfDays(numberOfDays);
+  };
+
+  const handleValueTimeFromChange = (newValue) => {
+    setValueTimeFrom(newValue);
+    if (newValue > valueTimeTo) {
+      setValueTimeTo(newValue);
+    }
+
+    const timeDiff = Math.abs(valueTimeTo - newValue);
+    const numberOfHours = timeDiff === 0 ? 1 : Math.ceil(timeDiff / (1000 * 60 * 60));
+    setNumberOfHours(numberOfHours);
+  };
+
+  const handleValueTimeToChange = (newValue) => {
+    setValueTimeTo(newValue);
+    if (typeRental === 2) {
+      const minimumCheckoutTime = new Date(valueTimeFrom.getTime() + 60 * 60 * 1000);
+      const timeCheckOut = new Date(valueTimeFrom);
+      timeCheckOut.setHours(24, 0, 0, 0);
+      if (newValue < minimumCheckoutTime) {
+        setValueTimeTo(minimumCheckoutTime);
+        const timeDiff = Math.abs(minimumCheckoutTime - valueTimeFrom);
+        const numberOfHours = timeDiff === 0 ? 1 : Math.ceil(timeDiff / (1000 * 60 * 60));
+        setNumberOfHours(numberOfHours);
+      } else if (newValue > timeCheckOut) {
+        setValueTimeTo(timeCheckOut);
+        toast.warning("Thời gian thuê theo giờ chỉ được đến 24h PM.", {
+          position: toast.POSITION.BOTTOM_CENTER,
+        });
+        return;
+      } else if (newValue < new Date(valueTimeFrom.getTime())) {
+        setValueTimeTo(minimumCheckoutTime);
+        toast.warning("Thời gian thuê phải ở tương lai.", {
+          position: toast.POSITION.BOTTOM_CENTER,
+        });
+        return;
+      }
+    } else if (typeRental === 1) {
+      const defaultCheckOutTime = setMinutes(setHours(new Date(), 12), 0);
+      setValueTimeTo(defaultCheckOutTime);
+    }
+
+    const timeDiff = Math.abs(newValue - valueTimeFrom);
+    const numberOfHours = timeDiff === 0 ? 1 : Math.ceil(timeDiff / (1000 * 60 * 60));
+    setNumberOfHours(numberOfHours);
+  };
+
+  const handleTypeRentalChange = (event) => {
+    const selectedTypeRental = event.target.value;
+    setTypeRental(selectedTypeRental);
+
+    if (selectedTypeRental === 2) {
+      const today = new Date();
+      setValueTo(today);
+      const minimumCheckoutTime = new Date(valueTimeFrom.getTime() + 60 * 60 * 1000);
+      if (valueTimeTo < minimumCheckoutTime) {
+        setValueTimeTo(minimumCheckoutTime);
+        const timeDiff = Math.abs(minimumCheckoutTime - valueTimeFrom);
+        const numberOfHours = timeDiff === 0 ? 1 : Math.ceil(timeDiff / (1000 * 60 * 60));
+        setNumberOfHours(numberOfHours);
+        console.log(numberOfHours);
+      }
+    } else if (selectedTypeRental === 1) {
+      const tomorrow = addDays(new Date(), 1);
+      setValueTo(tomorrow);
+      const defaultCheckOutTime = setMinutes(setHours(new Date(), 12), 0);
+      setValueTimeTo(defaultCheckOutTime);
+      const timeDiff = Math.abs(valueTo - valueFrom);
+      const numberOfDays = timeDiff === 0 ? 1 : Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+      setNumberOfDays(numberOfDays);
+    }
   };
 
   const formatDate = (date) => {
@@ -245,8 +332,9 @@ function BookRoom() {
     return `${day}/${month}/${year}`;
   };
 
-  const formatTime = (date) => {
-    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  // Hàm định dạng giờ mà không có giây
+  const formatTimeWithoutSeconds = (date) => {
+    return date ? date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "";
   };
   // Kết thúc xử lí ngày đặt phòng
 
@@ -277,6 +365,12 @@ function BookRoom() {
     setValueDateFrom(null);
     setValueDateTo(null);
   };
+
+  useEffect(() => {
+    if (order && order.customer) {
+      setSelectedCustomerRepresent(order.customer.id);
+    }
+  }, [order]);
 
   useEffect(() => {
     console.log("IdUseEffect: ", idOrderDetailChange);
@@ -314,18 +408,22 @@ function BookRoom() {
 
       // Kiểm tra xem orderDetailResponse có dữ liệu hay không
       if (orderDetailResponse.data) {
-        const { customerQuantity, checkInDatetime, checkOutDatetime, room } =
+        const { customerQuantity, checkInDatetime, checkOutDatetimeReal, room } =
           orderDetailResponse.data;
         const { typeRoom } = room;
-        const { capacity, children } = typeRoom;
+        const { id, capacity, children } = typeRoom;
 
-        let Api = `http://localhost:2003/api/admin/room/loadByCondition`;
+        let Api = `http://localhost:2003/api/general/room/loadByCondition`;
         // Add search text parameter only if there's a search text entered
         let hasQueryParams = false;
 
         // Construct the API URL based on the selected options
         if (capacity !== "") {
           Api += `?capacity=${capacity}`;
+          hasQueryParams = true;
+        }
+        if (id !== "") {
+          Api += hasQueryParams ? `&typeRoomId=${id}` : `?typeRoomId=${id}`;
           hasQueryParams = true;
         }
         if (customerQuantity !== "") {
@@ -342,11 +440,11 @@ function BookRoom() {
           Api = Api + `&dayStart=${formattedValueFrom}`;
           setCheckInChangeRoom(formattedValueFrom);
         }
-        if (checkOutDatetime) {
-          const valueToDate = new Date(checkOutDatetime);
+        if (checkOutDatetimeReal) {
+          const valueToDate = new Date(checkOutDatetimeReal);
           const formattedValueTo = valueToDate.toISOString().slice(0, 10);
           Api = Api + `&dayEnd=${formattedValueTo}`;
-          setCheckOutChangeRoom(formattedValueTo);
+          setCheckOutChangeRoom(checkOutDatetimeReal);
         }
         console.warn(Api);
         const response = await axios.get(Api);
@@ -442,11 +540,16 @@ function BookRoom() {
     } else if (selectedOrderDetails) {
       try {
         const customerOrderDetail = await axios.get(
-          `http://localhost:2003/api/admin/customer/getAllByOrderDetailId/${selectedOrderDetails}`
+          `http://localhost:2003/api/general/customer/getAllByOrderDetailId/${selectedOrderDetails}`
         );
         setCustomerOrderDetail(customerOrderDetail.data);
+        const customerDifferenceOrder = await axios.get(
+          `http://localhost:2003/api/general/getCustomerDifferenceOrder/${id}/${selectedOrderDetails}`
+        );
+        setCustomerDifferenceOrder(customerDifferenceOrder.data);
+        console.log("CustomerDifferenceOrder: ", customerDifferenceOrder.data);
       } catch (error) {
-        console.error("Error creating payment:", error);
+        console.error("Error:", error);
       }
     }
 
@@ -455,7 +558,7 @@ function BookRoom() {
   };
 
   const handleCloseReturnOneRoom = () => {
-    setGivenCustomerOneRoom("");
+    setSelectedCustomerReturn("");
     setNoteReturnOneRoom("");
     setOpenReturnOneRoom(false);
   };
@@ -513,6 +616,9 @@ function BookRoom() {
   const handleCloseDateDialog = () => {
     setValueFrom(new Date());
     setValueTo(null);
+    setValueTimeFrom(new Date());
+    setValueTimeTo(null);
+    setTypeRental(1);
     setNumberOfDays(0);
     setNumberOfPeople();
     setOpenDateDialog(false);
@@ -622,11 +728,11 @@ function BookRoom() {
 
     if (orderDetail) {
       orderDetail.comboUsedList.forEach((comboUsed) => {
-        totalComboCost += comboUsed.combo.price * comboUsed.quantity;
+        totalComboCost += comboUsed?.combo?.price * comboUsed?.quantity;
       });
 
       orderDetail.serviceUsedList.forEach((serviceUsed) => {
-        totalServiceCost += serviceUsed.service.price * serviceUsed.quantity;
+        totalServiceCost += serviceUsed?.service?.price * serviceUsed?.quantity;
       });
 
       totalRoomCost = orderDetail.roomPrice;
@@ -656,7 +762,7 @@ function BookRoom() {
     let total = 0;
     comboUsedTotalPrice.forEach((comboUsed) => {
       if (comboUsed.orderDetail.order.id === id) {
-        total += comboUsed.quantity * comboUsed.combo.price;
+        total += comboUsed?.quantity * comboUsed?.combo?.price;
       }
     });
     return total;
@@ -666,7 +772,7 @@ function BookRoom() {
     let total = 0;
     serviceUsedTotalPrice.forEach((serviceUsed) => {
       if (serviceUsed.orderDetail.order.id === id) {
-        total += serviceUsed.quantity * serviceUsed.service.price;
+        total += serviceUsed?.quantity * serviceUsed?.service?.price;
       }
     });
     return total;
@@ -675,7 +781,7 @@ function BookRoom() {
   const calculateTotalAmountCombo = () => {
     let total = 0;
     comboUsed.forEach((comboUsed) => {
-      total += comboUsed.quantity * comboUsed.combo.price;
+      total += comboUsed?.quantity * comboUsed?.combo?.price;
     });
     return total;
   };
@@ -683,7 +789,7 @@ function BookRoom() {
   const calculateTotalAmount = () => {
     let total = 0;
     serviceUsed.forEach((serviceUsed) => {
-      total += serviceUsed.quantity * serviceUsed.service.price;
+      total += serviceUsed?.quantity * serviceUsed?.service?.price;
     });
     return total;
   };
@@ -697,11 +803,11 @@ function BookRoom() {
   const moneyReturnCustomerOneRoom = givenCustomerOneRoom - sumOrderDetail;
   const vatAmount = totalAmount * 0.1;
   const totalMoney = totalAmount + vatAmount;
-  const sumAmount = totalAmount + vatAmount - order.deposit + order.surcharge;
+  const sumAmount = totalAmount + vatAmount + order.surcharge + order.deposit - order.deposit;
   useEffect(() => {
     setSumAmountValue(sumAmount);
   }, [sumAmount]);
-  const moneyReturnCustomer = givenCustomer - sumAmount;
+  const moneyReturnCustomer = givenCustomer - sumAmountValue;
 
   useEffect(() => {
     const newTotal = calculateTotal();
@@ -719,6 +825,114 @@ function BookRoom() {
     setEmail("");
     setNationality("");
     setAddress("");
+  };
+
+  const handleQuantityChange = (serviceId, newQuantity) => {
+    const updatedServiceUsed = serviceUsed.map((service) => {
+      if (service.id === serviceId) {
+        return { ...service, quantity: newQuantity };
+      }
+      return service;
+    });
+
+    setServiceUsed(updatedServiceUsed);
+  };
+
+  const handleQuantityChangeApi = async (serviceId, newQuantity) => {
+    if (newQuantity > 10) {
+      toast.error("Số lượng không được quá 10!", {
+        position: toast.POSITION.BOTTOM_CENTER,
+      });
+      return;
+    } else if (newQuantity < 1) {
+      const updatedServiceUsed = serviceUsed.map((service) => {
+        if (service.id === serviceId) {
+          return { ...service, quantity: 1 };
+        }
+        return service;
+      });
+
+      setServiceUsed(updatedServiceUsed);
+      toast.error("Số lượng phải lớn hơn 0!", {
+        position: toast.POSITION.BOTTOM_CENTER,
+      });
+      return;
+    }
+    try {
+      const response = await axios.put("http://localhost:2003/api/service-used/update", {
+        id: serviceId,
+        quantity: newQuantity,
+      });
+
+      if (response.status === 200) {
+        handleQuantityChange(serviceId, newQuantity);
+        setServiceUsed([...serviceUsed, response.data]);
+        const responseServicePrice = await axios.get("http://localhost:2003/api/service-used/load");
+        setServiceUsedTotalPrice(responseServicePrice.data);
+        const responseServiceUsed = await axios.get(
+          `http://localhost:2003/api/service-used/load/${selectedOrderDetails}`
+        );
+        setServiceUsed(responseServiceUsed.data);
+      } else {
+        console.error("Update không thành công.");
+      }
+    } catch (error) {
+      console.error("Đã có lỗi xảy ra khi gọi API update:", error);
+    }
+  };
+
+  const handleQuantityComboChange = (comboId, newQuantity) => {
+    const updatedComboUsed = comboUsed.map((combo) => {
+      if (combo.id === comboId) {
+        return { ...combo, quantity: newQuantity };
+      }
+      return combo;
+    });
+
+    setComboUsed(updatedComboUsed);
+  };
+
+  const handleQuantityComboChangeApi = async (comboId, newQuantity) => {
+    if (newQuantity > 10) {
+      toast.error("Số lượng không được quá 10!", {
+        position: toast.POSITION.BOTTOM_CENTER,
+      });
+      return;
+    } else if (newQuantity < 1) {
+      const updatedComboUsed = comboUsed.map((combo) => {
+        if (combo.id === comboId) {
+          return { ...combo, quantity: 1 };
+        }
+        return combo;
+      });
+
+      setComboUsed(updatedComboUsed);
+      toast.error("Số lượng phải lớn hơn 0!", {
+        position: toast.POSITION.BOTTOM_CENTER,
+      });
+      return;
+    }
+    try {
+      const response = await axios.put("http://localhost:2003/api/combo-used/update", {
+        id: comboId,
+        quantity: newQuantity,
+      });
+
+      if (response.status === 200) {
+        handleQuantityComboChange(comboId, newQuantity);
+        setComboUsed([...comboUsed, response.data]);
+        const responseComboPrice = await axios.get("http://localhost:2003/api/combo-used/load");
+        setComboUsedTotalPrice(responseComboPrice.data);
+        const responseComboUsed = await axios.get(
+          `http://localhost:2003/api/combo-used/load/${selectedOrderDetails}`
+        );
+        setComboUsed(responseComboUsed.data);
+      } else {
+        console.error("Update không thành công.");
+      }
+    } catch (error) {
+      console.error("Đã có lỗi xảy ra khi gọi API update:", error);
+    }
   };
 
   const renderButtonsBasedOnStatus = () => {
@@ -753,6 +967,12 @@ function BookRoom() {
             >
               Nhận phòng
             </Button>
+            <Backdrop
+              sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+              open={openLoading}
+            >
+              <CircularProgress color="inherit" />
+            </Backdrop>
           </React.Fragment>
         );
       case 2:
@@ -777,6 +997,12 @@ function BookRoom() {
             >
               Thanh toán
             </Button>
+            <Backdrop
+              sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+              open={openLoading}
+            >
+              <CircularProgress color="inherit" />
+            </Backdrop>
           </React.Fragment>
         );
       case 3:
@@ -784,14 +1010,14 @@ function BookRoom() {
       case 5:
         return (
           <React.Fragment>
-            <Button
+            {/* <Button
               style={{ width: 100, height: 50 }}
               onClick={handleOpenCancelOrder}
               variant="outlined"
               color="error"
             >
               Hủy
-            </Button>
+            </Button> */}
             <Button
               onClick={handleSave}
               style={{ marginLeft: 20, width: 100, height: 50 }}
@@ -811,6 +1037,12 @@ function BookRoom() {
             >
               Nhận phòng
             </Button>
+            <Backdrop
+              sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+              open={openLoading}
+            >
+              <CircularProgress color="inherit" />
+            </Backdrop>
           </React.Fragment>
         );
       default:
@@ -840,13 +1072,12 @@ function BookRoom() {
       setDiscountPercent(discount.reduceValue);
       const total = calculateTotal();
       const totalAfterDiscount = (total * discount.reduceValue) / 100;
-      if (totalAfterDiscount <= discount.maximumDiscount) {
+      if (totalAfterDiscount <= discount.maximumReductionValue) {
         setDiscountMoney(totalAfterDiscount);
         setSumAmountValue(sumAmount - totalAfterDiscount);
-      }
-      {
-        setDiscountMoney(discount.maximumDiscount);
-        setSumAmountValue(sumAmount - discount.maximumDiscount);
+      } else {
+        setDiscountMoney(discount.maximumReductionValue);
+        setSumAmountValue(sumAmount - discount.maximumReductionValue);
       }
     } else {
       setSelectedDiscount(null);
@@ -898,7 +1129,7 @@ function BookRoom() {
         return;
       }
       axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
-
+      setOpenLoading(true);
       await axios.put(`http://localhost:2003/api/order/update-accept/${id}`, {
         customerId: selectedCustomerAccept,
         totalMoney: sumAmountValue,
@@ -912,19 +1143,13 @@ function BookRoom() {
       });
       router.push(`/order-detail?id=${id}`);
     } catch (error) {
+      setOpenLoading(false);
       console.log(error);
     }
   };
 
   //Trả 1 phòng
   const handleReturnOneRoom = async () => {
-    if (!givenCustomerOneRoom || givenCustomerOneRoom < sumOrderDetail) {
-      toast.error("Số tiền khách trả không hợp lệ!", {
-        position: toast.POSITION.BOTTOM_CENTER,
-      });
-      return;
-    }
-
     if (!selectedCustomerReturn) {
       toast.error("Chưa chọn khách hàng!", {
         position: toast.POSITION.BOTTOM_CENTER,
@@ -933,6 +1158,14 @@ function BookRoom() {
     }
 
     try {
+      const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
+      // Kiểm tra xem accessToken có tồn tại không
+      if (!accessToken) {
+        console.log("Bạn chưa đăng nhập");
+        return;
+      }
+      axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+      setOpenLoading(true);
       const response = await axios.post(
         `http://localhost:2003/api/order/return/${selectedOrderDetails}`,
         {
@@ -940,25 +1173,31 @@ function BookRoom() {
           customerId: selectedCustomerReturn,
           totalMoney: sumOrderDetail,
           vat: vatOrderDetail,
-          moneyGivenByCustomer: givenCustomerOneRoom,
-          excessMoney: moneyReturnCustomerOneRoom,
           note: noteReturnOneRoom,
           idReturn: id,
+          idCustomerRepresent: selectedCustomerRepresent ? selectedCustomerRepresent : null,
         }
       );
       const orderId = response.data.id;
       handleCloseReturnOneRoom();
-      toast.success("Trả phòng thành công!", {
+      toast.success("Tách phòng thành công!", {
         position: toast.POSITION.BOTTOM_CENTER,
       });
       router.push(`/order-detail?id=${orderId}`);
     } catch (error) {
+      setOpenLoading(false);
       console.log(error);
     }
   };
 
   //Trả phòng
   const handleReturnRoom = async () => {
+    if (!/^\d+$/.test(givenCustomer)) {
+      toast.error("Vui lòng nhập số!", {
+        position: toast.POSITION.BOTTOM_CENTER,
+      });
+      return;
+    }
     if (!givenCustomer || givenCustomer < sumAmountValue) {
       // Xử lý khi tiền khách trả không hợp lệ, ví dụ: hiển thị thông báo lỗi
       toast.error("Số tiền khách trả không hợp lệ!", {
@@ -974,7 +1213,7 @@ function BookRoom() {
         return;
       }
       axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
-
+      setOpenLoading(true);
       await axios.put(`http://localhost:2003/api/order/update-return/${id}`, {
         totalMoney: sumAmountValue,
         vat: vatAmount,
@@ -991,6 +1230,7 @@ function BookRoom() {
       });
       router.push(`/order-detail?id=${id}`);
     } catch (error) {
+      setOpenLoading(false);
       console.log(error);
     }
   };
@@ -1006,9 +1246,10 @@ function BookRoom() {
       }
       axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
       // Make an API call to update the order status to "Đã xác nhận" (status: 2)
+      setOpenLoading(true);
       await axios.put(`http://localhost:2003/api/order/delete/${id}`, {
         note: noteCancelRoom,
-        deleted: fullname,
+        // deleted: fullname,
       });
       setOrder({ ...order, status: 0 });
       handleCloseCancelOrder();
@@ -1017,6 +1258,7 @@ function BookRoom() {
       });
       router.push(`/order-detail?id=${id}`);
     } catch (error) {
+      setOpenLoading(false);
       console.log(error);
     }
   };
@@ -1050,7 +1292,7 @@ function BookRoom() {
     }
 
     const comboResponse = await axios.get(
-      `http://localhost:2003/api/admin/combo/detail/${selectedComboId}`
+      `http://localhost:2003/api/general/combo/detail/${selectedComboId}`
     );
     const orderDetailResponse = await axios.get(
       `http://localhost:2003/api/order-detail/detail/${selectedOrderDetails}`
@@ -1120,7 +1362,7 @@ function BookRoom() {
     }
 
     const serviceResponse = await axios.get(
-      `http://localhost:2003/api/admin/service/detail/${selectedServiceId}`
+      `http://localhost:2003/api/general/service/detail/${selectedServiceId}`
     );
     const orderDetailResponse = await axios.get(
       `http://localhost:2003/api/order-detail/detail/${selectedOrderDetails}`
@@ -1193,9 +1435,9 @@ function BookRoom() {
   useEffect(() => {
     const fetchDiscount = async () => {
       try {
-        const total = calculateTotal();
+        // const total = calculateTotal();
         const response = await axios.get(
-          `http://localhost:2003/api/order/discount-program?totalMoney=${total}`
+          `http://localhost:2003/api/order/discount-program?totalMoney=${sumAmountValue}`
         );
         console.log("ABC: ", response.data);
         setDiscountProgram(response.data);
@@ -1346,10 +1588,10 @@ function BookRoom() {
       );
       setCustomerInfoOrder(responseInfoCustomerOrder.data);
       const responseCustomerOrder = await axios.get(
-        `http://localhost:2003/api/admin/customer/getAllByOrderId/${id}`
+        `http://localhost:2003/api/general/customer/getAllByOrderId/${id}`
       );
       setCustomerOrder(responseCustomerOrder.data);
-      const responseCustomer = await axios.get("http://localhost:2003/api/admin/customer/getAll");
+      const responseCustomer = await axios.get("http://localhost:2003/api/general/customer/getAll");
       setCustomer(responseCustomer.data);
       toast.success("Thêm thành công!", {
         position: toast.POSITION.BOTTOM_CENTER,
@@ -1465,7 +1707,7 @@ function BookRoom() {
       );
       setCustomerInfoOrder(responseInfoCustomerOrder.data);
       const responseCustomer = await axios.get(
-        `http://localhost:2003/api/admin/customer/getAllByOrderId/${id}`
+        `http://localhost:2003/api/general/customer/getAllByOrderId/${id}`
       );
       setCustomerOrder(responseCustomer.data);
       toast.success("Xóa thành công!", {
@@ -1475,6 +1717,23 @@ function BookRoom() {
       console.log(error);
     }
   };
+
+  useEffect(() => {
+    const hasMatchingCustomer = orderDetailData.some((orderDetail) => {
+      if (
+        orderDetail &&
+        orderDetail.id === selectedOrderDetails &&
+        orderDetail.informationCustomerList
+      ) {
+        return orderDetail.informationCustomerList.some(
+          (customer) => customer.citizenId === order.customer.citizenId
+        );
+      }
+      return false;
+    });
+
+    setIsCustomerAdded(hasMatchingCustomer);
+  }, [orderDetailData, order?.customer?.citizenId, selectedOrderDetails]);
 
   // Xóa combo sử dụng
   const handleDeleteComboUsed = async (id) => {
@@ -1554,7 +1813,7 @@ function BookRoom() {
       );
       setOrderDetailData(response.data);
       const responseRoom = await axios.get(
-        "http://localhost:2003/api/admin/room/loadAndSearchBookRoom"
+        "http://localhost:2003/api/general/room/loadAndSearchBookRoom"
       );
       setRooms(responseRoom.data);
       const responseServiceUsed = await axios.get("http://localhost:2003/api/service-used/load");
@@ -1562,7 +1821,7 @@ function BookRoom() {
       const responseComboPrice = await axios.get("http://localhost:2003/api/combo-used/load");
       setComboUsedTotalPrice(responseComboPrice.data);
       const responseCustomer = await axios.get(
-        `http://localhost:2003/api/admin/customer/getAllByOrderId/${id}`
+        `http://localhost:2003/api/general/customer/getAllByOrderId/${id}`
       );
       setCustomerOrder(responseCustomer.data);
       toast.success("Hủy phòng thành công!", {
@@ -1587,7 +1846,7 @@ function BookRoom() {
         }
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
         const response = await axios.get(
-          "http://localhost:2003/api/admin/room/loadAndSearchBookRoom"
+          "http://localhost:2003/api/general/room/loadAndSearchBookRoom"
         );
         setRooms(response.data); // Cập nhật danh sách phòng từ response
       } catch (error) {
@@ -1609,7 +1868,7 @@ function BookRoom() {
           return;
         }
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
-        const response = await axios.get("http://localhost:2003/api/admin/combo/getAll");
+        const response = await axios.get("http://localhost:2003/api/general/combo/getAll");
         setCombo(response.data); // Cập nhật danh sách phòng từ response
       } catch (error) {
         console.log(error);
@@ -1630,7 +1889,7 @@ function BookRoom() {
           return;
         }
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
-        const response = await axios.get("http://localhost:2003/api/admin/service/getAll");
+        const response = await axios.get("http://localhost:2003/api/general/service/getAll");
         setService(response.data); // Cập nhật danh sách phòng từ response
       } catch (error) {
         console.log(error);
@@ -1652,11 +1911,11 @@ function BookRoom() {
           return;
         }
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
-        const response = await axios.get("http://localhost:2003/api/admin/floor/getList");
-        const response2 = await axios.get("http://localhost:2003/api/admin/type-room/getList");
-        const response3 = await axios.get("http://localhost:2003/api/admin/service-type/getAll");
-        const response4 = await axios.get("http://localhost:2003/api/admin/unit/getAll");
-        let Api = `http://localhost:2003/api/admin/customer/getAll`;
+        const response = await axios.get("http://localhost:2003/api/general/floor/getList");
+        const response2 = await axios.get("http://localhost:2003/api/general/type-room/getList");
+        const response3 = await axios.get("http://localhost:2003/api/general/service-type/getAll");
+        const response4 = await axios.get("http://localhost:2003/api/general/unit/getAll");
+        let Api = `http://localhost:2003/api/general/customer/getAll`;
         let hasQueryParams = false;
         if (searchCustomer !== "") {
           Api += `?key=${searchCustomer}`;
@@ -1667,7 +1926,7 @@ function BookRoom() {
         const response7 = await axios.get("http://localhost:2003/api/combo-used/load");
         const response9 = await axios.get("http://localhost:2003/api/information-customer/load");
         const response10 = await axios.get(
-          `http://localhost:2003/api/admin/customer/getAllByOrderDetailId/${selectedOrderDetails}`
+          `http://localhost:2003/api/general/customer/getAllByOrderDetailId/${selectedOrderDetails}`
         );
         const response11 = await axios.get(
           `http://localhost:2003/api/information-customer/load/order/${id}`
@@ -1738,7 +1997,7 @@ function BookRoom() {
     async function fetchData() {
       try {
         const response = await axios.get(
-          `http://localhost:2003/api/admin/customer/getAllByOrderId/${id}`
+          `http://localhost:2003/api/general/customer/getAllByOrderId/${id}`
         );
         console.log("CustomerOrder:", response.data);
         if (response.data) {
@@ -1751,6 +2010,15 @@ function BookRoom() {
     fetchData();
   }, [id]);
 
+  const disableToday = (date) => {
+    const today = new Date();
+    return (
+      date.getDate() === today.getDate() &&
+      date.getMonth() === today.getMonth() &&
+      date.getFullYear() === today.getFullYear()
+    );
+  };
+
   const handleRoomSelect = (roomId) => {
     setSelectedRoomId(roomId);
     handleOpenDateDialog();
@@ -1761,6 +2029,7 @@ function BookRoom() {
     const selectedRoom = rooms.find((r) => r.id === selectedRoomId);
     if (selectedRoom) {
       setRoomPricePerDay(selectedRoom.typeRoom.pricePerDay);
+      setRoomPricePerHours(selectedRoom.typeRoom.pricePerHours);
     }
   }, [selectedRoomId, rooms]);
 
@@ -1779,19 +2048,25 @@ function BookRoom() {
         });
         return;
       }
-      const adult = parseInt(numberOfPeople);
-      const children = parseInt(
-        rooms.find((r) => r.id === selectedRoomId)?.typeRoom?.children || 0
-      );
-      const totalPeople = parseInt(adult + children);
+      // const adult = parseInt(numberOfPeople);
+      // const children = parseInt(
+      //   rooms.find((r) => r.id === selectedRoomId)?.typeRoom?.children || 0
+      // );
+      // const totalPeople = parseInt(adult + children);
       const capacity = rooms.find((r) => r.id === selectedRoomId)?.typeRoom?.capacity || 0;
-      if (totalPeople > capacity) {
+      if (numberOfPeople > capacity) {
         toast.error("Số người không được vượt quá sức chứa!", {
           position: toast.POSITION.BOTTOM_CENTER,
         });
         return false;
       }
-      const totalAmount = numberOfDays * roomPricePerDay;
+      let totalAmount;
+
+      if (typeRental === 1) {
+        totalAmount = numberOfDays * roomPricePerDay;
+      } else {
+        totalAmount = numberOfHours * roomPricePerHours;
+      }
       try {
         const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
         // Kiểm tra xem accessToken có tồn tại không
@@ -1808,10 +2083,9 @@ function BookRoom() {
             valueFrom.setHours(valueTimeFrom.getHours(), valueTimeFrom.getMinutes())
           ),
           checkOut: new Date(valueTo.setHours(valueTimeTo.getHours(), valueTimeTo.getMinutes())),
+          timeIn: typeRental,
           roomPrice: totalAmount,
           customerQuantity: numberOfPeople,
-          createBy: fullname,
-          updatedBy: fullname,
         });
 
         setOrderDetailData([...orderDetailData, response.data]);
@@ -1820,7 +2094,7 @@ function BookRoom() {
         );
         setOrderDetailData(responseOrderDetail.data);
         const responseRoom = await axios.get(
-          "http://localhost:2003/api/admin/room/loadAndSearchBookRoom"
+          "http://localhost:2003/api/general/room/loadAndSearchBookRoom"
         );
         setRooms(responseRoom.data);
         // router.push(`/booking?id=${id}`);
@@ -1835,9 +2109,12 @@ function BookRoom() {
         console.log("Lỗi khi thêm phòng vào hóa đơn chi tiết:", error);
         // Xử lý lỗi nếu có
         if (error.response.status === 400) {
-          toast.error("Phòng đã bị trùng. Vui lòng chọn ngày hoặc phòng khác.", {
-            position: toast.POSITION.BOTTOM_CENTER,
-          });
+          toast.error(
+            error.response.data,
+            {
+              position: toast.POSITION.BOTTOM_CENTER,
+            }
+          );
         } else {
           toast.error("Lỗi không xác định. Vui lòng thử lại sau.", {
             position: toast.POSITION.BOTTOM_CENTER,
@@ -1886,11 +2163,11 @@ function BookRoom() {
       );
       setOrderDetailData(responseOrderDetail.data);
       const responseRoom = await axios.get(
-        "http://localhost:2003/api/admin/room/loadAndSearchBookRoom"
+        "http://localhost:2003/api/general/room/loadAndSearchBookRoom"
       );
       setRooms(responseRoom.data);
       const responseRoomByCondition = await axios.get(
-        "http://localhost:2003/api/admin/room/loadByCondition"
+        "http://localhost:2003/api/general/room/loadByCondition"
       );
       setRooms(responseRoomByCondition.data);
       // router.push(`/booking?id=${id}`);
@@ -1906,9 +2183,12 @@ function BookRoom() {
       console.log("Lỗi khi thêm phòng vào hóa đơn chi tiết:", error);
       // Xử lý lỗi nếu có
       if (error.response.status === 400) {
-        toast.error("Phòng đã bị trùng. Vui lòng chọn ngày hoặc phòng khác.", {
-          position: toast.POSITION.BOTTOM_CENTER,
-        });
+        toast.error(
+          "Phòng đã được đặt trong khoảng thời gian này. Vui lòng chọn ngày hoặc phòng khác.",
+          {
+            position: toast.POSITION.BOTTOM_CENTER,
+          }
+        );
       } else {
         toast.error("Lỗi không xác định. Vui lòng thử lại sau.", {
           position: toast.POSITION.BOTTOM_CENTER,
@@ -1929,7 +2209,7 @@ function BookRoom() {
         }
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
 
-        let Api = `http://localhost:2003/api/admin/room/loadAndSearchBookRoom`;
+        let Api = `http://localhost:2003/api/general/room/loadAndSearchBookRoom`;
         // Add search text parameter only if there's a search text entered
         let hasQueryParams = false;
 
@@ -2192,7 +2472,7 @@ function BookRoom() {
         fullWidth
         PaperProps={{
           style: {
-            maxWidth: "80%",
+            maxWidth: "90%",
             maxHeight: "90%",
           },
         }}
@@ -2239,6 +2519,7 @@ function BookRoom() {
                 label="Đến ngày"
                 value={valueDateTo}
                 onChange={handleDateToChange}
+                disableDate={new Date()}
                 renderInput={(params) => (
                   <TextField
                     {...params}
@@ -2286,6 +2567,7 @@ function BookRoom() {
                     <TableCell>Tầng</TableCell>
                     <TableCell>Sức chứa</TableCell>
                     <TableCell>Giá theo ngày</TableCell>
+                    <TableCell>Giá theo giờ</TableCell>
                     <TableCell>Trạng thái</TableCell>
                     <TableCell>Thao tác</TableCell>
                   </TableRow>
@@ -2316,6 +2598,11 @@ function BookRoom() {
                           {room.typeRoom.pricePerDay ? formatPrice(room.typeRoom.pricePerDay) : ""}
                         </TableCell>
                         <TableCell>
+                          {room.typeRoom.pricePerHours
+                            ? formatPrice(room.typeRoom.pricePerHours)
+                            : ""}
+                        </TableCell>
+                        <TableCell>
                           <SeverityPill variant="contained" color={statusData.color}>
                             {statusText}
                           </SeverityPill>
@@ -2341,7 +2628,7 @@ function BookRoom() {
         fullWidth
         PaperProps={{
           style: {
-            maxWidth: "35%",
+            maxWidth: "50%",
           },
         }}
       >
@@ -2373,7 +2660,7 @@ function BookRoom() {
             onChange={handleFromDateChange}
             renderInput={(params) => (
               <TextField
-                style={{ marginRight: 25 }}
+                style={{ marginRight: 25, width: 375 }}
                 {...params}
                 inputProps={{
                   value: formatDate(valueFrom),
@@ -2385,13 +2672,14 @@ function BookRoom() {
           <TimePicker
             disabled
             label="Giờ check-in"
-            onChange={handleFromDateChange}
+            onChange={handleValueTimeFromChange}
             value={valueTimeFrom}
             renderInput={(params) => (
               <TextField
+                style={{ width: 375 }}
                 {...params}
                 inputProps={{
-                  value: formatTime(valueTimeFrom),
+                  value: valueTimeFrom ? formatTimeWithoutSeconds(valueTimeFrom) : "",
                   readOnly: true,
                 }}
               />
@@ -2408,7 +2696,7 @@ function BookRoom() {
             onChange={handleToDateChange}
             renderInput={(params) => (
               <TextField
-                style={{ marginRight: 25 }}
+                style={{ marginRight: 25, width: 375 }}
                 {...params}
                 inputProps={{
                   value: formatDate(valueTo),
@@ -2418,20 +2706,36 @@ function BookRoom() {
             )}
           />
           <TimePicker
-            disabled
+            disabled={typeRental === 1}
             label="Giờ check-out"
             value={valueTimeTo}
-            onChange={handleToDateChange}
+            onChange={handleValueTimeToChange}
             renderInput={(params) => (
               <TextField
+                style={{ width: 375 }}
                 {...params}
                 inputProps={{
-                  value: formatTime(valueTimeTo),
+                  value: valueTimeTo ? formatTimeWithoutSeconds(valueTimeTo) : "",
                   readOnly: true,
                 }}
               />
             )}
           />
+          <br />
+          <br />
+          <FormControl variant="standard" style={{ width: 200, marginLeft: 300 }}>
+            <InputLabel id="demo-simple-select-standard-label">Loại hình thuê</InputLabel>
+            <Select
+              labelId="demo-simple-select-standard-label"
+              id="demo-simple-select-standard"
+              label="Khách hàng"
+              value={typeRental}
+              onChange={handleTypeRentalChange}
+            >
+              <MenuItem value={1}>Theo ngày</MenuItem>
+              <MenuItem value={2}>Theo giờ</MenuItem>
+            </Select>
+          </FormControl>
           <br />
           <br />
           <TextField
@@ -2445,29 +2749,54 @@ function BookRoom() {
           />
           <br />
           <br />
-          <TextField fullWidth label="Số ngày" variant="outlined" disabled value={numberOfDays} />
+          {typeRental === 1 && (
+            <TextField fullWidth label="Số ngày" variant="outlined" disabled value={numberOfDays} />
+          )}
+          {typeRental === 2 && (
+            <TextField fullWidth label="Số giờ" variant="outlined" disabled value={numberOfHours} />
+          )}
           <br />
           <br />
-          <TextField
-            fullWidth
-            label="Giá"
-            variant="outlined"
-            disabled
-            value={
-              selectedRoomId
-                ? formatPrice(
-                    rooms.find((r) => r.id === selectedRoomId)?.typeRoom?.pricePerDay * numberOfDays
-                  )
-                : ""
-            }
-          />
+
+          {typeRental === 1 && (
+            <TextField
+              fullWidth
+              label="Giá"
+              variant="outlined"
+              disabled
+              value={
+                selectedRoomId
+                  ? formatPrice(
+                      rooms.find((r) => r.id === selectedRoomId)?.typeRoom?.pricePerDay *
+                        numberOfDays
+                    )
+                  : ""
+              }
+            />
+          )}
+          {typeRental === 2 && (
+            <TextField
+              fullWidth
+              label="Giá"
+              variant="outlined"
+              disabled
+              value={
+                selectedRoomId
+                  ? formatPrice(
+                      rooms.find((r) => r.id === selectedRoomId)?.typeRoom?.pricePerHours *
+                        numberOfHours
+                    )
+                  : ""
+              }
+            />
+          )}
           <br />
           <br />
           <TextField
             fullWidth
             value={numberOfPeople}
             onChange={(e) => setNumberOfPeople(e.target.value)}
-            label="Người lớn"
+            label="Số người"
             variant="outlined"
           />
           <br />
@@ -2531,11 +2860,26 @@ function BookRoom() {
                   <TableCell>Phòng</TableCell>
                   <TableCell>Tầng</TableCell>
                   <TableCell>Loại phòng</TableCell>
+                  <TableCell>Loại hình thuê</TableCell>
                   <TableCell>Sức chứa</TableCell>
-                  <TableCell>Người lớn</TableCell>
-                  <TableCell>Trẻ em</TableCell>
+                  <TableCell>Số người</TableCell>
                   <TableCell>Ngày check-in</TableCell>
-                  <TableCell>Ngày check-out</TableCell>
+                  {order.status === 1 || order.status === 5 ? (
+                    <TableCell>Ngày check out</TableCell>
+                  ) : (
+                    ""
+                  )}
+                  {order.status === 2 ? <TableCell>Ngày check out</TableCell> : ""}
+                  {order.status === 2 ? <TableCell>Ngày check out dự kiến</TableCell> : ""}
+                  {order.status === 3 ? (
+                    <>
+                      <TableCell>Ngày check out</TableCell>
+                      <TableCell>Ngày check out dự kiến</TableCell>
+                    </>
+                  ) : (
+                    // <TableCell>Ngày check-out</TableCell>
+                    ""
+                  )}
                   <TableCell>Thành tiền</TableCell>
                   <TableCell>
                     {order.status === 1 || order.status === 5 ? <>Thao tác</> : null}
@@ -2555,7 +2899,7 @@ function BookRoom() {
                       <TableCell>
                         {orderDetail && orderDetail.roomImages && orderDetail.roomImages[0] && (
                           <img
-                            style={{ objectFit: "cover", width: "100%" }}
+                            style={{ objectFit: "cover", width: "100px" }}
                             src={orderDetail.roomImages[0]}
                             alt={`Room ${index + 1} Image 1`}
                           />
@@ -2564,19 +2908,67 @@ function BookRoom() {
                       <TableCell>{orderDetail.room.roomName}</TableCell>
                       <TableCell>{orderDetail.room.floor.floorName}</TableCell>
                       <TableCell>{orderDetail.room.typeRoom.typeRoomName}</TableCell>
+                      <TableCell>{orderDetail.timeIn === 1 ? "Theo ngày" : "Theo giờ"}</TableCell>
                       <TableCell>{orderDetail.room.typeRoom.capacity}</TableCell>
                       <TableCell>{orderDetail.customerQuantity}</TableCell>
-                      <TableCell>{orderDetail.room.typeRoom.children}</TableCell>
                       <TableCell>
                         {orderDetail &&
                           orderDetail.checkIn &&
-                          format(new Date(orderDetail.checkIn), "dd/MM/yyyy")}
+                          format(new Date(orderDetail.checkIn), "dd/MM/yyyy HH:mm")}
                       </TableCell>
-                      <TableCell>
-                        {orderDetail &&
-                          orderDetail.checkOut &&
-                          format(new Date(orderDetail.checkOut), "dd/MM/yyyy")}
-                      </TableCell>
+                      {order.status === 1 || order.status === 5 ? (
+                        <TableCell>
+                          {orderDetail &&
+                            orderDetail.checkOut &&
+                            format(new Date(orderDetail.checkOut), "dd/MM/yyyy HH:mm")}
+                        </TableCell>
+                      ) : (
+                        ""
+                      )}
+                      {order.status === 2 ? (
+                        <TableCell>
+                          {orderDetail &&
+                            orderDetail.checkOutReal &&
+                            format(new Date(orderDetail.checkOutReal), "dd/MM/yyyy HH:mm")}
+                        </TableCell>
+                      ) : (
+                        ""
+                      )}
+                      {order.status === 2 ? (
+                        <TableCell>
+                          {orderDetail &&
+                            orderDetail.checkOut &&
+                            format(new Date(orderDetail.checkOut), "dd/MM/yyyy HH:mm")}
+                        </TableCell>
+                      ) : (
+                        // <TableCell>
+                        //   {orderDetail &&
+                        //     orderDetail.checkOut &&
+                        //     format(new Date(orderDetail.checkOut), "dd/MM/yyyy HH:mm")}
+                        // </TableCell>
+                        ""
+                      )}
+                      {order.status === 3 ? (
+                        <>
+                          <TableCell>
+                            {orderDetail &&
+                              orderDetail.checkOutReal &&
+                              format(new Date(orderDetail.checkOutReal), "dd/MM/yyyy HH:mm")}
+                          </TableCell>
+                          <TableCell>
+                            {orderDetail &&
+                              orderDetail.checkOut &&
+                              format(new Date(orderDetail.checkOut), "dd/MM/yyyy HH:mm")}
+                          </TableCell>
+                        </>
+                      ) : (
+                        // <TableCell>
+                        //   {orderDetail &&
+                        //     orderDetail.checkOut &&
+                        //     format(new Date(orderDetail.checkOut), "dd/MM/yyyy HH:mm")}
+                        // </TableCell>
+                        ""
+                      )}
                       <TableCell>
                         {orderDetail.roomPrice ? formatPrice(orderDetail.roomPrice) : ""}
                       </TableCell>
@@ -2658,7 +3050,7 @@ function BookRoom() {
                                   key="returnRoom"
                                   onClick={() => handleOpenReturnOneRoom(orderDetail.id)}
                                 >
-                                  Trả phòng
+                                  Tách phòng
                                 </MenuItem>
                               ) : null}
                             </Menu>
@@ -2771,11 +3163,24 @@ function BookRoom() {
                           {serviceUsed.length > 0 ? (
                             serviceUsed.map((serviceUsed, index) => (
                               <TableRow key={index}>
-                                <TableCell>{serviceUsed.service.serviceName}</TableCell>
-                                <TableCell>{serviceUsed.orderDetail.room.roomName}</TableCell>
-                                <TableCell>{serviceUsed.quantity}</TableCell>
+                                <TableCell>{serviceUsed?.service?.serviceName}</TableCell>
+                                <TableCell>{serviceUsed?.orderDetail?.room?.roomName}</TableCell>
                                 <TableCell>
-                                  {formatPrice(serviceUsed.quantity * serviceUsed.service.price)}
+                                  <Input
+                                    type="number"
+                                    value={serviceUsed.quantity}
+                                    onChange={(e) => {
+                                      // Giữ giá trị số nguyên dương
+                                      const newValue = Math.max(
+                                        1,
+                                        parseInt(e.target.value, 10) || 0
+                                      );
+                                      handleQuantityChangeApi(serviceUsed.id, newValue);
+                                    }}
+                                  />
+                                </TableCell>
+                                <TableCell>
+                                  {formatPrice(serviceUsed?.quantity * serviceUsed?.service?.price)}
                                 </TableCell>
                                 <TableCell>
                                   {order.status === 1 || order.status === 5 ? (
@@ -2834,11 +3239,24 @@ function BookRoom() {
                           {comboUsed.length > 0 ? (
                             comboUsed.map((comboUsed, index) => (
                               <TableRow key={index}>
-                                <TableCell>{comboUsed.combo.comboName}</TableCell>
-                                <TableCell>{comboUsed.orderDetail.room.roomName}</TableCell>
-                                <TableCell>{comboUsed.quantity}</TableCell>
+                                <TableCell>{comboUsed?.combo?.comboName}</TableCell>
+                                <TableCell>{comboUsed?.orderDetail?.room?.roomName}</TableCell>
                                 <TableCell>
-                                  {formatPrice(comboUsed.quantity * comboUsed.combo.price)}
+                                  <Input
+                                    type="number"
+                                    value={comboUsed.quantity}
+                                    onChange={(e) => {
+                                      // Giữ giá trị số nguyên dương
+                                      const newValue = Math.max(
+                                        1,
+                                        parseInt(e.target.value, 10) || 0
+                                      );
+                                      handleQuantityComboChangeApi(comboUsed.id, newValue);
+                                    }}
+                                  />
+                                </TableCell>
+                                <TableCell>
+                                  {formatPrice(comboUsed?.quantity * comboUsed?.combo?.price)}
                                 </TableCell>
                                 <TableCell>
                                   {order.status === 1 || order.status === 5 ? (
@@ -2889,7 +3307,7 @@ function BookRoom() {
       </Box>
       <Dialog open={openReturnOneRoom} onClose={handleCloseReturnOneRoom} maxWidth="md">
         <DialogTitle sx={{ m: 0, p: 2 }} id="customized-dialog-title">
-          XÁC NHẬN THANH TOÁN
+          XÁC NHẬN TÁCH PHÒNG
         </DialogTitle>
         <IconButton
           aria-label="close"
@@ -2932,19 +3350,27 @@ function BookRoom() {
           />
           <br />
           <br />
-          <TextField
-            label="Khách hàng trả"
-            value={givenCustomerOneRoom}
-            onChange={(e) => setGivenCustomerOneRoom(e.target.value)}
-            fullWidth
-            variant="outlined"
-          />
-          <br />
-          <br />
-          <div style={{ display: "flex" }}>
-            <FormControl variant="standard">
-              <InputLabel id="demo-simple-select-standard-label">Khách hàng</InputLabel>
-              {customerOrderDetail.length > 0 ? (
+
+          {isCustomerAdded ? (
+            <div style={{ display: "flex", justifyContent: "space-around" }}>
+              <FormControl variant="standard">
+                <InputLabel id="demo-simple-select-standard-label">Khách hàng</InputLabel>
+                <Select
+                  labelId="demo-simple-select-standard-label"
+                  id="demo-simple-select-standard"
+                  label="Khách hàng"
+                  style={{ width: 300 }}
+                  value={selectedCustomerRepresent}
+                  // onChange={(event) => setSelectedCustomerRepresent(event.target.value)}
+                >
+                  <MenuItem key={order.customer.id} value={order.customer.id}>
+                    {order.customer.fullname}
+                  </MenuItem>
+                </Select>
+              </FormControl>
+
+              <FormControl variant="standard">
+                <InputLabel id="demo-simple-select-standard-label">Khách hàng</InputLabel>
                 <Select
                   labelId="demo-simple-select-standard-label"
                   id="demo-simple-select-standard"
@@ -2953,27 +3379,40 @@ function BookRoom() {
                   value={selectedCustomerReturn}
                   onChange={(event) => setSelectedCustomerReturn(event.target.value)}
                 >
-                  {customerOrderDetail.map((customerOrderDetail) => (
-                    <MenuItem key={customerOrderDetail.id} value={customerOrderDetail.id}>
-                      {customerOrderDetail.fullname}
+                  {customerDifferenceOrder.map((customerDifferenceOrder) => (
+                    <MenuItem key={customerDifferenceOrder.id} value={customerDifferenceOrder.id}>
+                      {customerDifferenceOrder.fullname}
                     </MenuItem>
                   ))}
                 </Select>
-              ) : (
-                <p>Loading...</p>
-              )}
-            </FormControl>
-            <TextField
-              style={{ marginLeft: 135, width: 500 }}
-              label="Tiền trả lại"
-              value={
-                givenCustomerOneRoom - sumOrderDetail
-                  ? formatPrice(givenCustomerOneRoom - sumOrderDetail)
-                  : ""
-              }
-              variant="outlined"
-            />
-          </div>
+              </FormControl>
+            </div>
+          ) : (
+            <div style={{ display: "flex", justifyContent: "center" }}>
+              <FormControl variant="standard">
+                <InputLabel id="demo-simple-select-standard-label">Khách hàng</InputLabel>
+                {customerOrderDetail.length > 0 ? (
+                  <Select
+                    labelId="demo-simple-select-standard-label"
+                    id="demo-simple-select-standard"
+                    label="Khách hàng"
+                    style={{ width: 300 }}
+                    value={selectedCustomerReturn}
+                    onChange={(event) => setSelectedCustomerReturn(event.target.value)}
+                  >
+                    {customerOrderDetail.map((customerOrderDetail) => (
+                      <MenuItem key={customerOrderDetail.id} value={customerOrderDetail.id}>
+                        {customerOrderDetail.fullname}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                ) : (
+                  <p>Loading...</p>
+                )}
+              </FormControl>
+            </div>
+          )}
+
           <br />
           <TextareaAutosize
             className="form-control"
@@ -2987,19 +3426,11 @@ function BookRoom() {
           />
         </DialogContent>
         <DialogActions>
+          <Button onClick={handleCloseReturnOneRoom} color="error" variant="outlined">
+            Hủy
+          </Button>
           <Button onClick={handleReturnOneRoom} variant="outlined">
-            Tiền mặt
-          </Button>
-          <Button onClick={createPaymentMomo} variant="outlined" color="error">
-            Thanh toán MOMO
-          </Button>
-          <Button
-            style={{ marginRight: 20 }}
-            onClick={createPayment}
-            variant="outlined"
-            color="secondary"
-          >
-            Chuyển khoản ngân hàng
+            Xác nhận
           </Button>
         </DialogActions>
         <br />
@@ -3534,13 +3965,27 @@ function BookRoom() {
             justifyContent: "flex-end",
           }}
         >
-          <div style={{ marginLeft: 150, marginRight: 250, color: "red" }}>
+          <div style={{ marginRight: 50, color: "red" }}>
             <TextField
-              style={{ marginRight: 20 }}
+              style={{ marginRight: 20, width: 150 }}
               label="Tạm tính"
-              value={formatPrice(totalAmount)}
+              value={formatPrice(sumAmountValue)}
             />
-            <TextField label="VAT" value={formatPrice(vatAmount)} />
+            <TextField
+              style={{ marginRight: 20, width: 150 }}
+              label="VAT"
+              value={formatPrice(vatAmount)}
+            />
+            <TextField
+              style={{ marginRight: 20, width: 150 }}
+              label="Phụ thu"
+              value={order.surcharge ? formatPrice(order.surcharge) : "0 VND"}
+            />
+            <TextField
+              style={{ marginRight: 20, width: 150 }}
+              label="Tiền cọc"
+              value={order.deposit ? formatPrice(order.deposit) : "0 VND"}
+            />
           </div>
           {renderButtonsBasedOnStatus()}
           <Dialog open={openAcceptOrder} maxWidth="md">
@@ -3655,7 +4100,6 @@ function BookRoom() {
                     ))}
                   </Select>
                 </FormControl>
-
                 <br />
                 <br />
                 <TextField
@@ -3679,8 +4123,8 @@ function BookRoom() {
               <div style={{ display: "flex" }}>
                 <TextField
                   style={{ width: 520, marginRight: 30 }}
-                  label="Tổng tiền"
-                  value={sumAmountValue ? formatPrice(sumAmountValue) : "0 VND"}
+                  label="Thành tiền (Tiền phòng + Dịch vụ + VAT)"
+                  value={totalMoney ? formatPrice(totalMoney) : "0 VND"}
                   fullWidth
                   variant="outlined"
                 />
@@ -3688,6 +4132,23 @@ function BookRoom() {
                   style={{ width: 550 }}
                   label="Tiền cọc"
                   value={order.deposit ? formatPrice(order.deposit) : "0 VND"}
+                  fullWidth
+                  variant="outlined"
+                />
+              </div>
+              <br />
+              <div style={{ display: "flex" }}>
+                <TextField
+                  style={{ width: 520, marginRight: 30 }}
+                  label="Phụ thu"
+                  value={order.surcharge ? formatPrice(order.surcharge) : "0 VND"}
+                  fullWidth
+                  variant="outlined"
+                />
+                <TextField
+                  style={{ width: 550 }}
+                  label="Tổng tiền khách phải trả"
+                  value={sumAmountValue ? formatPrice(sumAmountValue) : "0 VND"}
                   fullWidth
                   variant="outlined"
                 />
@@ -3704,23 +4165,16 @@ function BookRoom() {
                 />
                 <TextField
                   style={{ width: 550 }}
-                  label="Phụ thu"
-                  value={order.surcharge ? formatPrice(order.surcharge) : "0 VND"}
+                  label="Tiền trả lại"
+                  value={
+                    givenCustomer - sumAmountValue
+                      ? formatPrice(givenCustomer - sumAmountValue)
+                      : "0 VND"
+                  }
                   fullWidth
                   variant="outlined"
                 />
               </div>
-              <br />
-              <TextField
-                label="Tiền trả lại"
-                value={
-                  givenCustomer - sumAmountValue
-                    ? formatPrice(givenCustomer - sumAmountValue)
-                    : "0 VND"
-                }
-                fullWidth
-                variant="outlined"
-              />
               <br />
               <br />
               <TextareaAutosize

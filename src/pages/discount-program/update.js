@@ -10,12 +10,10 @@ import Swal from "sweetalert2";
 import { useRouter } from "next/router";
 import { TextField } from "@mui/material";
 import { DatePicker, TimePicker } from "@mui/x-date-pickers";
-
+import CurrencyInput from "react-currency-input-field";
 const cx = classNames.bind(style);
 
 function UpdateDiscountProgram() {
-  // const [serviceType, setServiceType] = useState([]);
-  // const [unit, setUnit] = useState([]);
   const router = useRouter(); // Sử dụng useRouter để truy cập router của Next.js
   const { id } = router.query; // Lấy thông tin từ URL qua router.query
 
@@ -24,20 +22,30 @@ function UpdateDiscountProgram() {
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const [endDate, setEndDate] = useState();
 
+  const [minimumInvoice, setMinimumInvoice] = useState();
+  const [maximumReductionValue, setMaximumReductionValue] = useState();
+
   const handleDateFromChange = (date) => {
+    const selectedDate = new Date(date);
+    const endDay = new Date(endDate);
     setStartDay(date);
-    if (date > endDate) {
+    if (selectedDate > endDay) {
       setEndDate(date);
     }
     console.log(date);
   };
 
   const handleDateToChange = (date) => {
-    setEndDate(date);
-    if (date < startDay) {
+    // Chuyển đổi date về đối tượng Date
+    const selectedDate = new Date(date);
+    const startDay2 = new Date(startDay);
+
+    if (selectedDate < startDay2) {
       toast.error("Ngày kết thúc không được trước ngày bắt đầu", {
         position: toast.POSITION.TOP_RIGHT,
       });
+    } else {
+      setEndDate(date);
       setStartDay(date);
     }
     console.log(date);
@@ -55,6 +63,7 @@ function UpdateDiscountProgram() {
     endDate: "",
   });
 
+  console.log("acbc", startDay);
   const formatDateToYYYYMMDD = (date) => {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -65,7 +74,7 @@ function UpdateDiscountProgram() {
   const formatDate2 = (inputDateString) => {
     const inputDate = new Date(inputDateString);
 
-    const day = (inputDate.getUTCDate() + 1).toString().padStart(2, "0");
+    const day = inputDate.getUTCDate().toString().padStart(2, "0");
     const month = (inputDate.getUTCMonth() + 1).toString().padStart(2, "0");
     const year = inputDate.getUTCFullYear();
 
@@ -73,6 +82,18 @@ function UpdateDiscountProgram() {
 
     return `${day}/${month}/${year}`;
   };
+  function handleChangeMin(value) {
+    setDiscountProgramUpdate((prev) => ({
+      ...prev,
+      minimumInvoice: value,
+    }));
+  }
+  function handleChangeMax(value) {
+    setDiscountProgramUpdate((prev) => ({
+      ...prev,
+      maximumReductionValue: value,
+    }));
+  }
 
   const handleSubmit = async (event, id, discountProgramUpdate) => {
     event.preventDefault(); // Ngăn chặn sự kiện submit mặc định
@@ -123,76 +144,7 @@ function UpdateDiscountProgram() {
           window.location.href = "/auth/login"; // Chuyển hướng đến trang đăng nhập
         } else if (error.response.status === 400) {
           console.log(error.response.data);
-
-          const isAccountCodeError = error.response.data.accountCode === undefined;
-          const isFullnameError = error.response.data.fullname === undefined;
-          const isEmailError = error.response.data.email === undefined;
-          const isPhoneNumberError = error.response.data.phoneNumber === undefined;
-          const isCitizenIdError = error.response.data.citizenId === undefined;
-          const isBirthdayError = error.response.data.birthday === undefined;
-
-          if (
-            !isAccountCodeError &&
-            !isFullnameError &&
-            !isEmailError &&
-            !isPhoneNumberError &&
-            !isCitizenIdError &&
-            !isBirthdayError
-          ) {
-            toast.error(error.response.data.accountCode, {
-              position: toast.POSITION.BOTTOM_RIGHT,
-            });
-            toast.error(error.response.data.fullname, {
-              position: toast.POSITION.BOTTOM_RIGHT,
-            });
-            toast.error(error.response.data.email, {
-              position: toast.POSITION.BOTTOM_RIGHT,
-            });
-            toast.error(error.response.data.phoneNumber, {
-              position: toast.POSITION.BOTTOM_RIGHT,
-            });
-            toast.error(error.response.data.citizenId, {
-              position: toast.POSITION.BOTTOM_RIGHT,
-            });
-            toast.error(error.response.data.birthday, {
-              position: toast.POSITION.BOTTOM_RIGHT,
-            });
-            return false;
-          } else {
-            // Nếu có ít nhất một trường bị thiếu, xóa thông báo lỗi cho trường đó nếu có
-            // và hiển thị thông báo lỗi cho các trường còn lại
-            if (!isAccountCodeError) {
-              toast.error(error.response.data.accountCode, {
-                position: toast.POSITION.BOTTOM_RIGHT,
-              });
-            }
-            if (!isFullnameError) {
-              toast.error(error.response.data.fullname, {
-                position: toast.POSITION.BOTTOM_RIGHT,
-              });
-            }
-            if (!isEmailError) {
-              toast.error(error.response.data.email, {
-                position: toast.POSITION.BOTTOM_RIGHT,
-              });
-            }
-            if (!isPhoneNumberError) {
-              toast.error(error.response.data.phoneNumber, {
-                position: toast.POSITION.BOTTOM_RIGHT,
-              });
-            }
-            if (!isCitizenIdError) {
-              toast.error(error.response.data.citizenId, {
-                position: toast.POSITION.BOTTOM_RIGHT,
-              });
-            }
-            if (!isBirthdayError) {
-              toast.error(error.response.data.birthday, {
-                position: toast.POSITION.BOTTOM_RIGHT,
-              });
-            }
-            return false;
-          }
+          toast.error(error.response.data);
         } else {
           alert("Có lỗi xảy ra trong quá trình gọi API");
           return false;
@@ -258,19 +210,15 @@ function UpdateDiscountProgram() {
         <label htmlFor="floatingInput">Tên chương trình</label>
       </div>
       <div className="form-floating">
-        <input
-          type="text"
+        <CurrencyInput
           className="form-control"
-          id="floatingPassword"
-          placeholder="Password"
-          name="minimumInvoice"
+          id="input-example"
+          name="price"
+          placeholder="Please enter a number"
+          // defaultValue={0}
+          // decimalsLimit={2}
           value={discountProgramUpdate.minimumInvoice}
-          onChange={(e) => {
-            setDiscountProgramUpdate((prev) => ({
-              ...prev,
-              minimumInvoice: e.target.value,
-            }));
-          }}
+          onValueChange={(value) => handleChangeMin(value)} // Thêm event và value vào hàm
         />
         <label htmlFor="floatingPassword">Hóa đơn tối thiểu</label>
       </div>
@@ -291,7 +239,7 @@ function UpdateDiscountProgram() {
             }));
           }}
         />
-        <label htmlFor="floatingPassword">Giá trị giảm</label>
+        <label htmlFor="floatingPassword">Giá trị giảm (%)</label>
       </div>
       <br />
       <div className="form-floating">
@@ -314,20 +262,15 @@ function UpdateDiscountProgram() {
       </div>
       <br />
       <div className="form-floating">
-        <input
-          type="number"
+        <CurrencyInput
           className="form-control"
-          id="floatingPassword"
-          placeholder="Password"
-          variant="outlined"
-          name="maximumReductionValue"
+          id="input-example"
+          name="price"
+          placeholder="Please enter a number"
+          // defaultValue={0}
+          // decimalsLimit={2}
           value={discountProgramUpdate.maximumReductionValue}
-          onChange={(e) => {
-            setDiscountProgramUpdate((prev) => ({
-              ...prev,
-              maximumReductionValue: e.target.value,
-            }));
-          }}
+          onValueChange={(value) => handleChangeMax(value)} // Thêm event và value vào hàm
         />
         <label htmlFor="floatingPassword">Giá trị giảm tối đa</label>
       </div>
@@ -336,7 +279,7 @@ function UpdateDiscountProgram() {
         className="form-control"
         label="Ngày bắt đầu"
         disablePast
-        value={formatDate2(discountProgramUpdate.startDay)}
+        value={discountProgramUpdate.startDay}
         onChange={handleDateFromChange}
         renderInput={(params) => (
           <TextField
@@ -356,7 +299,7 @@ function UpdateDiscountProgram() {
         className="form-control"
         label="Ngày kết thúc"
         disablePast
-        value={formatDate2(discountProgramUpdate.endDate)}
+        value={discountProgramUpdate.endDate}
         onChange={handleDateToChange}
         renderInput={(params) => (
           <TextField
@@ -376,13 +319,13 @@ function UpdateDiscountProgram() {
         className={(cx("input-btn"), "btn btn-primary")}
         onClick={() => {
           Swal.fire({
-            title: "Are you sure?",
-            text: "You won't be able to revert this!",
+            title: "Bạn chắc chắn muốn cập nhật?",
             icon: "warning",
             showCancelButton: true,
             confirmButtonColor: "#3085d6",
             cancelButtonColor: "#d33",
-            confirmButtonText: "Yes, Update it!",
+            cancelButtonText: "Hủy",
+            confirmButtonText: "Cập nhật",
           }).then(async (result) => {
             if (result.isConfirmed) {
               const isSubmitSuccess = await handleSubmit(event, id, discountProgramUpdate);

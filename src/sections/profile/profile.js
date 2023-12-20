@@ -11,11 +11,10 @@ import {
   
   const user = {
     avatar: '/assets/avatars/avatar-anika-visser.png',
-    city: 'Los Angeles',
-    country: 'USA',
+    city: 'Ha noi ',
+    country: 'Viet Nam',
     jobTitle: 'Senior Developer',
-    name: 'Anika Visser',
-    timezone: 'GTM-7'
+    timezone: 'GTM+7'
   };
   
   export const Profile = () => (
@@ -37,12 +36,6 @@ import {
             }}
           />
           <Typography
-            gutterBottom
-            variant="h5"
-          >
-            {user.name}
-          </Typography>
-          <Typography
             color="text.secondary"
             variant="body2"
           >
@@ -58,12 +51,12 @@ import {
       </CardContent>
       <Divider />
       <CardActions>
-        <Button
+        {/* <Button
           fullWidth
           variant="text"
         >
           Upload picture
-        </Button>
+        </Button> */}
       </CardActions>
     </Card>
   );

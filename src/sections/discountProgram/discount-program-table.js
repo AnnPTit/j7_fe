@@ -28,7 +28,9 @@ export const DiscountProgramTable = (props) => {
   const handleDelete = (id) => {
     props.onDelete(id);
   };
-
+  const formatPrice = (price) => {
+    return price.toLocaleString("vi-VN") + " VND";
+  };
   return (
     <Card>
       <Scrollbar>
@@ -40,7 +42,8 @@ export const DiscountProgramTable = (props) => {
                 <TableCell>Mã</TableCell>
                 <TableCell>Tên Chương Trình</TableCell>
                 <TableCell>Hóa Đơn Tối Thiểu</TableCell>
-                <TableCell>Giá Trị Giảm</TableCell>
+                <TableCell>Giá trị giảm (%)</TableCell>
+                <TableCell>Giá Trị Giảm Tối Đa</TableCell>
                 <TableCell>Số Lượng</TableCell>
                 <TableCell>Ngày Áp Dụng</TableCell>
                 <TableCell>Ngày Kết Thúc</TableCell>
@@ -57,18 +60,18 @@ export const DiscountProgramTable = (props) => {
                 const hrefUpdate = `/discount-program/update?id=${discountProgram.id}`;
                 const alertDelete = () => {
                   Swal.fire({
-                    title: "Are you sure?",
-                    text: "You won't be able to revert this!",
+                    title: "Bạn chắc chắn muốn xóa?",
                     icon: "warning",
                     showCancelButton: true,
                     confirmButtonColor: "#3085d6",
                     cancelButtonColor: "#d33",
-                    confirmButtonText: "Yes, delete it!",
+                    cancelButtonText: "Hủy",
+                    confirmButtonText: "Xóa!",
                   }).then((result) => {
                     if (result.isConfirmed) {
-                      Swal.fire("Deleted!", "Your data has been deleted.", "success");
+                      Swal.fire("Xóa!", "Xóa thành công.", "success");
                       handleDelete(discountProgram.id);
-                      toast.success("Delete Successfully!");
+                      toast.success("Xóa thành công!");
                     }
                   });
                 };
@@ -81,8 +84,9 @@ export const DiscountProgramTable = (props) => {
                     </TableCell>
                     <TableCell>{discountProgram.code}</TableCell>
                     <TableCell>{discountProgram.name}</TableCell>
-                    <TableCell>{discountProgram.minimumInvoice}</TableCell>
-                    <TableCell>{discountProgram.reduceValue}</TableCell>
+                    <TableCell>{formatPrice(discountProgram.minimumInvoice)}</TableCell>
+                    <TableCell>{discountProgram.reduceValue} %</TableCell>
+                    <TableCell>{formatPrice(discountProgram.maximumReductionValue)}</TableCell>
                     <TableCell>{discountProgram.numberOfApplication}</TableCell>
                     <TableCell>{startDay}</TableCell>
                     <TableCell>{endDate}</TableCell>

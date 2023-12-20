@@ -24,6 +24,8 @@ function UpdateCustomer() {
   const [customerUpdate, setCustomerUpdate] = useState({
     id: "",
     customerCode: "",
+    username: "",
+    password: "",
     fullname: "",
     gender: "",
     birthday: "",
@@ -155,14 +157,14 @@ function UpdateCustomer() {
         );
         setWards(response.data.results);
         const ward = response.data.results.find((w) => w.ward_name === customerUpdate.wards);
-        console.log(ward);
         setSelectedWards(ward?.ward_id);
         const name = ward ? ward.ward_name : "";
         setSelectedWards(name);
+        setSelectedWardName(name);
       };
       fetchWards();
     }
-  }, [customerUpdate.wards, idDistrict, selectedWards]);
+  }, [customerUpdate.wards, idDistrict]);
 
   const handleProvinceChange = (e) => {
     setSelectedProvince(e.target.value);
@@ -177,8 +179,6 @@ function UpdateCustomer() {
     }
     console.log(province);
   };
-
-  useEffect(() => {}, []);
 
   const handleDistrictChange = (e) => {
     setSelectedDistrict(e.target.value);
@@ -253,6 +253,7 @@ function UpdateCustomer() {
       ...customerUpdate,
       id: id,
       customerCode: customerUpdate.customerCode,
+      username: customerUpdate.username,
       gender: customerUpdate.gender,
       fullname: customerUpdate.fullname,
       email: customerUpdate.email,
@@ -303,22 +304,34 @@ function UpdateCustomer() {
         } else if (error.response.status === 400) {
           console.log(error.response.data);
 
+          toast.error(error.response.data);
           const isCustomerCodeError = error.response.data.customerCode === undefined;
+          const isUserNameError = error.response.data.username === undefined;
           const isFullnameError = error.response.data.fullname === undefined;
           const isEmailError = error.response.data.email === undefined;
           const isPhoneNumberError = error.response.data.phoneNumber === undefined;
           const isCitizenIdError = error.response.data.citizenId === undefined;
           const isBirthdayError = error.response.data.birthday === undefined;
+          const isProvinceError = error.response.data.provinces === undefined;
+          const isDistrictError = error.response.data.districts === undefined;
+          const isWardError = error.response.data.wards === undefined;
 
           if (
             !isCustomerCodeError &&
+            !isUserNameError &&
             !isFullnameError &&
             !isEmailError &&
             !isPhoneNumberError &&
             !isCitizenIdError &&
-            !isBirthdayError
+            !isBirthdayError &&
+            !isProvinceError &&
+            !isDistrictError &&
+            !isWardError
           ) {
             toast.error(error.response.data.customerCode, {
+              position: toast.POSITION.BOTTOM_RIGHT,
+            });
+            toast.error(error.response.data.username, {
               position: toast.POSITION.BOTTOM_RIGHT,
             });
             toast.error(error.response.data.fullname, {
@@ -334,6 +347,15 @@ function UpdateCustomer() {
               position: toast.POSITION.BOTTOM_RIGHT,
             });
             toast.error(error.response.data.birthday, {
+              position: toast.POSITION.BOTTOM_RIGHT,
+            });
+            toast.error(error.response.data.provinces, {
+              position: toast.POSITION.BOTTOM_RIGHT,
+            });
+            toast.error(error.response.data.districts, {
+              position: toast.POSITION.BOTTOM_RIGHT,
+            });
+            toast.error(error.response.data.wards, {
               position: toast.POSITION.BOTTOM_RIGHT,
             });
             return false;
@@ -370,6 +392,21 @@ function UpdateCustomer() {
                 position: toast.POSITION.BOTTOM_RIGHT,
               });
             }
+            if (!isProvinceError) {
+              toast.error(error.response.data.provinces, {
+                position: toast.POSITION.BOTTOM_RIGHT,
+              });
+            }
+            if (!isDistrictError) {
+              toast.error(error.response.data.districts, {
+                position: toast.POSITION.BOTTOM_RIGHT,
+              });
+            }
+            if (!isWardError) {
+              toast.error(error.response.data.wards, {
+                position: toast.POSITION.BOTTOM_RIGHT,
+              });
+            }
             return false;
           }
         } else {
@@ -401,6 +438,43 @@ function UpdateCustomer() {
         <label htmlFor="floatingInput">Mã Khách Hàng</label>
       </div>
 
+      <div className="form-floating">
+        <input
+          type="text"
+          className="form-control"
+          id="floatingPassword"
+          placeholder="Password"
+          name="username"
+          value={customerUpdate.username}
+          onChange={(e) => {
+            setCustomerUpdate((prev) => ({
+              ...prev,
+              username: e.target.value,
+            }));
+          }}
+        />
+        <label htmlFor="floatingPassword">User Name</label>
+      </div>
+      <br></br>
+
+      <div className="form-floating">
+        <input
+          type="text"
+          className="form-control"
+          id="floatingPassword"
+          placeholder="Password"
+          name="password"
+          value={customerUpdate.password}
+          onChange={(e) => {
+            setCustomerUpdate((prev) => ({
+              ...prev,
+              password: e.target.value,
+            }));
+          }}
+        />
+        <label htmlFor="floatingPassword">Password</label>
+      </div>
+      <br></br>
       <div className="form-floating">
         <input
           type="text"
@@ -472,7 +546,7 @@ function UpdateCustomer() {
           id="floatingBirthday"
           placeholder="Ngày sinh"
           name="birthday"
-          value={customerUpdate.birthday.slice(0, 10)}
+          value={customerUpdate.birthday ? customerUpdate.birthday.slice(0, 10) : null}
           onChange={(e) => {
             setCustomerUpdate((prev) => ({
               ...prev,
@@ -590,19 +664,19 @@ function UpdateCustomer() {
         className={(cx("input-btn"), "btn btn-primary")}
         onClick={() => {
           Swal.fire({
-            title: "Are you sure?",
-            text: "You won't be able to revert this!",
+            title: "Bạn chắc chắn muốn cập nhật?",
             icon: "warning",
             showCancelButton: true,
             confirmButtonColor: "#3085d6",
             cancelButtonColor: "#d33",
-            confirmButtonText: "Yes, Update it!",
+            cancelButtonText: "Hủy",
+            confirmButtonText: "Cập nhật",
           }).then(async (result) => {
             if (result.isConfirmed) {
               const isSubmitSuccess = await handleSubmit(event, id, customerUpdate);
               if (isSubmitSuccess) {
-                Swal.fire("Update!", "Your data has been Update.", "success");
-                toast.success("Update Successfully!");
+                Swal.fire("Cập nhật!", "Cập nhật thành công.", "success");
+                toast.success("Cập nhật thành công!");
               }
             }
           });
