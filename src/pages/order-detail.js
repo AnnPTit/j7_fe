@@ -449,7 +449,6 @@ function OrderTimeline() {
     } catch (error) {
       setOpenLoading(false);
       console.log(error);
-      toast.error("Có lỗi xảy ra !");
     }
   };
 
@@ -628,8 +627,8 @@ function OrderTimeline() {
             <br />
           </div>
           <div style={{ marginLeft: 150, fontFamily: "inherit", fontSize: "17px" }}>
-            <label>Họ và tên</label>
-            <label style={{ marginLeft: 150 }}>{order.customer.fullname}</label>
+            <label>Khách hàng</label>
+            <label style={{ marginLeft: 130 }}>{order.customer.fullname}</label>
             <br />
             <br />
             <label>Số điện thoại</label>
