@@ -124,9 +124,9 @@ export const TypeRoomTable = (props) => {
                     confirmButtonText: "Xóa!",
                   }).then((result) => {
                     if (result.isConfirmed) {
-                      Swal.fire("Xóa thành công !", "Xóa thành công !", "success");
+                      
                       handleDelete(typeRoom.id);
-                      toast.success("Xóa thành công !");
+                      // toast.success("Xóa thành công !");
                     }
                   });
                 };

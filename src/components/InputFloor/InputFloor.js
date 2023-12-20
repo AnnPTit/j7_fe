@@ -118,7 +118,7 @@ function InputFloor() {
             <div className={cx("input-data")}>
               <input type="text" required name="floorName" />
               <div className={cx("underline")}></div>
-              <label>Floor Name</label>
+              <label>Tên Tầng</label>
             </div>
           </div>
           <div className={cx("form-row")}>

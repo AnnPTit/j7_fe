@@ -12,6 +12,7 @@ import InputTypeRoom from "src/components/InputTypeRoom/InputTypeRoom";
 import MyPagination from "src/components/Pagination";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { toast } from "react-toastify";
+import Swal from "sweetalert2";
 
 const useTypeRoom = (data, page, rowsPerPage) => {
   return useMemo(() => {
@@ -51,8 +52,13 @@ const Page = () => {
       setDataChange(!dataChange);
     } catch (error) {
       if (error.code === "ERR_BAD_REQUEST") {
-        toast.error(error.response.data);
+        toast.error(error.response.data,{
+          position: toast.POSITION.BOTTOM_CENTER,
+        });
+        return;
       }
+
+      // Swal.fire("Xóa thành công !", "Xóa thành công !", "success");
       console.log(error);
     }
   };
