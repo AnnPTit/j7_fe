@@ -11,6 +11,7 @@ import { applyPagination } from "src/utils/apply-pagination";
 import InputTypeRoom from "src/components/InputTypeRoom/InputTypeRoom";
 import MyPagination from "src/components/Pagination";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { toast } from "react-toastify";
 
 const useTypeRoom = (data, page, rowsPerPage) => {
   return useMemo(() => {
@@ -49,6 +50,9 @@ const Page = () => {
       await axios.delete(`http://localhost:2003/api/admin/type-room/delete/${id}`);
       setDataChange(!dataChange);
     } catch (error) {
+      if (error.code === "ERR_BAD_REQUEST") {
+        toast.error(error.response.data);
+      }
       console.log(error);
     }
   };
