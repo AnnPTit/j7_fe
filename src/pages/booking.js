@@ -1435,9 +1435,11 @@ function BookRoom() {
   useEffect(() => {
     const fetchDiscount = async () => {
       try {
-        // const total = calculateTotal();
+        const total = calculateTotal();
+        const sumAmount = total + (total*0.1 )+ order.surcharge ;
+        console.log("SumAmountValue: ", sumAmount);
         const response = await axios.get(
-          `http://localhost:2003/api/order/discount-program?totalMoney=${sumAmountValue}`
+          `http://localhost:2003/api/order/discount-program?totalMoney=${sumAmount}`
         );
         console.log("ABC: ", response.data);
         setDiscountProgram(response.data);
