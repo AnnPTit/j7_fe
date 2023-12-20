@@ -672,7 +672,7 @@ export const BookRoomTable = (props) => {
                                 id="outlined-read-only-input"
                                 label="CCCD"
                                 value={citizenId}
-                                onChange={(e) => setCitizenId(e.target.value)}
+                                // onChange={(e) => setCitizenId(e.target.value)}
                               />
                             </span>
                             <TextField
