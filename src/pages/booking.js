@@ -615,9 +615,9 @@ function BookRoom() {
 
   const handleCloseDateDialog = () => {
     setValueFrom(new Date());
-    setValueTo(null);
+    // setValueTo(null);
     setValueTimeFrom(new Date());
-    setValueTimeTo(null);
+    // setValueTimeTo(null);
     setTypeRental(1);
     setNumberOfDays(0);
     setNumberOfPeople();
