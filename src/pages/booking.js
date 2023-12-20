@@ -408,7 +408,7 @@ function BookRoom() {
 
       // Kiểm tra xem orderDetailResponse có dữ liệu hay không
       if (orderDetailResponse.data) {
-        const { customerQuantity, checkInDatetime, checkOutDatetime, room } =
+        const { customerQuantity, checkInDatetime, checkOutDatetimeReal, room } =
           orderDetailResponse.data;
         const { typeRoom } = room;
         const { id, capacity, children } = typeRoom;
@@ -440,11 +440,11 @@ function BookRoom() {
           Api = Api + `&dayStart=${formattedValueFrom}`;
           setCheckInChangeRoom(formattedValueFrom);
         }
-        if (checkOutDatetime) {
-          const valueToDate = new Date(checkOutDatetime);
+        if (checkOutDatetimeReal) {
+          const valueToDate = new Date(checkOutDatetimeReal);
           const formattedValueTo = valueToDate.toISOString().slice(0, 10);
           Api = Api + `&dayEnd=${formattedValueTo}`;
-          setCheckOutChangeRoom(formattedValueTo);
+          setCheckOutChangeRoom(checkOutDatetimeReal);
         }
         console.warn(Api);
         const response = await axios.get(Api);
@@ -2110,7 +2110,7 @@ function BookRoom() {
         // Xử lý lỗi nếu có
         if (error.response.status === 400) {
           toast.error(
-            "Phòng đã được đặt trong khoảng thời gian này. Vui lòng chọn ngày hoặc phòng khác.",
+            error.response.data,
             {
               position: toast.POSITION.BOTTOM_CENTER,
             }
