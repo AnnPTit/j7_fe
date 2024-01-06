@@ -29,6 +29,9 @@ import {
   Divider,
   IconButton,
   Input,
+  Stack,
+  CardContent,
+  CardMedia,
 } from "@mui/material";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
@@ -60,6 +63,11 @@ import QrCodeScannerIcon from "@mui/icons-material/QrCodeScanner";
 import { CustomerSearch } from "src/sections/bookRoomOffline/customer-search";
 import Backdrop from "@mui/material/Backdrop";
 import CircularProgress from "@mui/material/CircularProgress";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import { RoomPlanSearch } from "src/sections/roomPlan/room-plan-search";
+import RoomPlanFilter from "src/sections/roomPlan/room-plan-filter";
+import { FaHotel, FaSignOutAlt } from "react-icons/fa";
+
 function BookRoom() {
   const router = useRouter(); // Sử dụng useRouter để truy cập router của Next.js
   const { id } = router.query;
@@ -85,6 +93,7 @@ function BookRoom() {
   const [typeRoom, setTypeRoom] = useState([]);
   const [floorChose, setFloorChose] = useState("");
   const [typeRoomChose, setTypeRoomChose] = useState("");
+  const [statusChoose, setStatusChoose] = useState("");
   const [serviceType, setServiceType] = useState([]);
   const [unit, setUnit] = useState([]);
   const [selectedRoomId, setSelectedRoomId] = useState(null);
@@ -137,6 +146,10 @@ function BookRoom() {
   const [isCustomerAdded, setIsCustomerAdded] = useState(false);
   const [typeRental, setTypeRental] = useState(1);
   const [openLoading, setOpenLoading] = React.useState(false);
+  const [room, setRoom] = useState([]);
+  const [idRoom, setIdRoom] = useState("");
+  const [roomName, setRoomName] = useState("");
+  const [orderRoom, setOrderRoom] = useState([]);
 
   // CTGG
   const [reduceValue, setReduceValue] = useState(0);
@@ -232,7 +245,7 @@ function BookRoom() {
   const handleToDateChange = (newValue) => {
     console.log(newValue + "C");
     console.log(valueFrom + "C");
-    const tomorrow = addDays(new Date(), 1);
+    const tomorrow = addDays(new Date(), 0);
     if (newValue === valueFrom) {
       setValueTo(tomorrow);
     } else if (newValue > valueFrom) {
@@ -351,6 +364,24 @@ function BookRoom() {
   const handleRedirectOrders = () => {
     router.push(`/order-detail?id=${id}`);
   };
+
+  // Xử lí Tìm phòng
+  const [openCheckDateDialog, setOpenCheckDateDialog] = React.useState(false);
+  const [anchorElMenu, setAnchorElMenu] = React.useState(null);
+  const openMenu = Boolean(anchorEl);
+
+  const handleClickMenu = (event, roomId, roomName) => {
+    setAnchorElMenu(event.currentTarget);
+    setIdRoom(roomId);
+    setRoomName(roomName);
+  };
+
+  const handleCloseMenu = () => {
+    setAnchorElMenu(null);
+    setIdRoom("");
+    setRoomName("");
+  };
+
   // Xử lí các hàm đóng, mở dialog
   const handleOpenSearchRoom = () => {
     setOpenSeacrhRoom(true);
@@ -358,12 +389,10 @@ function BookRoom() {
 
   const handleCloseSearchRoom = () => {
     setOpenSeacrhRoom(false);
+    setStatusChoose("");
     setTextSearch("");
     setFloorChose("");
     setTypeRoomChose("");
-    setPriceRange([0, 3000000]);
-    setValueDateFrom(null);
-    setValueDateTo(null);
   };
 
   useEffect(() => {
@@ -492,6 +521,7 @@ function BookRoom() {
 
   const handleOpenDateDialog = () => {
     setOpenDateDialog(true);
+    setAnchorElMenu(null);
   };
 
   const handleOpenChooseCustomer = () => {
@@ -615,15 +645,106 @@ function BookRoom() {
 
   const handleCloseDateDialog = () => {
     setValueFrom(new Date());
-    // setValueTo(null);
+    setValueTo(null);
     setValueTimeFrom(new Date());
     // setValueTimeTo(null);
     setTypeRental(1);
     setNumberOfDays(0);
-    setNumberOfPeople();
+    setNumberOfPeople(0);
     setOpenDateDialog(false);
+    setIdRoom("");
+    setRoomName("");
   };
   // Kết thúc các hàm xử lí đóng, mở dialog
+
+  // Load idRoom
+  useEffect(() => {
+    const selectedRoom = room
+      .find((floorRooms) => floorRooms.some((r) => r.id === idRoom))
+      ?.find((r) => r.id === idRoom);
+    if (selectedRoom) {
+      setRoomPricePerDay(selectedRoom?.typeRoom?.pricePerDay);
+      setRoomPricePerHours(selectedRoom?.typeRoom?.pricePerHours);
+    }
+  }, [idRoom, room]);
+
+  useEffect(() => {
+    // Định nghĩa hàm fetchData bên trong useEffect
+    async function fetchData() {
+      try {
+        const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
+        // Kiểm tra xem accessToken có tồn tại không
+        if (!accessToken) {
+          console.log("Bạn chưa đăng nhập");
+          return;
+        }
+        axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
+        if (idRoom) {
+          const order = await axios.get(`http://localhost:2003/api/order/getByRoomId/${idRoom}`);
+          console.log("Id Order: ", order.data.id);
+          setOrderRoom(order.data);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    }
+    // Gọi hàm fetchData ngay lập tức
+    fetchData();
+  }, [idRoom]);
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const accessToken = localStorage.getItem("accessToken");
+        if (!accessToken) {
+          console.log("Bạn chưa đăng nhập");
+          return;
+        }
+        axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+        let api = "http://localhost:2003/api/room/room-plan";
+
+        let hasQueryParams = false;
+
+        // Construct the API URL based on the selected options
+        if (statusChoose !== "") {
+          api += `?status=${statusChoose}`;
+          hasQueryParams = true;
+        }
+        if (textSearch !== "") {
+          api += hasQueryParams ? `&key=${textSearch}` : `?key=${textSearch}`;
+          hasQueryParams = true;
+        }
+        if (floorChose !== "") {
+          api += hasQueryParams ? `&floorId=${floorChose}` : `?floorId=${floorChose}`;
+          hasQueryParams = true;
+        }
+        if (typeRoomChose !== "") {
+          api += hasQueryParams ? `&typeRoomId=${typeRoomChose}` : `?typeRoomId=${typeRoomChose}`;
+          hasQueryParams = true;
+        }
+        // const response = await axios.get("http://localhost:2003/api/room/room-plan");
+        const response = await axios.get(api);
+        console.log("Data: ", response.data);
+        setRoom(response.data);
+      } catch (error) {
+        console.log(error);
+      }
+    }
+    fetchData();
+  }, [statusChoose, textSearch, floorChose, typeRoomChose]);
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 0:
+        return { color: "warning", text: "Phòng đang sửa" };
+      case 1:
+        return { color: "success", text: "Phòng trống" };
+      case 2:
+        return { color: "error", text: "Đang có khách" };
+      default:
+        return { color: "default", text: "Unknown" };
+    }
+  };
 
   // Xử lí quét QR thêm thông tin khách hàng
   const handleError = (err) => {
@@ -1141,7 +1262,7 @@ function BookRoom() {
       toast.success("Nhận phòng thành công!", {
         position: toast.POSITION.BOTTOM_CENTER,
       });
-      router.push(`/order-detail?id=${id}`);
+      router.push(`/room-plan`);
     } catch (error) {
       setOpenLoading(false);
       console.log(error);
@@ -1228,7 +1349,7 @@ function BookRoom() {
       toast.success("Trả phòng thành công!", {
         position: toast.POSITION.BOTTOM_CENTER,
       });
-      router.push(`/order-detail?id=${id}`);
+      router.push(`/room-plan`);
     } catch (error) {
       setOpenLoading(false);
       console.log(error);
@@ -1274,6 +1395,7 @@ function BookRoom() {
     // const updatedTotalMoney = calculateTotal(); // Lấy giá trị tạm tính
     const response = await axios.put(`http://localhost:2003/api/order/update/${id}`, {
       totalMoney: sumAmountValue,
+      vat: vatAmount,
     });
     toast.success("Lưu thành công!", {
       position: toast.POSITION.BOTTOM_CENTER,
@@ -1436,7 +1558,7 @@ function BookRoom() {
     const fetchDiscount = async () => {
       try {
         const total = calculateTotal();
-        const sumAmount = total + (total*0.1 )+ order.surcharge ;
+        const sumAmount = total + total * 0.1 + order.surcharge;
         console.log("SumAmountValue: ", sumAmount);
         const response = await axios.get(
           `http://localhost:2003/api/order/discount-program?totalMoney=${sumAmount}`
@@ -1473,11 +1595,7 @@ function BookRoom() {
       phoneNumber == null ||
       !phoneNumber.trim() ||
       email == null ||
-      !email.trim() ||
-      nationality == null ||
-      !nationality.trim() ||
-      address == null ||
-      !address.trim()
+      !email.trim()
     ) {
       toast.error("Vui lòng điền đầy đủ thông tin khách hàng!", {
         position: toast.POSITION.BOTTOM_CENTER,
@@ -2026,19 +2144,10 @@ function BookRoom() {
     handleOpenDateDialog();
   };
 
-  // Trong useEffect để fetch giá theo ngày của phòng khi selectedRoomId thay đổi
-  useEffect(() => {
-    const selectedRoom = rooms.find((r) => r.id === selectedRoomId);
-    if (selectedRoom) {
-      setRoomPricePerDay(selectedRoom.typeRoom.pricePerDay);
-      setRoomPricePerHours(selectedRoom.typeRoom.pricePerHours);
-    }
-  }, [selectedRoomId, rooms]);
-
   // Tạo phòng
   const createOrderDetail = async () => {
     // Thực hiện xử lý khi ngày được xác nhận
-    if (selectedRoomId && valueFrom && valueTo && valueTimeFrom && valueTimeTo) {
+    if (idRoom && valueFrom && valueTo && valueTimeFrom && valueTimeTo) {
       if (numberOfPeople < 1) {
         toast.error("Số người lớn hơn 0!", {
           position: toast.POSITION.BOTTOM_CENTER,
@@ -2055,7 +2164,10 @@ function BookRoom() {
       //   rooms.find((r) => r.id === selectedRoomId)?.typeRoom?.children || 0
       // );
       // const totalPeople = parseInt(adult + children);
-      const capacity = rooms.find((r) => r.id === selectedRoomId)?.typeRoom?.capacity || 0;
+      const capacity =
+        room
+          .find((floorRooms) => floorRooms.some((r) => r.id === idRoom))
+          ?.find((r) => r.id === idRoom)?.typeRoom?.capacity || 0;
       if (numberOfPeople > capacity) {
         toast.error("Số người không được vượt quá sức chứa!", {
           position: toast.POSITION.BOTTOM_CENTER,
@@ -2080,7 +2192,9 @@ function BookRoom() {
 
         const response = await axios.post("http://localhost:2003/api/order-detail/save", {
           order: { id: id },
-          room: rooms.find((r) => r.id === selectedRoomId),
+          room: room
+            .find((floorRooms) => floorRooms.some((r) => r.id === idRoom))
+            ?.find((r) => r.id === idRoom),
           checkIn: new Date(
             valueFrom.setHours(valueTimeFrom.getHours(), valueTimeFrom.getMinutes())
           ),
@@ -2096,9 +2210,9 @@ function BookRoom() {
         );
         setOrderDetailData(responseOrderDetail.data);
         const responseRoom = await axios.get(
-          "http://localhost:2003/api/general/room/loadAndSearchBookRoom"
+          "http://localhost:2003/api/room/room-plan"
         );
-        setRooms(responseRoom.data);
+        setRoom(responseRoom.data);
         // router.push(`/booking?id=${id}`);
         toast.success("Thêm phòng thành công!", {
           position: toast.POSITION.BOTTOM_CENTER,
@@ -2111,12 +2225,9 @@ function BookRoom() {
         console.log("Lỗi khi thêm phòng vào hóa đơn chi tiết:", error);
         // Xử lý lỗi nếu có
         if (error.response.status === 400) {
-          toast.error(
-            error.response.data,
-            {
-              position: toast.POSITION.BOTTOM_CENTER,
-            }
-          );
+          toast.error(error.response.data, {
+            position: toast.POSITION.BOTTOM_CENTER,
+          });
         } else {
           toast.error("Lỗi không xác định. Vui lòng thử lại sau.", {
             position: toast.POSITION.BOTTOM_CENTER,
@@ -2479,8 +2590,8 @@ function BookRoom() {
           },
         }}
       >
-        <DialogTitle sx={{ m: 0, p: 2 }} id="customized-dialog-title">
-          Tìm kiếm phòng
+        <DialogTitle sx={{ m: 0, p: 2, display: "flex", justifyContent: "center" }} id="customized-dialog-title">
+          Sơ đồ phòng
         </DialogTitle>
         <IconButton
           aria-label="close"
@@ -2495,134 +2606,170 @@ function BookRoom() {
           <CloseIcon />
         </IconButton>
         <DialogContent>
-          <RoomSearch textSearch={textSearch} setTextSearch={setTextSearch} />
-          <div style={{ display: "flex", marginLeft: 600, marginTop: -70 }}>
-            <Grid item xs={12} ml={2} mr={2} sm={12} xl={2} lg={3}>
-              <DatePicker
-                disablePast
-                label="Từ ngày"
-                value={valueDateFrom}
-                onChange={handleDateFromChange}
-                renderInput={(params) => (
-                  <TextField
-                    style={{ marginRight: 20 }}
-                    {...params}
-                    inputProps={{
-                      value: formatDate(valueDateFrom),
-                      readOnly: true,
-                    }}
-                  />
-                )}
-              />
-            </Grid>
-            <Grid item xs={12} sm={12} xl={2} lg={3}>
-              <DatePicker
-                disablePast
-                label="Đến ngày"
-                value={valueDateTo}
-                onChange={handleDateToChange}
-                disableDate={new Date()}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    inputProps={{
-                      value: formatDate(valueDateTo),
-                      readOnly: true,
-                    }}
-                  />
-                )}
-              />
-            </Grid>
-          </div>
-          <div style={{ display: "flex", marginTop: 25, alignItems: "center" }}>
-            <div>
-              <RoomFilter
-                floor={floor}
-                typeRoom={typeRoom}
-                floorChose={floorChose}
-                typeRoomChose={typeRoomChose}
-                setFloorChose={setFloorChose}
-                setTypeRoomChose={setTypeRoomChose}
-              />
-            </div>
-            <div
-              style={{
-                marginLeft: 100,
-                width: 260,
-              }}
-            >
-              <PriceRangeSlider priceRange={priceRange} setPriceRange={setPriceRange} />
-            </div>
-          </div>
-          <br />
-          <br />
-          <Scrollbar>
-            <Box sx={{ minWidth: 800 }}>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>STT</TableCell>
-                    <TableCell></TableCell>
-                    <TableCell>Mã phòng</TableCell>
-                    <TableCell>Phòng</TableCell>
-                    <TableCell>Loại phòng</TableCell>
-                    <TableCell>Tầng</TableCell>
-                    <TableCell>Sức chứa</TableCell>
-                    <TableCell>Giá theo ngày</TableCell>
-                    <TableCell>Giá theo giờ</TableCell>
-                    <TableCell>Trạng thái</TableCell>
-                    <TableCell>Thao tác</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {rooms.map((room, index) => {
-                    const statusData = getStatusButtonColor(room.status);
-                    const statusText = statusData.text;
+          <RoomPlanSearch textSearch={textSearch} setTextSearch={setTextSearch} />
+          <RoomPlanFilter
+            floor={floor}
+            typeRoom={typeRoom}
+            floorChose={floorChose}
+            typeRoomChose={typeRoomChose}
+            statusChoose={statusChoose}
+            setFloorChose={setFloorChose}
+            setTypeRoomChose={setTypeRoomChose}
+            setStatusChoose={setStatusChoose}
+          />
+          {room.map((room, floorIndex) => (
+            <Box key={floorIndex}>
+              <Typography variant="h5" gutterBottom>
+                Tầng {floorIndex + 1}
+              </Typography>
+              <br />
+              <Stack>
+                <Grid container>
+                  {room.map((room) => {
+                    const status = getStatusColor(room.status);
+                    const statusText = status.text;
                     return (
-                      <TableRow key={room.id}>
-                        <TableCell padding="checkbox">
-                          <div key={index}>
-                            <span>{index + 1}</span>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <img
-                            style={{ height: 200, objectFit: "cover", width: "80%" }}
-                            src={room.photoList[0].url}
-                          />
-                        </TableCell>
-                        <TableCell>{room.roomCode}</TableCell>
-                        <TableCell>{room.roomName}</TableCell>
-                        <TableCell>{room.typeRoom.typeRoomName}</TableCell>
-                        <TableCell>{room.floor.floorName}</TableCell>
-                        <TableCell>{room.typeRoom.capacity}</TableCell>
-                        <TableCell>
-                          {room.typeRoom.pricePerDay ? formatPrice(room.typeRoom.pricePerDay) : ""}
-                        </TableCell>
-                        <TableCell>
-                          {room.typeRoom.pricePerHours
-                            ? formatPrice(room.typeRoom.pricePerHours)
-                            : ""}
-                        </TableCell>
-                        <TableCell>
-                          <SeverityPill variant="contained" color={statusData.color}>
-                            {statusText}
-                          </SeverityPill>
-                        </TableCell>
-                        <TableCell>
-                          {room.status === 1 && ( // Kiểm tra nếu room.status là 1 thì hiển thị nút
-                            <Button variant="outlined" onClick={() => handleRoomSelect(room.id)}>
-                              Chọn
-                            </Button>
-                          )}
-                        </TableCell>
-                      </TableRow>
+                      <Grid item xs={12} sm={6} md={4} lg={4} key={room.id}>
+                        <Box
+                          style={{
+                            border: "1px solid #ccc",
+                            boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
+                            height: 470,
+                          }}
+                        >
+                          <CardContent>
+                            <div style={{ display: "flex", justifyContent: "space-between" }}>
+                              <Typography variant="h6" component="div">
+                                <SeverityPill variant="contained" color={status.color}>
+                                  {statusText}
+                                </SeverityPill>
+                                <br />
+                                <br />
+                              </Typography>
+
+                              <Typography variant="h6" component="div">
+                                {room.roomName}
+                                {room.status === 1 ? (
+                                  <>
+                                    <IconButton
+                                      aria-controls={open ? "demo-positioned-menu" : undefined}
+                                      aria-haspopup="true"
+                                      aria-expanded={open ? "true" : undefined}
+                                      onClick={(event) =>
+                                        handleClickMenu(event, room.id, room.roomName)
+                                      }
+                                    >
+                                      <KeyboardArrowDownIcon />
+                                    </IconButton>
+                                    {room.status === 1 && room.id === idRoom ? (
+                                      <Menu
+                                        id="demo-positioned-menu"
+                                        aria-labelledby="demo-positioned-button"
+                                        anchorEl={anchorElMenu}
+                                        open={Boolean(anchorElMenu)}
+                                        onClose={handleCloseMenu}
+                                        anchorOrigin={{
+                                          vertical: "top",
+                                          horizontal: "left",
+                                        }}
+                                        transformOrigin={{
+                                          vertical: "top",
+                                          horizontal: "left",
+                                        }}
+                                      >
+                                        <MenuItem onClick={handleOpenDateDialog}>
+                                          <KeyboardArrowDownIcon />
+                                          Tiến hành check-in
+                                        </MenuItem>
+                                      </Menu>
+                                    ) : null}
+                                  </>
+                                ) : null}
+
+                                <br />
+                                <br />
+                                {room.typeRoom.typeRoomName}
+                              </Typography>
+                            </div>
+                            <br />
+                            {room && room.photoList && room.photoList.length > 0 ? (
+                              <CardMedia
+                                component="img"
+                                alt="Main Room Image"
+                                image={
+                                  room.photoList.map((photo) =>
+                                    typeof photo.url === "string" ? photo.url : ""
+                                  )[0]
+                                }
+                                style={{
+                                  height: 200,
+                                  objectFit: "cover",
+                                  width: "100%",
+                                }}
+                              />
+                            ) : (
+                              <Typography>No Image Available</Typography>
+                            )}
+
+                            <hr />
+                            <div style={{ display: "flex", justifyContent: "space-between" }}>
+                              {room.status === 2 || room.status === 1 ? (
+                                <>
+                                  {room.orderDetailList.map((orderDetail, index) =>
+                                    orderDetail.status === 1 || orderDetail.status === 2 ? (
+                                      <React.Fragment key={index}>
+                                        <Typography>
+                                          <SvgIcon fontSize="small">
+                                            <FaHotel />
+                                          </SvgIcon>{" "}
+                                          {format(
+                                            new Date(orderDetail.checkInDatetime),
+                                            "dd/MM/yyyy HH:mm"
+                                          )}
+                                          <Typography
+                                            variant="h6"
+                                            style={{ color: "red", marginTop: 10 }}
+                                          >
+                                            {formatPrice(orderDetail.roomPrice)}
+                                          </Typography>
+                                        </Typography>
+                                      </React.Fragment>
+                                    ) : null
+                                  )}
+                                </>
+                              ) : null}
+                              {room.status === 2 || room.status === 1 ? (
+                                <>
+                                  {room.orderDetailList.map((orderDetail, index) =>
+                                    orderDetail.status === 1 || orderDetail.status === 2 ? (
+                                      <Typography key={index}>
+                                        <SvgIcon fontSize="small">
+                                          <FaSignOutAlt />
+                                        </SvgIcon>{" "}
+                                        {format(
+                                          new Date(orderDetail.checkOutDatetime),
+                                          "dd/MM/yyyy HH:mm"
+                                        )}
+                                        <Typography variant="h6" style={{ marginTop: 10 }}>
+                                          {orderDetail.order.customer.fullname}
+                                        </Typography>
+                                      </Typography>
+                                    ) : null
+                                  )}
+                                </>
+                              ) : null}
+                            </div>
+                            {/* <div style={{ display: "flex", justifyContent: "center" }}></div> */}
+                          </CardContent>
+                        </Box>
+                      </Grid>
                     );
                   })}
-                </TableBody>
-              </Table>
+                </Grid>
+              </Stack>
+              <hr />
             </Box>
-          </Scrollbar>
+          ))}
         </DialogContent>
       </Dialog>
       <Dialog
@@ -2634,7 +2781,7 @@ function BookRoom() {
           },
         }}
       >
-        <DialogTitle>Chọn ngày check-in và check-out</DialogTitle>
+        <DialogTitle>{roomName} - Chọn ngày check-in và check-out</DialogTitle>
         <IconButton
           aria-label="close"
           onClick={handleCloseDateDialog}
@@ -2730,7 +2877,7 @@ function BookRoom() {
             <Select
               labelId="demo-simple-select-standard-label"
               id="demo-simple-select-standard"
-              label="Khách hàng"
+              label="Loại hình thuê"
               value={typeRental}
               onChange={handleTypeRentalChange}
             >
@@ -2746,7 +2893,11 @@ function BookRoom() {
             variant="outlined"
             disabled
             value={
-              selectedRoomId ? rooms.find((r) => r.id === selectedRoomId)?.typeRoom?.capacity : ""
+              idRoom
+                ? room
+                    .find((floorRooms) => floorRooms.some((r) => r.id === idRoom))
+                    ?.find((r) => r.id === idRoom)?.typeRoom?.capacity || ""
+                : ""
             }
           />
           <br />
@@ -2767,10 +2918,11 @@ function BookRoom() {
               variant="outlined"
               disabled
               value={
-                selectedRoomId
+                idRoom
                   ? formatPrice(
-                      rooms.find((r) => r.id === selectedRoomId)?.typeRoom?.pricePerDay *
-                        numberOfDays
+                      room
+                        .find((floorRooms) => floorRooms.some((r) => r.id === idRoom))
+                        ?.find((r) => r.id === idRoom)?.typeRoom?.pricePerDay * numberOfDays || ""
                     )
                   : ""
               }
@@ -2783,10 +2935,12 @@ function BookRoom() {
               variant="outlined"
               disabled
               value={
-                selectedRoomId
+                idRoom
                   ? formatPrice(
-                      rooms.find((r) => r.id === selectedRoomId)?.typeRoom?.pricePerHours *
-                        numberOfHours
+                      room
+                        .find((floorRooms) => floorRooms.some((r) => r.id === idRoom))
+                        ?.find((r) => r.id === idRoom)?.typeRoom?.pricePerHours * numberOfHours ||
+                        ""
                     )
                   : ""
               }
@@ -2809,7 +2963,11 @@ function BookRoom() {
             variant="outlined"
             disabled
             value={
-              selectedRoomId ? rooms.find((r) => r.id === selectedRoomId)?.typeRoom?.children : ""
+              idRoom
+                ? room
+                    .find((floorRooms) => floorRooms.some((r) => r.id === idRoom))
+                    ?.find((r) => r.id === idRoom)?.typeRoom?.children || ""
+                : ""
             }
           />
         </DialogContent>
@@ -2820,6 +2978,12 @@ function BookRoom() {
           <Button onClick={createOrderDetail} variant="outlined">
             Xác nhận
           </Button>
+          <Backdrop
+            sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+            open={openLoading}
+          >
+            <CircularProgress color="inherit" />
+          </Backdrop>
         </DialogActions>
       </Dialog>
 
