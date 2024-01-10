@@ -750,8 +750,20 @@ function RoomPlan() {
                             </SeverityPill>
                             <br />
                             <br />
+                            {room.orderDetailList.find(
+                              (orderDetail) =>
+                                orderDetail.order &&
+                                orderDetail.order.status === 1 &&
+                                orderDetail.order.typeOfOrder == 0 &&
+                                room.status === 1
+                            ) ? (
+                              <>
+                                <SeverityPill variant="contained" color="primary">
+                                  Khách đặt trước
+                                </SeverityPill>
+                              </>
+                            ) : null}
                           </Typography>
-
                           <Typography variant="h6" component="div">
                             {room.roomName}
                             <IconButton
@@ -788,6 +800,35 @@ function RoomPlan() {
                               (orderDetail) =>
                                 orderDetail.order &&
                                 orderDetail.order.status === 1 &&
+                                orderDetail.order.typeOfOrder == 0 &&
+                                room.status === 1 &&
+                                room.id === idRoom
+                            ) ? (
+                              <Menu
+                                id="demo-positioned-menu"
+                                aria-labelledby="demo-positioned-button"
+                                anchorEl={anchorEl}
+                                open={Boolean(anchorEl)}
+                                onClose={handleClose}
+                                anchorOrigin={{
+                                  vertical: "top",
+                                  horizontal: "left",
+                                }}
+                                transformOrigin={{
+                                  vertical: "top",
+                                  horizontal: "left",
+                                }}
+                              >
+                                <MenuItem onClick={handleClose}>
+                                  <KeyboardArrowDownIcon />
+                                  Tiến hành nhận phòng
+                                </MenuItem>
+                              </Menu>
+                            ) : null}
+                            {room.orderDetailList.find(
+                              (orderDetail) =>
+                                orderDetail.order &&
+                                orderDetail.order.status === 1 &&
                                 room.status === 2 &&
                                 room.id === idRoom
                             ) ? (
@@ -816,8 +857,8 @@ function RoomPlan() {
                                 {room.orderDetailList.find(
                                   (orderDetail) =>
                                     orderDetail.order &&
-                                      orderDetail.order.status === 2 &&
-                                     room.status === 2 &&
+                                    orderDetail.order.status === 2 &&
+                                    room.status === 2 &&
                                     room.id === idRoom
                                 ) ? (
                                   <Menu
