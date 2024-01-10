@@ -928,7 +928,8 @@ function BookRoom() {
   useEffect(() => {
     setSumAmountValue(sumAmount);
   }, [sumAmount]);
-  const moneyReturnCustomer = givenCustomer - sumAmountValue;
+  const moneyReturnCustomer =
+    Number(order?.moneyGivenByCustomer) + Number(givenCustomer) - Number(sumAmountValue);
 
   useEffect(() => {
     const newTotal = calculateTotal();
@@ -1313,13 +1314,14 @@ function BookRoom() {
 
   //Trả phòng
   const handleReturnRoom = async () => {
-    if (!/^\d+$/.test(givenCustomer)) {
+    if (givenCustomer && !/^\d+$/.test(givenCustomer)) {
       toast.error("Vui lòng nhập số!", {
         position: toast.POSITION.BOTTOM_CENTER,
       });
       return;
     }
-    if (!givenCustomer || givenCustomer < sumAmountValue) {
+
+    if (Number(givenCustomer) + Number(order?.moneyGivenByCustomer) < sumAmountValue) {
       // Xử lý khi tiền khách trả không hợp lệ, ví dụ: hiển thị thông báo lỗi
       toast.error("Số tiền khách trả không hợp lệ!", {
         position: toast.POSITION.BOTTOM_CENTER,
@@ -1338,7 +1340,8 @@ function BookRoom() {
       await axios.put(`http://localhost:2003/api/order/update-return/${id}`, {
         totalMoney: sumAmountValue,
         vat: vatAmount,
-        moneyGivenByCustomer: givenCustomer,
+        moneyGivenByCustomer: Number(givenCustomer) + Number(order?.moneyGivenByCustomer),
+        moneyPayment: givenCustomer,
         excessMoney: moneyReturnCustomer,
         note: noteReturnRoom,
         discountProgram: selectedDiscount ? selectedDiscount.id : null,
@@ -2209,9 +2212,7 @@ function BookRoom() {
           `http://localhost:2003/api/order-detail/loadOrderDetailByOrderId/${id}`
         );
         setOrderDetailData(responseOrderDetail.data);
-        const responseRoom = await axios.get(
-          "http://localhost:2003/api/room/room-plan"
-        );
+        const responseRoom = await axios.get("http://localhost:2003/api/room/room-plan");
         setRoom(responseRoom.data);
         // router.push(`/booking?id=${id}`);
         toast.success("Thêm phòng thành công!", {
@@ -2590,7 +2591,10 @@ function BookRoom() {
           },
         }}
       >
-        <DialogTitle sx={{ m: 0, p: 2, display: "flex", justifyContent: "center" }} id="customized-dialog-title">
+        <DialogTitle
+          sx={{ m: 0, p: 2, display: "flex", justifyContent: "center" }}
+          id="customized-dialog-title"
+        >
           Sơ đồ phòng
         </DialogTitle>
         <IconButton
@@ -2645,6 +2649,19 @@ function BookRoom() {
                                 </SeverityPill>
                                 <br />
                                 <br />
+                                {room.orderDetailList.find(
+                                  (orderDetail) =>
+                                    orderDetail.order &&
+                                    orderDetail.order.status === 1 &&
+                                    orderDetail.order.typeOfOrder == 0 &&
+                                    room.status === 1
+                                ) ? (
+                                  <>
+                                    <SeverityPill variant="contained" color="primary">
+                                      Khách đặt trước
+                                    </SeverityPill>
+                                  </>
+                                ) : null}
                               </Typography>
 
                               <Typography variant="h6" component="div">
@@ -4324,23 +4341,41 @@ function BookRoom() {
                 <TextField
                   style={{ width: 520, marginRight: 30 }}
                   label="Khách hàng trả"
-                  value={givenCustomer ? formatPriceCustomerGiven(givenCustomer) : ""}
+                  value={givenCustomer ? formatPriceCustomerGiven(givenCustomer) : 0}
                   onChange={(e) => setGivenCustomer(e.target.value)}
                   fullWidth
                   variant="outlined"
                 />
                 <TextField
                   style={{ width: 550 }}
-                  label="Tiền trả lại"
+                  label="Tiền khách đã thanh toán"
                   value={
-                    givenCustomer - sumAmountValue
-                      ? formatPrice(givenCustomer - sumAmountValue)
+                    order?.moneyGivenByCustomer
+                      ? formatPriceCustomerGiven(order?.moneyGivenByCustomer)
                       : "0 VND"
                   }
                   fullWidth
                   variant="outlined"
                 />
               </div>
+              <br />
+              <div style={{ display: "flex" }}>
+                <TextField
+                  label="Tiền trả lại"
+                  value={
+                    order?.moneyGivenByCustomer
+                      ? formatPrice(
+                          Number(order?.moneyGivenByCustomer) +
+                            Number(givenCustomer) -
+                            Number(sumAmountValue)
+                        )
+                      : formatPrice(Number(givenCustomer) - Number(sumAmountValue))
+                  }
+                  fullWidth
+                  variant="outlined"
+                />
+              </div>
+
               <br />
               <br />
               <TextareaAutosize

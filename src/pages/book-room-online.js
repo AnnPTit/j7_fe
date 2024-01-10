@@ -49,6 +49,60 @@ const Page = () => {
     }
   };
 
+  // Change status
+  const changeStatus = async (id) => {
+    try {
+      const result = await axios.delete(
+        `http://localhost:2003/api/manage-booking/change-status/${id}`
+      );
+      console.log(result);
+      setDataChange(!dataChange);
+    } catch (error) {
+      console.log(error);
+      if (error.code === "ERR_BAD_REQUEST") {
+        toast.error("Có lỗi xảy ra", {
+          position: toast.POSITION.BOTTOM_CENTER,
+        });
+      }
+    }
+  };
+
+  // Change Wait Room
+  const changeWaitRoom = async (id) => {
+    try {
+      const result = await axios.delete(
+        `http://localhost:2003/api/manage-booking/change-wait-room/${id}`
+      );
+      console.log(result);
+      setDataChange(!dataChange);
+    } catch (error) {
+      console.log(error);
+      if (error.code === "ERR_BAD_REQUEST") {
+        toast.error("Có lỗi xảy ra", {
+          position: toast.POSITION.BOTTOM_CENTER,
+        });
+      }
+    }
+  };
+
+  // Change status
+  const changeCancel = async (id) => {
+    try {
+      const result = await axios.delete(
+        `http://localhost:2003/api/manage-booking/change-cancel/${id}`
+      );
+      console.log(result);
+      setDataChange(!dataChange);
+    } catch (error) {
+      console.log(error);
+      if (error.code === "ERR_BAD_REQUEST") {
+        toast.error("Có lỗi xảy ra", {
+          position: toast.POSITION.BOTTOM_CENTER,
+        });
+      }
+    }
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -56,7 +110,7 @@ const Page = () => {
         console.log(accessToken);
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
 
-        let Api = `http://localhost:2003/api/order/loadBookRoomOnline?current_page=${pageNumber}`; // Thay đổi URL API của bạn tại đây
+        let Api = `http://localhost:2003/api/manage-booking/load?current_page=${pageNumber}`; // Thay đổi URL API của bạn tại đây
         if (textSearch !== "") {
           Api = Api + `&key=${textSearch}`;
         }
@@ -88,7 +142,7 @@ const Page = () => {
   return (
     <>
       <Head>
-        <title>Phòng đặt Online | Armani Hotel</title>
+        <title>Quản lý Booking | Armani Hotel</title>
       </Head>
       <Box
         component="main"
@@ -100,13 +154,16 @@ const Page = () => {
         <Container maxWidth="xl">
           <Stack spacing={3}>
             <BookRoomSearch textSearch={textSearch} setTextSearch={setTextSearch} />
-            <BookRoomOnlineFilter statusChoose={statusChoose} setStatusChoose={setStatusChoose}/>
+            <BookRoomOnlineFilter statusChoose={statusChoose} setStatusChoose={setStatusChoose} />
             <div style={{ minHeight: 500 }}>
               {" "}
               <BookRoomTable
                 items={bookRoom}
                 selected={bookRoomSelection.selected}
                 // onDelete={handleDelete} // Thêm prop onDelete và truyền giá trị của handleDelete vào đây
+                onChangeStatus={changeStatus} // Thêm prop onDelete và truyền giá trị của handleDelete vào đây
+                onChangeWaitRoom={changeWaitRoom}
+                onChangeCancel={changeCancel}
                 setPageNumber={setPageNumber}
                 totalElements={totalElements}
                 pageNumber={pageNumber}
