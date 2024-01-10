@@ -35,6 +35,7 @@ import {
 import { Scrollbar } from "src/components/scrollbar";
 import InformationCircleIcon from "@heroicons/react/24/solid/InformationCircleIcon";
 import PlusCircleIcon from "@heroicons/react/24/solid/PlusCircleIcon";
+import CheckCircleIcon from "@heroicons/react/24/solid/CheckCircleIcon";
 import XCircleIcon from "@heroicons/react/24/solid/XCircleIcon";
 import { SeverityPill } from "src/components/severity-pill";
 import Link from "next/link";
@@ -96,6 +97,16 @@ export const BookRoomTable = (props) => {
   const [openChooseRoom, setOpenChooseRoom] = React.useState(false);
   const [openUpdateCustomer, setOpenUpdateCustomer] = React.useState(false);
   const [openCancelBooking, setOpenCancelBooking] = React.useState(false);
+  const [openRefund, setOpenRefund] = React.useState(false);
+  const [refundMoney, setRefundMoney] = React.useState(0);
+  const [fee, setFee] = React.useState(0);
+
+  //Tính toán số tiền hoàn trả
+  const caculateRefundMoney = () => {
+    // Kiểm tra ngày check in phải lớn hơn ngày hôm nay 2 ngày  -> miễn phí
+    // Quá 2 ngày -> phí đêm đầu
+    console.log(booking.checkInDate);
+  };
 
   //Dialog chọn phòng
   const handleOpenChooseRoom = () => {
@@ -128,6 +139,13 @@ export const BookRoomTable = (props) => {
   // Dialog hủy booking
   const handleOpenCancelBooking = () => {
     setOpenCancelBooking(true);
+  };
+  const handleOpenRefund = () => {
+    console.log("okk");
+    setOpenRefund(true);
+  };
+  const handleCloseRefund = () => {
+    setOpenRefund(false);
   };
 
   const hanldeCloseCancelBooking = () => {
@@ -177,6 +195,34 @@ export const BookRoomTable = (props) => {
         );
         console.log("OrderDetail: ", responseOrderDetail.data);
         setOrderDetail(responseOrderDetail.data);
+      }
+
+      // Lấy ngày hiện tại
+      const currentDate = new Date();
+
+      // Chuyển đổi ngày từ dạng chuỗi sang đối tượng Date
+      const checkInDate = new Date(booking.checkInDate);
+
+      // Tính toán khoảng cách thời gian giữa ngày check in và ngày hiện tại
+      const timeDifference = checkInDate.getTime() - currentDate.getTime();
+
+      // Chuyển đổi khoảng cách thời gian từ milliseconds sang days
+      const daysDifference = timeDifference / (1000 * 3600 * 24);
+
+      // Kiểm tra nếu ngày check in phải lớn hơn ngày hôm nay 2 ngày
+      if (daysDifference > 2) {
+        // Miễn phí
+        console.log("Miễn phí");
+      } else if (daysDifference < 0) {
+        console.log("Đớp hết");
+      } else {
+        // Phí đêm đầu
+        const price = responseBooking.data.typeRoom.pricePerDay;
+        console.log("Phí đêm đầu", price);
+        const fee = price + price * 0.1;
+        const refund = responseBooking.data.totalPrice - fee;
+        setRefundMoney(refund);
+        setFee(fee);
       }
     } catch (error) {
       console.log(error);
@@ -234,6 +280,10 @@ export const BookRoomTable = (props) => {
         return { color: "secondary", text: "Đã nhận phòng" };
       case 4:
         return { color: "success", text: "Đã trả phòng" };
+      case 5:
+        return { color: "warning", text: "Yêu cầu hủy phòng / Hoàn tiền" };
+      case 6:
+        return { color: "error", text: "Khách hủy" };
       default:
         return { color: "default", text: "Unknown" };
     }
@@ -752,7 +802,53 @@ export const BookRoomTable = (props) => {
       }
       axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
       const response = await axios.put(
-        `http://localhost:2003/api/manage-booking/cancel-booking/${booking?.id}`,
+        `http://localhost:2003/api/manage-booking/cancel-booking/${booking?.id}/1`,
+        payload
+      );
+      setBooking(response.data);
+      const responseOrderDetail = await axios.get(
+        `http://localhost:2003/api/order-detail/loadOrderDetailByOrderId/${booking?.order?.id}`
+      );
+      setOrderDetail(responseOrderDetail.data);
+      const responseRoom = await axios.get("http://localhost:2003/api/room/room-plan");
+      setRoom(responseRoom.data);
+      const responseBooking = await axios.get(
+        `http://localhost:2003/api/manage-booking/getById/${booking?.id}`
+      );
+      setBooking(responseBooking.data);
+      props.onChangeCancel(booking?.id);
+      setOpenCancelBooking(false);
+      setOpenLoading(true);
+      toast.success("Hủy thành công !");
+    } catch (error) {
+      if (error.response) {
+        if (error.response.status === 400) {
+          toast.error(error.response.data, {
+            position: toast.POSITION.BOTTOM_CENTER,
+          });
+        }
+      }
+      setOpenLoading(false);
+    }
+  };
+
+
+  const handleCancelBooking2 = async () => {
+    const payload = {
+      ...booking,
+      bankAccountName: booking.bankAccountName,
+      bankAccountNumber: booking.bankAccountNumber,
+      note: noteCancelBooking,
+    };
+    try {
+      const accessToken = localStorage.getItem("accessToken");
+      if (!accessToken) {
+        console.log("Bạn chưa đăng nhập");
+        return;
+      }
+      axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+      const response = await axios.put(
+        `http://localhost:2003/api/manage-booking/cancel-booking/${booking?.id}/2`,
         payload
       );
       setBooking(response.data);
@@ -880,6 +976,106 @@ export const BookRoomTable = (props) => {
               Đóng
             </Button>
             <Button variant="outlined" onClick={handleCancelBooking} style={{ marginLeft: 20 }}>
+              Xác nhận
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+      <Dialog
+        open={openRefund}
+        onClose={handleCloseRefund}
+        fullWidth
+        PaperProps={{
+          style: {
+            maxWidth: "40%",
+            maxHeight: "100%",
+          },
+        }}
+      >
+        <DialogTitle
+          sx={{ m: 0, p: 2, display: "flex", justifyContent: "center" }}
+          id="customized-dialog-title"
+        >
+          Hoàn thành xác nhận chuyển tiền
+        </DialogTitle>
+        <IconButton
+          aria-label="close"
+          onClick={handleCloseRefund}
+          sx={{
+            position: "absolute",
+            right: 8,
+            top: 8,
+            color: (theme) => theme.palette.grey[900],
+          }}
+        >
+          <CloseIcon />
+        </IconButton>
+        <DialogContent>
+          <TextField
+            style={{ display: "flex", justifyContent: "center" }}
+            value={booking?.customer?.fullname}
+            label="Tên khách hàng"
+          />
+          <br />
+          <TextField
+            style={{ display: "flex", justifyContent: "center" }}
+            value={booking?.customer?.phoneNumber}
+            label="Số điện thoại"
+          />
+          <br />
+          <TextField
+            style={{ display: "flex", justifyContent: "center" }}
+            value={booking?.customer?.email}
+            label="Email"
+          />
+          <br />
+          <TextField
+            style={{ display: "flex", justifyContent: "center" }}
+            value={booking?.bankAccountNumber}
+            onChange={(e) => {
+              setBooking((prev) => ({
+                ...prev,
+                bankAccountNumber: e.target.value,
+              }));
+            }}
+            label="Số tài khoản"
+          />
+          <br />
+          <TextField
+            style={{ display: "flex", justifyContent: "center" }}
+            value={booking?.bankAccountName}
+            onChange={(e) => {
+              setBooking((prev) => ({
+                ...prev,
+                bankAccountName: e.target.value,
+              }));
+            }}
+            label="Tên ngân hàng"
+          />
+          <br />
+          <TextField
+            style={{ display: "flex", justifyContent: "center" }}
+            value={formatPrice(refundMoney) + " VND"}
+            label="Số tiền chuyển lại"
+          />
+          <br />
+          <h6 style={{ marginLeft: 5 }}>Lí do hủy đặt phòng: </h6>
+          <TextareaAutosize
+            className="form-control"
+            placeholder="Lí do hủy đặt phòng"
+            name="note"
+            cols={80}
+            style={{ height: 150 }}
+            variant="outlined"
+            value={noteCancelBooking}
+            onChange={(e) => setNoteCancelBooking(e.target.value)}
+          />
+          <br />
+          <div style={{ display: "flex", justifyContent: "flex-end" }}>
+            <Button variant="outlined" onClick={handleCloseRefund} color="error">
+              Đóng
+            </Button>
+            <Button variant="outlined" onClick={handleCancelBooking2} style={{ marginLeft: 20 }}>
               Xác nhận
             </Button>
           </div>
@@ -1260,6 +1456,20 @@ export const BookRoomTable = (props) => {
                 <p>+ Email: {booking?.customer?.email}</p>
                 <p>+ Loại phòng: {booking?.typeRoom?.typeRoomName}</p>
                 <p>+ Số lượng phòng: {booking?.numberRooms}</p>
+                {booking.status === 5 ? (
+                  <div>
+                    <p
+                      style={{
+                        color: "red",
+                      }}
+                    >
+                      Ngân hàng : {booking?.bankAccountName ? booking?.bankAccountName : ""}{" "}
+                    </p>
+                    <p>Phí thu : {formatPrice(fee)} VND</p>
+                  </div>
+                ) : (
+                  <div></div>
+                )}
               </div>
               <div style={{ fontSize: 20 }}>
                 <p>
@@ -1274,6 +1484,30 @@ export const BookRoomTable = (props) => {
                   + Tiền đã thanh toán:{" "}
                   {booking?.totalPrice ? formatPrice(booking?.totalPrice) : ""} VND
                 </p>
+                {booking.status === 5 ? (
+                  <div>
+                    <p
+                      style={{
+                        color: "red",
+                      }}
+                    >
+                      Tài khoản : {booking?.bankAccountNumber ? booking?.bankAccountNumber : ""}{" "}
+                    </p>
+                    <p>
+                      Số tiền hoàn trả :{" "}
+                      <span
+                        style={{
+                          color: "red",
+                        }}
+                      >
+                        {formatPrice(refundMoney)}
+                      </span>{" "}
+                      VND
+                    </p>
+                  </div>
+                ) : (
+                  <div></div>
+                )}
               </div>
             </div>
             <div style={{ marginLeft: 50, display: "flex" }}>
@@ -1294,6 +1528,13 @@ export const BookRoomTable = (props) => {
                 <>
                   <Button onClick={handleOpenChooseRoom}>
                     <PlusCircleIcon />
+                  </Button>
+                </>
+              ) : null}
+              {booking?.status === 5 ? (
+                <>
+                  <Button onClick={handleOpenRefund}>
+                    <CheckCircleIcon /> Hoàn tiền
                   </Button>
                 </>
               ) : null}
@@ -1622,7 +1863,7 @@ export const BookRoomTable = (props) => {
                     onClick={handleOpenCancelBooking}
                     style={{ marginLeft: 10 }}
                   >
-                    Khách hủy đặt phòng
+                    Hủy đặt phòng
                   </Button>
                 </div>
               </React.Fragment>
