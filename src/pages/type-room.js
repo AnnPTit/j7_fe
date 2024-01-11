@@ -8,12 +8,13 @@ import { Layout as DashboardLayout } from "src/layouts/dashboard/layout";
 import { TypeRoomTable } from "src/sections/typeRoom/type-room-table";
 import { TypeRoomSearch } from "src/sections/typeRoom/type-room-search";
 import { applyPagination } from "src/utils/apply-pagination";
-import InputTypeRoom from "src/components/InputTypeRoom/InputTypeRoom";
+import InputTypeRoom from "src/pages/input/InputTypeRoom/InputTypeRoom";
 import MyPagination from "src/components/Pagination";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { toast } from "react-toastify";
+import { SideNavItem } from "src/layouts/dashboard/side-nav-item";
 import Swal from "sweetalert2";
-
+import { usePathname } from "next/navigation";
 const useTypeRoom = (data, page, rowsPerPage) => {
   return useMemo(() => {
     console.log("data : ", data);
@@ -41,10 +42,17 @@ const Page = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
 
-  const openModelInput = () => {
-    setInputModal(!inputModal);
+  const pathname = usePathname();
+  const item = {
+    title: "Add",
+    path: "input/InputTypeRoom/InputTypeRoom",
+    icon: (
+      <SvgIcon fontSize="small">
+        <PlusIcon />
+      </SvgIcon>
+    ),
   };
-
+  const active = item.path ? pathname === item.path : false;
   // Delete typeRoom
   const handleDelete = async (id) => {
     try {
@@ -52,7 +60,7 @@ const Page = () => {
       setDataChange(!dataChange);
     } catch (error) {
       if (error.code === "ERR_BAD_REQUEST") {
-        toast.error(error.response.data,{
+        toast.error(error.response.data, {
           position: toast.POSITION.BOTTOM_CENTER,
         });
         return;
@@ -141,21 +149,22 @@ const Page = () => {
         <Container maxWidth="xl">
           <Stack spacing={2}>
             <Stack direction="row" justifyContent="space-between" spacing={4}>
-              <Stack spacing={0}>
-                <Stack alignItems="center" direction="row" spacing={0}></Stack>
+              <Stack spacing={1}>
+                <Typography variant="h4">Loại phòng</Typography>
+                <Stack alignItems="center" direction="row" spacing={1}></Stack>
               </Stack>
               <div>
-                <Button
-                  onClick={openModelInput}
-                  startIcon={
-                    <SvgIcon fontSize="small">
-                      <PlusIcon />
-                    </SvgIcon>
-                  }
-                  variant="contained"
-                >
-                  Thêm mới
-                </Button>
+                <SideNavItem
+                  style={{ backgroundColor: "red" }}
+                  active={active}
+                  disabled={item.disabled}
+                  external={item.external}
+                  icon={item.icon}
+                  key={item.title}
+                  path={item.path}
+                  title={item.title}
+                  btn={true}
+                />
               </div>
             </Stack>
             <TypeRoomSearch textSearch={textSearch} setTextSearch={setTextSearch} />

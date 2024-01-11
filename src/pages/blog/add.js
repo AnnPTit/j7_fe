@@ -8,6 +8,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import Swal from "sweetalert2";
 import Card from "react-bootstrap/Card";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import "react-toastify/dist/ReactToastify.css";
 
 const cx = classNames.bind(style);
 
