@@ -229,6 +229,21 @@ export const BookRoomTable = (props) => {
     }
   };
 
+  function getFile() {
+    // Get the input element
+    var fileInput = document.getElementById("fileInput");
+
+    // Get the selected file
+    var selectedFile = fileInput.files[0];
+
+    // Display file details (for example, the file name)
+    if (selectedFile) {
+      alert("Selected file: " + selectedFile.name);
+    } else {
+      alert("No file selected");
+    }
+  }
+
   const onClose = () => {
     setOpen(false);
     // setBooking(null);
@@ -802,7 +817,7 @@ export const BookRoomTable = (props) => {
       }
       axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
       const response = await axios.put(
-        `http://localhost:2003/api/manage-booking/cancel-booking/${booking?.id}/1`,
+        `http://localhost:2003/api/manage-booking/cancel-booking/${booking?.id}`,
         payload
       );
       setBooking(response.data);
@@ -832,14 +847,26 @@ export const BookRoomTable = (props) => {
     }
   };
 
-
   const handleCancelBooking2 = async () => {
-    const payload = {
-      ...booking,
-      bankAccountName: booking.bankAccountName,
-      bankAccountNumber: booking.bankAccountNumber,
-      note: noteCancelBooking,
-    };
+    var fileInput = document.getElementById("fileInput");
+    var file = fileInput.files[0];
+
+    // Create FormData object
+    const formData = new FormData();
+
+    // Append file to FormData
+    formData.append("file", file);
+    formData.append("id", booking.id);
+
+    // Other form data
+    formData.append("bankAccountName", booking.bankAccountName);
+    formData.append("bankAccountNumber", booking.bankAccountNumber);
+    formData.append("note", noteCancelBooking);
+
+    if (file === undefined) {
+      toast.error("Hình ảnh không được để trống !");
+    }
+
     try {
       const accessToken = localStorage.getItem("accessToken");
       if (!accessToken) {
@@ -848,8 +875,8 @@ export const BookRoomTable = (props) => {
       }
       axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
       const response = await axios.put(
-        `http://localhost:2003/api/manage-booking/cancel-booking/${booking?.id}/2`,
-        payload
+        `http://localhost:2003/api/manage-booking/cancel-booking/customer/${booking?.id}`,
+        formData
       );
       setBooking(response.data);
       const responseOrderDetail = await axios.get(
@@ -858,14 +885,10 @@ export const BookRoomTable = (props) => {
       setOrderDetail(responseOrderDetail.data);
       const responseRoom = await axios.get("http://localhost:2003/api/room/room-plan");
       setRoom(responseRoom.data);
-      const responseBooking = await axios.get(
-        `http://localhost:2003/api/manage-booking/getById/${booking?.id}`
-      );
-      setBooking(responseBooking.data);
-      props.onChangeCancel(booking?.id);
       setOpenCancelBooking(false);
       setOpenLoading(true);
       toast.success("Hủy thành công !");
+      window.location.reload();
     } catch (error) {
       if (error.response) {
         if (error.response.status === 400) {
@@ -1070,6 +1093,9 @@ export const BookRoomTable = (props) => {
             value={noteCancelBooking}
             onChange={(e) => setNoteCancelBooking(e.target.value)}
           />
+          <br />
+          <p>Chọn hình ảnh</p>
+          <input type="file" id="fileInput" />
           <br />
           <div style={{ display: "flex", justifyContent: "flex-end" }}>
             <Button variant="outlined" onClick={handleCloseRefund} color="error">
