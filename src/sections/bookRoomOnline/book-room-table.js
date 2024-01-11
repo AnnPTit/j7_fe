@@ -15,9 +15,27 @@ import {
   Select,
   Checkbox,
   TextField,
+  IconButton,
+  TextareaAutosize,
+  Typography,
+  Stack,
+  Grid,
+  CardContent,
+  Menu,
+  MenuItem,
+  CardMedia,
+  DialogTitle,
+  FormControl,
+  InputLabel,
+  FormLabel,
+  RadioGroup,
+  FormControlLabel,
+  Radio,
 } from "@mui/material";
 import { Scrollbar } from "src/components/scrollbar";
 import InformationCircleIcon from "@heroicons/react/24/solid/InformationCircleIcon";
+import PlusCircleIcon from "@heroicons/react/24/solid/PlusCircleIcon";
+import XCircleIcon from "@heroicons/react/24/solid/XCircleIcon";
 import { SeverityPill } from "src/components/severity-pill";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -27,17 +45,17 @@ import axios from "axios";
 import { Drawer } from "antd";
 import { DatePicker, TimePicker } from "@mui/x-date-pickers";
 import { parse, format, subYears, differenceInYears, differenceInHours, isToday } from "date-fns";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import FormControl from "@mui/material/FormControl";
-import FormLabel from "@mui/material/FormLabel";
-import Radio from "@mui/material/Radio";
-import RadioGroup from "@mui/material/RadioGroup";
 import Swal from "sweetalert2";
 import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Backdrop from "@mui/material/Backdrop";
 import CircularProgress from "@mui/material/CircularProgress";
+import { FaHotel, FaSignOutAlt } from "react-icons/fa";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import CloseIcon from "@mui/icons-material/Close";
+import { RoomPlanSearch } from "../roomPlan/room-plan-search";
+import RoomPlanFilter from "../roomPlan/room-plan-filter";
 
 const numeral = require("numeral");
 
@@ -45,27 +63,95 @@ export const BookRoomTable = (props) => {
   const { items = [], selected = [] } = props;
   const router = useRouter();
   const [order, setOrder] = useState({});
+  const [booking, setBooking] = useState({
+    bankAccountNumber: "",
+    bankAccountName: "",
+  });
   const [orderDetail, setOrderDetail] = useState([]);
-  const [birthday, setBirthday] = useState(null);
-  const [gender, setGender] = useState(true);
-  const [citizenId, setCitizenId] = useState("");
-  const [nation, setNation] = useState("");
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [address, setAddress] = useState("");
-  const [customerId, setCustomerId] = useState("");
   const [orderId, setOrderId] = useState("");
-  const [orderStatus, setOrderStatus] = useState(0);
-  const [openDetail, setOpenDetail] = React.useState(false);
-  const [loading, setLoading] = useState(false);
-  const [refuseReason, setRefuseReason] = React.useState("");
-  const [isNewCustom, SetIsNewCustom] = React.useState(true);
   const [surcharge, setSurcharge] = useState(0);
+  const [room, setRoom] = useState([]);
+  const [idRoom, setIdRoom] = useState("");
+  const [roomName, setRoomName] = useState("");
+  const [floor, setFloor] = useState([]);
+  const [typeRoom, setTypeRoom] = useState([]);
+  const [statusChoose, setStatusChoose] = useState("");
+  const [textSearch, setTextSearch] = useState("");
+  const [floorChose, setFloorChose] = useState("");
+  const [typeRoomChose, setTypeRoomChose] = useState("");
+  const [note, setNote] = useState("");
+  const [noteCancelBooking, setNoteCancelBooking] = useState("");
+  const [bank, setBank] = useState();
+
+  // Khách hàng
+  const [cccd, setCccd] = useState("");
+  const [birthday, setBirthday] = useState(null);
+  const [gender, setGender] = useState("Nam");
+  const [nationality, setNationality] = useState("");
+  const [address, setAddress] = useState("");
+
+  // Loading && Dialog
+  const [loading, setLoading] = useState(false);
   const [openLoading, setOpenLoading] = React.useState(false);
+  const [openChooseRoom, setOpenChooseRoom] = React.useState(false);
+  const [openUpdateCustomer, setOpenUpdateCustomer] = React.useState(false);
+  const [openCancelBooking, setOpenCancelBooking] = React.useState(false);
+
+  //Dialog chọn phòng
+  const handleOpenChooseRoom = () => {
+    setOpenChooseRoom(true);
+  };
+
+  const handleCloseChooseRoom = () => {
+    setOpenChooseRoom(false);
+    setStatusChoose("");
+    setTextSearch("");
+    setFloorChose("");
+    setTypeRoomChose("");
+    setAnchorEl(null);
+  };
+
+  // Dialog update khách hàng
+  const handleOpenUpdateCustomer = () => {
+    setOpenUpdateCustomer(true);
+  };
+
+  const handleCloseUpdateCustomer = () => {
+    setOpenUpdateCustomer(false);
+    setCccd("");
+    setBirthday(null);
+    setGender("Nam");
+    setNationality("");
+    setAddress("");
+  };
+
+  // Dialog hủy booking
+  const handleOpenCancelBooking = () => {
+    setOpenCancelBooking(true);
+  };
+
+  const hanldeCloseCancelBooking = () => {
+    setOpenCancelBooking(false);
+  };
+
+  // Xử lí check-in/check-out
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const openAnchorEl = Boolean(anchorEl);
+
+  const handleClick = (event, roomId, roomName) => {
+    setAnchorEl(event.currentTarget);
+    setIdRoom(roomId);
+    setRoomName(roomName);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+    setIdRoom("");
+    setRoomName("");
+  };
 
   const [open, setOpen] = useState(false);
-  const showDrawer = async (orderId) => {
+  const showDrawer = async (bookingId) => {
     setOpen(true);
     try {
     } catch (error) {
@@ -78,39 +164,29 @@ export const BookRoomTable = (props) => {
         return;
       }
       axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
-      const responseOrder = await axios.get(
-        `http://localhost:2003/api/order/detail-info/${orderId}`
+      const responseBooking = await axios.get(
+        `http://localhost:2003/api/manage-booking/getById/${bookingId}`
       );
-      setOrder(responseOrder.data);
-      setGender(responseOrder.data.customer.gender);
-      const formattedDate = formatDate(responseOrder.data.customer.birthday);
-      setBirthday(formattedDate);
-      setCitizenId(responseOrder.data.customer.citizenId);
-      if (responseOrder.data.customer.citizenId) {
-        SetIsNewCustom(false);
-      }
-      setName(responseOrder.data.customer.fullname);
-      setEmail(responseOrder.data.customer.email);
-      setPhone(responseOrder.data.customer.phoneNumber);
-      setNation(responseOrder.data.customer.nationality);
-      setAddress(responseOrder.data.customer.address);
-      setOrderId(responseOrder.data.id);
-      setCustomerId(responseOrder.data.customer.id);
-      setOrderStatus(responseOrder.data.status);
-      console.log(responseOrder.data);
+      setBooking(responseBooking.data);
+      // setOrderId(responseOrder.data.id);
+      console.log(responseBooking.data);
 
-      const responseOrderDetail = await axios.get(
-        `http://localhost:2003/api/order-detail/loadOrderDetailByOrderId/${orderId}`
-      );
-      console.log("OrderDetail: ", responseOrderDetail.data);
-      setOrderDetail(responseOrderDetail.data);
+      if (booking?.order?.id !== null) {
+        const responseOrderDetail = await axios.get(
+          `http://localhost:2003/api/order-detail/loadOrderDetailByOrderId/${booking?.order?.id}`
+        );
+        console.log("OrderDetail: ", responseOrderDetail.data);
+        setOrderDetail(responseOrderDetail.data);
+      }
     } catch (error) {
       console.log(error);
     }
   };
-  console.log(orderStatus);
+
   const onClose = () => {
     setOpen(false);
+    // setBooking(null);
+    // setOrderDetail(null);
   };
 
   const formatPrice = (price) => {
@@ -133,12 +209,17 @@ export const BookRoomTable = (props) => {
     return formattedNumber;
   };
 
-  const handleCloseDetail = () => {
-    setOpenDetail(false);
-  };
-
-  const handleOpenDetail = () => {
-    setOpenDetail(true);
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 0:
+        return { color: "warning", text: "Phòng đang sửa" };
+      case 1:
+        return { color: "success", text: "Phòng trống" };
+      case 2:
+        return { color: "error", text: "Đang có khách" };
+      default:
+        return { color: "default", text: "Unknown" };
+    }
   };
 
   const getStatusButtonColor = (status) => {
@@ -146,46 +227,15 @@ export const BookRoomTable = (props) => {
       case 0:
         return { color: "error", text: "Đã hủy" };
       case 1:
-        return { color: "warning", text: "Chờ xác nhận" };
+        return { color: "warning", text: "Chưa xếp phòng" };
       case 2:
-        return { color: "primary", text: "Đã nhận phòng" };
+        return { color: "primary", text: "Đã xếp phòng" };
       case 3:
-        return { color: "success", text: "Đã trả phòng" };
+        return { color: "secondary", text: "Đã nhận phòng" };
       case 4:
-        return { color: "secondary", text: "Đã xác nhận" };
-      case 5:
-        return { color: "info", text: "Thanh toán tiền cọc" };
-      case 6:
-        return { color: "error", text: "Từ chối" };
-      case 7:
-        return { color: "error", text: "Hết hạn" };
-      case 8:
-        return { color: "error", text: "Hết hạn thanh toán tiền cọc" };
-      case 9:
-        return { color: "error", text: "Hết hạn checkin" };
+        return { color: "success", text: "Đã trả phòng" };
       default:
         return { color: "default", text: "Unknown" };
-    }
-  };
-
-  // Hủy hóa đơn
-  const handleCancelOrder = async (id) => {
-    try {
-      console.log(id);
-      setLoading(true);
-      const response = await axios.post(
-        `http://localhost:2003/api/home/order/cancel/${orderId}/6?refuseReason=${refuseReason}`
-      );
-      if (response.data.status === 1) {
-        toast.success(response.data.message);
-      }
-      if (response.data.status === 0) {
-        toast.error(response.data.message);
-      }
-      setLoading(false);
-      window.location.href = `/book-room-online`;
-    } catch (error) {
-      console.log(error);
     }
   };
 
@@ -207,94 +257,15 @@ export const BookRoomTable = (props) => {
     return `${formattedDay}/${formattedMonth}/${year}`;
   }
 
-  const handleSubmit = async () => {
-    // tạo payload để gửi xuống
-    console.log(gender);
-    if (citizenId === null) {
-      toast.error("Căn cước công dân không được để trống !", {
-        position: toast.POSITION.TOP_RIGHT,
-      });
-      return;
-    }
-    if (birthday === null) {
-      toast.error("Ngày sinh không được để trống !", {
-        position: toast.POSITION.TOP_RIGHT,
-      });
-      return;
-    } else {
-      const currentDate = new Date();
-      const birthday2 = parse(birthday, "dd/MM/yyyy", new Date());
-      const age = differenceInYears(currentDate, birthday2);
-      if (age < 18) {
-        toast.error("Bạn chưa đủ 18 tuổi !", {
-          position: toast.POSITION.TOP_RIGHT,
-        });
-        return;
-      }
-    }
-    if (gender === null) {
-      // toast.error("Giới tính không được để trống !", {
-      //   position: toast.POSITION.TOP_RIGHT,
-      // });
-      // return;
-      setGender(true);
-    }
-    if (address === null) {
-      toast.error("Địa chỉ không được để trống !", {
-        position: toast.POSITION.TOP_RIGHT,
-      });
-      return;
-    }
-    if (nation === null) {
-      toast.error("Quốc tịch không được để trống !", {
-        position: toast.POSITION.TOP_RIGHT,
-      });
-      return;
-    }
-    const payload = {
-      citizenId,
-      birthday,
-      gender,
-      address,
-      nation,
-      orderId: orderId,
-      customerId: customerId,
-      isNewCustomer: isNewCustom,
-    };
-
-    try {
-      const accessToken = localStorage.getItem("accessToken");
-      if (!accessToken) {
-        console.log("Bạn chưa đăng nhập");
-        return;
-      }
-      axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
-      const response = await axios.post(`http://localhost:2003/api/order/confirm-order`, payload);
-      if (response.data.message !== null) {
-        toast.error(response.data.message, {
-          position: toast.POSITION.TOP_RIGHT,
-        });
-      } else {
-        setOpenLoading(true);
-        toast.success("Xác nhận thành công !", {
-          position: toast.POSITION.TOP_RIGHT,
-        });
-        window.location.href = "/book-room-online";
-      }
-    } catch (error) {
-      setOpenLoading(false);
-      console.log(error);
-      toast.error("Có lỗi xảy ra !");
-    }
-  };
-
-  const refuseOrder = async () => {};
-
   const handleRedirect = async () => {
-    const { bookingDateStart } = order;
-    console.log("Check-in: ", bookingDateStart);
+    if (!booking) {
+      return false;
+    }
+
+    const { checkInDate } = booking;
+    console.log("Check-in: ", checkInDate);
     const currentDate = new Date();
-    const checkinDateTime = new Date(bookingDateStart);
+    const checkinDateTime = new Date(checkInDate);
     console.log("Check-in Datetime: ", checkinDateTime);
 
     const shouldApplySurcharge =
@@ -307,7 +278,7 @@ export const BookRoomTable = (props) => {
 
     if (shouldApplySurcharge) {
       const payload = {
-        orderId: orderId,
+        orderId: booking?.order?.id,
         surcharge: surcharge,
       };
 
@@ -323,7 +294,7 @@ export const BookRoomTable = (props) => {
           payload
         );
         setOpenLoading(true);
-        router.push(`/booking?id=${orderId}`);
+        router.push(`/booking?id=${booking?.order?.id}`);
       } catch (error) {
         setOpenLoading(false);
         console.log(error);
@@ -331,7 +302,7 @@ export const BookRoomTable = (props) => {
       }
     } else if (inTime) {
       const payload = {
-        orderId: orderId,
+        orderId: booking?.order?.id,
         surcharge: surcharge,
       };
 
@@ -347,7 +318,7 @@ export const BookRoomTable = (props) => {
           payload
         );
         setOpenLoading(true);
-        router.push(`/booking?id=${orderId}`);
+        router.push(`/booking?id=${booking?.order?.id}`);
       } catch (error) {
         setOpenLoading(false);
         console.log(error);
@@ -365,15 +336,19 @@ export const BookRoomTable = (props) => {
   };
 
   const handleRedirectDetail = async () => {
-    router.push(`/booking?id=${orderId}`);
+    router.push(`/booking?id=${booking?.order?.id}`);
   };
 
   useEffect(() => {
     const calculateSurcharge = () => {
-      const { bookingDateStart } = order;
-      console.log("Check-in: ", bookingDateStart);
+      if (!booking) {
+        return false;
+      }
+
+      const { checkInDate } = booking;
+      console.log("Check-in: ", checkInDate);
       const currentDate = new Date();
-      const checkinDateTime = new Date(bookingDateStart);
+      const checkinDateTime = new Date(checkInDate);
       console.log("Check-in Datetime: ", checkinDateTime);
 
       const shouldApplySurcharge =
@@ -393,226 +368,1304 @@ export const BookRoomTable = (props) => {
     };
 
     setSurcharge(calculateSurcharge());
-  }, [order, setSurcharge]);
-
-  const renderButtonsBasedOnStatus = () => {
-    switch (order.status) {
-      case 1:
-        return (
-          <React.Fragment>
-            <Dialog open={openDetail} onClose={handleCloseDetail} maxWidth="lg">
-              <DialogContent>
-                <TextField
-                  style={{ marginTop: 10 }}
-                  label="Lý do từ chối "
-                  fullWidth
-                  variant="outlined"
-                  value={refuseReason}
-                  onChange={(e) => setRefuseReason(e.target.value)}
-                />
-                <Button
-                  style={{ marginTop: 40 }}
-                  variant="outlined"
-                  color="error"
-                  // onClick={() => handleCancelOrder(orderId)}
-                  onClick={() => {
-                    handleCloseDetail();
-                    Swal.fire({
-                      title: "Bạn có chắc chắn muốn hủy ? ",
-                      text: "",
-                      icon: "warning",
-                      showCancelButton: true,
-                      confirmButtonColor: "#3085d6",
-                      cancelButtonColor: "#d33",
-                      cancelButtonText: "Hủy",
-                      confirmButtonText: "Đúng, hủy!",
-                    }).then(async (result) => {
-                      if (result.isConfirmed) {
-                        const isSubmitSuccess = await handleCancelOrder(orderId);
-                        if (isSubmitSuccess) {
-                          Swal.fire("Đã hủy phòng !", "success");
-                          toast.success("Đã hủy phòng !");
-                        }
-                      }
-                    });
-                  }}
-                >
-                  Hủy xác nhận
-                </Button>
-                {loading && (
-                  <div class="d-flex justify-content-center">
-                    <div class="spinner-border" role="status">
-                      <span class="visually-hidden">Loading...</span>
-                    </div>
-                  </div>
-                )}
-              </DialogContent>
-            </Dialog>
-            <div style={{ display: "flex", justifyContent: "flex-end" }}>
-              <TextField
-                style={{ marginRight: 20 }}
-                value={numeral(order.deposit).format("0,0 ") + "  đ"}
-                label="Tiền cọc"
-              />
-              <Button
-                style={{ marginRight: 20 }}
-                variant="outlined"
-                color="error"
-                onClick={handleOpenDetail}
-              >
-                Hủy xác nhận
-              </Button>
-              <Button
-                variant="outlined"
-                //  onClick={handleSubmit}
-                onClick={() => {
-                  Swal.fire({
-                    title: "Bạn có chắc chắn xác nhận ? ",
-                    text: "",
-                    icon: "warning",
-                    showCancelButton: true,
-                    confirmButtonColor: "#3085d6",
-                    cancelButtonColor: "#d33",
-                    cancelButtonText: "Hủy",
-                    confirmButtonText: "Xác nhận",
-                  }).then(async (result) => {
-                    if (result.isConfirmed) {
-                      const isSubmitSuccess = await handleSubmit();
-                      if (isSubmitSuccess) {
-                        Swal.fire("Xác nhận thành công !", "success");
-                        toast.success("Xác nhận thành công !");
-                      }
-                    }
-                  });
-                }}
-              >
-                Xác nhận
-              </Button>
-              <Backdrop
-                sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
-                open={openLoading}
-              >
-                <CircularProgress color="inherit" />
-              </Backdrop>
-            </div>
-          </React.Fragment>
-        );
-      case 2:
-        return (
-          <React.Fragment>
-            <div style={{ display: "flex", justifyContent: "flex-end" }}>
-              <TextField
-                style={{ marginRight: 20 }}
-                value={numeral(order.deposit).format("0,0 ") + "  đ"}
-                label="Tiền cọc"
-              />
-              <Button variant="outlined" onClick={handleRedirectDetail}>
-                Chi tiết
-              </Button>
-            </div>
-          </React.Fragment>
-        );
-      case 3:
-        return (
-          <React.Fragment>
-            <div style={{ display: "flex", justifyContent: "flex-end" }}>
-              <TextField
-                style={{ marginRight: 20 }}
-                value={numeral(order.deposit).format("0,0 ") + "  đ"}
-                label="Tiền cọc"
-              />
-              <Button variant="outlined" onClick={handleRedirectDetail}>
-                Chi tiết
-              </Button>
-            </div>
-          </React.Fragment>
-        );
-      case 4:
-        return (
-          <React.Fragment>
-            <div style={{ display: "flex", justifyContent: "flex-end" }}>
-              <TextField
-                style={{ marginRight: 20 }}
-                value={numeral(order.deposit).format("0,0 ") + "  đ"}
-                label="Tiền cọc"
-              />
-              <Button variant="outlined" onClick={handleRedirectDetail}>
-                Chi tiết
-              </Button>
-            </div>
-          </React.Fragment>
-        );
-      case 5:
-        return (
-          <React.Fragment>
-            <div style={{ display: "flex", justifyContent: "flex-end" }}>
-              <TextField
-                style={{ marginRight: 20 }}
-                value={numeral(surcharge).format("0,0 ") + "  đ"}
-                label="* Phụ thu : 10.000đ /h"
-              />
-              <TextField
-                style={{ marginRight: 20 }}
-                value={numeral(order.deposit).format("0,0 ") + "  đ"}
-                label="Tiền cọc"
-              />
-              <Button variant="outlined" onClick={handleRedirect}>
-                Tiến hành nhận phòng
-              </Button>
-              <Backdrop
-                sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
-                open={openLoading}
-              >
-                <CircularProgress color="inherit" />
-              </Backdrop>
-            </div>
-          </React.Fragment>
-        );
-      default:
-        return null;
-    }
-  };
+  }, [booking, setSurcharge]);
 
   const isNewOrder = (order) => {
     const isNewStatus = order.status === 1;
     return isNewStatus;
   };
 
+  // get data for filter
+  useEffect(() => {
+    // Định nghĩa hàm fetchData bên trong useEffect
+    async function fetchData() {
+      try {
+        const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
+        // Kiểm tra xem accessToken có tồn tại không
+        if (!accessToken) {
+          console.log("Bạn chưa đăng nhập");
+          return;
+        }
+        axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
+        const responseFloor = await axios.get("http://localhost:2003/api/general/floor/getList");
+        const responseTypeRoom = await axios.get(
+          "http://localhost:2003/api/general/type-room/getList"
+        );
+        setFloor(responseFloor.data);
+        setTypeRoom(responseTypeRoom.data);
+      } catch (error) {
+        console.log(error);
+      }
+    }
+    // Gọi hàm fetchData ngay lập tức
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const accessToken = localStorage.getItem("accessToken");
+        if (!accessToken) {
+          console.log("Bạn chưa đăng nhập");
+          return;
+        }
+        axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+        let api = "http://localhost:2003/api/room/room-plan";
+
+        let hasQueryParams = false;
+
+        // Construct the API URL based on the selected options
+        if (statusChoose !== "") {
+          api += `?status=${statusChoose}`;
+          hasQueryParams = true;
+        }
+        if (textSearch !== "") {
+          api += hasQueryParams ? `&key=${textSearch}` : `?key=${textSearch}`;
+          hasQueryParams = true;
+        }
+        if (floorChose !== "") {
+          api += hasQueryParams ? `&floorId=${floorChose}` : `?floorId=${floorChose}`;
+          hasQueryParams = true;
+        }
+        if (typeRoomChose !== "") {
+          api += hasQueryParams ? `&typeRoomId=${typeRoomChose}` : `?typeRoomId=${typeRoomChose}`;
+          hasQueryParams = true;
+        }
+        // const response = await axios.get("http://localhost:2003/api/room/room-plan");
+        const response = await axios.get(api);
+        console.log("Data: ", response.data);
+        setRoom(response.data);
+      } catch (error) {
+        console.log(error);
+      }
+    }
+    fetchData();
+  }, [statusChoose, textSearch, floorChose, typeRoomChose]);
+
+  // Load thông tin hóa đơn chi tiết
+  useEffect(() => {
+    if (booking?.order?.id) {
+      const fetchOrderDetail = async () => {
+        try {
+          const response = await axios.get(
+            `http://localhost:2003/api/order-detail/loadOrderDetailByOrderId/${booking?.order?.id}`
+          );
+          setOrderDetail(response.data);
+        } catch (error) {
+          console.error("Error loading customer information:", error);
+        }
+      };
+
+      fetchOrderDetail();
+    } else {
+      setOrderDetail([]);
+    }
+  }, [booking?.order?.id]);
+
+  // Xếp phòng
+  const addRoom = async () => {
+    // Thực hiện xử lý khi ngày được xác nhận
+    if (idRoom) {
+      if (orderDetail.length >= booking?.numberRooms) {
+        toast.error("Vượt quá số lượng phòng!", {
+          position: toast.POSITION.BOTTOM_CENTER,
+        });
+        return false;
+      }
+
+      try {
+        const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
+        // Kiểm tra xem accessToken có tồn tại không
+        if (!accessToken) {
+          console.log("Bạn chưa đăng nhập");
+          return;
+        }
+        axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+
+        const response = await axios.post("http://localhost:2003/api/order/add-room-booking", {
+          idBooking: booking?.id,
+          idRoom: idRoom,
+        });
+
+        setOrderDetail([...orderDetail, response.data]);
+        const responseBooking = await axios.get(
+          `http://localhost:2003/api/manage-booking/getById/${booking?.id}`
+        );
+        setBooking(responseBooking.data);
+        const responseOrderDetail = await axios.get(
+          `http://localhost:2003/api/order-detail/loadOrderDetailByOrderId/${booking?.order?.id}`
+        );
+        setOrderDetail(responseOrderDetail.data);
+        const responseRoom = await axios.get("http://localhost:2003/api/room/room-plan");
+        setRoom(responseRoom.data);
+        props.onChangeStatus(booking?.id);
+        // router.push(`/booking?id=${id}`);
+        toast.success("Xếp phòng thành công!", {
+          position: toast.POSITION.BOTTOM_CENTER,
+        });
+        console.log("Phòng đã được thêm vào hóa đơn chi tiết:", response.data);
+        // Đóng dialog chọn ngày
+        handleCloseChooseRoom();
+      } catch (error) {
+        console.log("Lỗi khi thêm phòng vào hóa đơn chi tiết:", error);
+        // Xử lý lỗi nếu có
+        if (error.response.status === 400) {
+          toast.error(error.response.data, {
+            position: toast.POSITION.BOTTOM_CENTER,
+          });
+        } else {
+          toast.error("Lỗi không xác định. Vui lòng thử lại sau.", {
+            position: toast.POSITION.BOTTOM_CENTER,
+          });
+        }
+      }
+    } else {
+      toast.warning("Vui lòng ngày check-in/check-out và giờ check-in/check-out.", {
+        position: toast.POSITION.BOTTOM_CENTER,
+      });
+      return false;
+    }
+  };
+
+  // Xóa phòng
+  const handleDeleteRoom = async (orderDetailid) => {
+    try {
+      const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
+      // Kiểm tra xem accessToken có tồn tại không
+      if (!accessToken) {
+        console.log("Bạn chưa đăng nhập");
+        return;
+      }
+      axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+
+      await axios.put(
+        `http://localhost:2003/api/order-detail/delete-room-booking/${orderDetailid}?idOrder=${booking?.order?.id}`
+      );
+
+      setOrderDetail((prevOrderDetail) =>
+        prevOrderDetail.filter((orderDetailData) => orderDetailData.id !== orderDetailid)
+      );
+      const response = await axios.get(
+        `http://localhost:2003/api/order-detail/loadOrderDetailByOrderId/${booking?.order?.id}`
+      );
+      setOrderDetail(response.data);
+      const responseRoom = await axios.get("http://localhost:2003/api/room/room-plan");
+      setRoom(responseRoom.data);
+      const responseBooking = await axios.get(
+        `http://localhost:2003/api/manage-booking/getById/${booking?.id}`
+      );
+      setBooking(responseBooking.data);
+      console.log("Length: ", orderDetail.length - 1);
+      if (orderDetail.length - 1 === 0) {
+        props.onChangeWaitRoom(booking?.id);
+      }
+      toast.success("Hủy phòng thành công!", {
+        position: toast.POSITION.BOTTOM_CENTER,
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  // Xác nhận khách hàng booking
+  const handleAcceptCustomerBooking = async () => {
+    if (cccd == null || !cccd.trim() || birthday == null || !birthday.trim()) {
+      toast.error("Vui lòng thông tin khách hàng!", {
+        position: toast.POSITION.BOTTOM_CENTER,
+      });
+      return;
+    } else if (!/^\d+$/.test(cccd)) {
+      toast.error("CCCD chỉ được chứa ký tự số!", {
+        position: toast.POSITION.BOTTOM_CENTER,
+      });
+      return;
+    } else if (!/^[0]\d{11}$/.test(cccd)) {
+      toast.error("CCCD phải bắt đầu bằng số 0 và có đúng 12 số!", {
+        position: toast.POSITION.BOTTOM_CENTER,
+      });
+      return;
+    }
+
+    const genderBoolean = gender === "Nam"; // true if gender is "Nam", false if gender is "Nữ"
+    const parsedBirthday = parse(birthday, "dd/MM/yyyy", new Date());
+
+    const formattedBirthday = format(parsedBirthday, "yyyy-MM-dd");
+    const customerBooking = {
+      idBooking: booking?.id,
+      idOrder: booking?.order?.id,
+      idCustomer: booking?.customer?.id,
+      citizenId: cccd,
+      gender: genderBoolean,
+      birthday: formattedBirthday,
+      nationality: nationality,
+      address: address,
+    };
+
+    try {
+      const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
+      // Kiểm tra xem accessToken có tồn tại không
+      if (!accessToken) {
+        console.log("Bạn chưa đăng nhập");
+        return;
+      }
+      axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+
+      const response = await axios.post(
+        "http://localhost:2003/api/manage-booking/accept-customer",
+        customerBooking
+      );
+      toast.success("Xác nhận thành công!", {
+        position: toast.POSITION.BOTTOM_CENTER,
+      });
+      if (!booking) {
+        return false;
+      }
+
+      const { checkInDate } = booking;
+      console.log("Check-in: ", checkInDate);
+      const currentDate = new Date();
+      const checkinDateTime = new Date(checkInDate);
+      console.log("Check-in Datetime: ", checkinDateTime);
+
+      const shouldApplySurcharge =
+        currentDate < checkinDateTime &&
+        (differenceInHours(checkinDateTime, currentDate) <= 38 ||
+          (isToday(checkinDateTime) && currentDate.getHours() < checkinDateTime.getHours()));
+
+      const inTime =
+        currentDate >= checkinDateTime && currentDate.getHours() >= checkinDateTime.getHours();
+
+      if (shouldApplySurcharge) {
+        const payload = {
+          orderId: booking?.order?.id,
+          surcharge: surcharge,
+        };
+
+        try {
+          const accessToken = localStorage.getItem("accessToken");
+          if (!accessToken) {
+            console.log("Bạn chưa đăng nhập");
+            return;
+          }
+          axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+          const response = await axios.put(
+            `http://localhost:2003/api/order/update-surcharge`,
+            payload
+          );
+          setOpenLoading(true);
+          router.push(`/booking?id=${booking?.order?.id}`);
+        } catch (error) {
+          setOpenLoading(false);
+          console.log(error);
+          toast.error("Có lỗi xảy ra !");
+        }
+      } else if (inTime) {
+        const payload = {
+          orderId: booking?.order?.id,
+          surcharge: surcharge,
+        };
+
+        try {
+          const accessToken = localStorage.getItem("accessToken");
+          if (!accessToken) {
+            console.log("Bạn chưa đăng nhập");
+            return;
+          }
+          axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+          const response = await axios.put(
+            `http://localhost:2003/api/order/update-surcharge`,
+            payload
+          );
+          setOpenLoading(true);
+          router.push(`/booking?id=${booking?.order?.id}`);
+        } catch (error) {
+          setOpenLoading(false);
+          console.log(error);
+          toast.error("Có lỗi xảy ra !");
+        }
+      } else {
+        toast.warning(
+          "Vui lòng chờ đến đúng ngày check-in. Hoặc bạn có thể check-in sớm hơn 1 ngày nhưng sẽ tính thêm phụ thu!",
+          {
+            position: toast.POSITION.BOTTOM_CENTER,
+          }
+        );
+        return;
+      }
+      router.push(`/booking?id=${booking?.order?.id}`);
+      console.log("Customer Booking added: ", response.data);
+      setCccd("");
+      setGender("Nam");
+      setBirthday(null);
+      setNationality("");
+      setAddress("");
+    } catch (error) {
+      if (error.response) {
+        // Xử lý response lỗi
+        if (error.response.status === 403) {
+          alert("Bạn không có quyền truy cập vào trang này");
+          window.location.href = "/auth/login"; // Chuyển hướng đến trang đăng nhập
+        } else if (error.response.status === 400) {
+          toast.error(error.response.data, {
+            position: toast.POSITION.BOTTOM_CENTER,
+          });
+        }
+      }
+    }
+  };
+
+  // Update Checkout hóa đơn
+  const handleUpdateOrder = async () => {
+    try {
+      const accessToken = localStorage.getItem("accessToken");
+      if (!accessToken) {
+        console.log("Bạn chưa đăng nhập");
+        return;
+      }
+      axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+      const response = await axios.put(
+        `http://localhost:2003/api/order/update-checkout/${booking?.order?.id}`
+      );
+      console.log("ACB");
+      setOpenLoading(true);
+      router.push(`/booking?id=${booking?.order?.id}`);
+    } catch (error) {
+      setOpenLoading(false);
+      console.log(error);
+      toast.error("Có lỗi xảy ra !");
+    }
+  };
+
+  // Update Checkout hóa đơn
+  const handleCancelBooking = async () => {
+    const payload = {
+      ...booking,
+      bankAccountName: booking.bankAccountName,
+      bankAccountNumber: booking.bankAccountNumber,
+      note: noteCancelBooking,
+    };
+    try {
+      const accessToken = localStorage.getItem("accessToken");
+      if (!accessToken) {
+        console.log("Bạn chưa đăng nhập");
+        return;
+      }
+      axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+      const response = await axios.put(
+        `http://localhost:2003/api/manage-booking/cancel-booking/${booking?.id}`,
+        payload
+      );
+      setBooking(response.data);
+      const responseOrderDetail = await axios.get(
+        `http://localhost:2003/api/order-detail/loadOrderDetailByOrderId/${booking?.order?.id}`
+      );
+      setOrderDetail(responseOrderDetail.data);
+      const responseRoom = await axios.get("http://localhost:2003/api/room/room-plan");
+      setRoom(responseRoom.data);
+      const responseBooking = await axios.get(
+        `http://localhost:2003/api/manage-booking/getById/${booking?.id}`
+      );
+      setBooking(responseBooking.data);
+      props.onChangeCancel(booking?.id);
+      setOpenCancelBooking(false);
+      setOpenLoading(true);
+      toast.success("Hủy thành công !");
+    } catch (error) {
+      if (error.response) {
+        if (error.response.status === 400) {
+          toast.error(error.response.data, {
+            position: toast.POSITION.BOTTOM_CENTER,
+          });
+        }
+      }
+      setOpenLoading(false);
+    }
+  };
+
   return (
     <Card sx={{ marginTop: 5, marginBottom: 3 }}>
       <ToastContainer></ToastContainer>
+      <Dialog
+        open={openCancelBooking}
+        onClose={hanldeCloseCancelBooking}
+        fullWidth
+        PaperProps={{
+          style: {
+            maxWidth: "40%",
+            maxHeight: "100%",
+          },
+        }}
+      >
+        <DialogTitle
+          sx={{ m: 0, p: 2, display: "flex", justifyContent: "center" }}
+          id="customized-dialog-title"
+        >
+          Hủy Booking
+        </DialogTitle>
+        <IconButton
+          aria-label="close"
+          onClick={hanldeCloseCancelBooking}
+          sx={{
+            position: "absolute",
+            right: 8,
+            top: 8,
+            color: (theme) => theme.palette.grey[900],
+          }}
+        >
+          <CloseIcon />
+        </IconButton>
+        <DialogContent>
+          <TextField
+            style={{ display: "flex", justifyContent: "center" }}
+            value={booking?.customer?.fullname}
+            label="Tên khách hàng"
+          />
+          <br />
+          <TextField
+            style={{ display: "flex", justifyContent: "center" }}
+            value={booking?.customer?.phoneNumber}
+            label="Số điện thoại"
+          />
+          <br />
+          <TextField
+            style={{ display: "flex", justifyContent: "center" }}
+            value={booking?.customer?.email}
+            label="Email"
+          />
+          <br />
+          <TextField
+            style={{ display: "flex", justifyContent: "center" }}
+            value={booking?.bankAccountNumber}
+            onChange={(e) => {
+              setBooking((prev) => ({
+                ...prev,
+                bankAccountNumber: e.target.value,
+              }));
+            }}
+            label="Số tài khoản"
+          />
+          <br />
+          <TextField
+            style={{ display: "flex", justifyContent: "center" }}
+            value={booking?.bankAccountName}
+            onChange={(e) => {
+              setBooking((prev) => ({
+                ...prev,
+                bankAccountName: e.target.value,
+              }));
+            }}
+            label="Tên ngân hàng"
+          />
+          <br />
+          <TextField
+            style={{ display: "flex", justifyContent: "center" }}
+            value={booking?.totalPrice ? formatPrice(booking?.totalPrice) + " VND" : ""}
+            label="Số tiền chuyển lại"
+          />
+          <br />
+          <h6 style={{ marginLeft: 5 }}>Lí do hủy đặt phòng: </h6>
+          <TextareaAutosize
+            className="form-control"
+            placeholder="Lí do hủy đặt phòng"
+            name="note"
+            cols={80}
+            style={{ height: 150 }}
+            variant="outlined"
+            value={noteCancelBooking}
+            onChange={(e) => setNoteCancelBooking(e.target.value)}
+          />
+          <br />
+          <div style={{ display: "flex", justifyContent: "flex-end" }}>
+            <Button variant="outlined" onClick={hanldeCloseCancelBooking} color="error">
+              Đóng
+            </Button>
+            <Button variant="outlined" onClick={handleCancelBooking} style={{ marginLeft: 20 }}>
+              Xác nhận
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+      <Dialog
+        open={openUpdateCustomer}
+        onClose={handleCloseUpdateCustomer}
+        fullWidth
+        PaperProps={{
+          style: {
+            maxWidth: "35%",
+            maxHeight: "100%",
+          },
+        }}
+      >
+        <DialogTitle
+          sx={{ m: 0, p: 2, display: "flex", justifyContent: "center" }}
+          id="customized-dialog-title"
+        >
+          Xác nhận thông tin khách hàng
+        </DialogTitle>
+        <IconButton
+          aria-label="close"
+          onClick={handleCloseUpdateCustomer}
+          sx={{
+            position: "absolute",
+            right: 8,
+            top: 8,
+            color: (theme) => theme.palette.grey[900],
+          }}
+        >
+          <CloseIcon />
+        </IconButton>
+        <DialogContent>
+          <TextField
+            style={{ display: "flex", justifyContent: "center" }}
+            value={booking?.customer?.fullname}
+            label="Tên khách hàng"
+          />
+          <br />
+          <TextField
+            style={{ display: "flex", justifyContent: "center" }}
+            value={
+              booking?.customer?.phoneNumber
+                ? formatPhoneNumber(booking?.customer?.phoneNumber)
+                : ""
+            }
+            label="Số điện thoại"
+          />
+          <br />
+          <TextField
+            style={{ display: "flex", justifyContent: "center" }}
+            value={booking?.customer?.email}
+            label="Email"
+          />
+          <br />
+          <TextField
+            style={{ display: "flex", justifyContent: "center" }}
+            value={cccd || ""}
+            onChange={(e) => setCccd(e.target.value)}
+            label="Giấy tờ tùy thân"
+          />
+          <br />
+          <DatePicker
+            disableFuture
+            maxDate={subYears(new Date(), 18)}
+            openTo="year"
+            label="Ngày sinh"
+            value={birthday || ""}
+            onChange={handleBirthDayChange}
+            renderInput={(params) => (
+              <TextField
+                style={{ display: "flex", justifyContent: "center" }}
+                {...params}
+                inputProps={{
+                  value: birthday || "",
+                  readOnly: true,
+                }}
+              />
+            )}
+          />
+          <br />
+          <FormControl style={{ display: "flex", justifyContent: "center" }}>
+            <FormLabel
+              style={{ display: "flex", justifyContent: "center" }}
+              id="demo-row-radio-buttons-group-label"
+            >
+              Giới tính
+            </FormLabel>
+            <RadioGroup
+              style={{ display: "flex", justifyContent: "center" }}
+              row
+              aria-labelledby="demo-row-radio-buttons-group-label"
+              name="row-radio-buttons-group"
+              value={gender || ""}
+              onChange={(e) => setGender(e.target.value)}
+            >
+              <FormControlLabel value="Nam" control={<Radio />} label="Nam" />
+              <FormControlLabel value="Nữ" control={<Radio />} label="Nữ" />
+            </RadioGroup>
+          </FormControl>
+          <br />
+          <TextField
+            style={{ display: "flex", justifyContent: "center" }}
+            value={nationality || ""}
+            onChange={(e) => setNationality(e.target.value)}
+            label="Quốc tịch"
+          />
+          <br />
+          <TextField
+            style={{ display: "flex", justifyContent: "center" }}
+            value={address || ""}
+            onChange={(e) => setAddress(e.target.value)}
+            label="Địa chỉ"
+          />
+          <br />
+          <div style={{ display: "flex", justifyContent: "flex-end" }}>
+            <Button variant="outlined" onClick={handleCloseUpdateCustomer} color="error">
+              Đóng
+            </Button>
+            <Button
+              variant="outlined"
+              onClick={handleAcceptCustomerBooking}
+              style={{ marginLeft: 20 }}
+            >
+              Xác nhận
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+      <Dialog
+        open={openChooseRoom}
+        onClose={handleCloseChooseRoom}
+        fullWidth
+        PaperProps={{
+          style: {
+            maxWidth: "90%",
+            maxHeight: "90%",
+          },
+        }}
+      >
+        <DialogTitle
+          sx={{ m: 0, p: 2, display: "flex", justifyContent: "center" }}
+          id="customized-dialog-title"
+        >
+          Sơ đồ phòng
+        </DialogTitle>
+        <IconButton
+          aria-label="close"
+          onClick={handleCloseChooseRoom}
+          sx={{
+            position: "absolute",
+            right: 8,
+            top: 8,
+            color: (theme) => theme.palette.grey[900],
+          }}
+        >
+          <CloseIcon />
+        </IconButton>
+        <DialogContent>
+          <RoomPlanSearch textSearch={textSearch} setTextSearch={setTextSearch} />
+          <RoomPlanFilter
+            floor={floor}
+            typeRoom={typeRoom}
+            floorChose={floorChose}
+            typeRoomChose={typeRoomChose}
+            statusChoose={statusChoose}
+            setFloorChose={setFloorChose}
+            setTypeRoomChose={setTypeRoomChose}
+            setStatusChoose={setStatusChoose}
+          />
+          {room.map((room, floorIndex) => (
+            <Box key={floorIndex}>
+              <Typography variant="h5" gutterBottom>
+                Tầng {floorIndex + 1}
+              </Typography>
+              <br />
+              <Stack>
+                <Grid container>
+                  {room.map((room) => {
+                    const status = getStatusColor(room.status);
+                    const statusText = status.text;
+                    return (
+                      <Grid item xs={12} sm={6} md={4} lg={4} key={room.id}>
+                        <Box
+                          style={{
+                            border: "1px solid #ccc",
+                            boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
+                            height: 470,
+                          }}
+                        >
+                          <CardContent>
+                            <div style={{ display: "flex", justifyContent: "space-between" }}>
+                              <Typography variant="h6" component="div">
+                                <SeverityPill variant="contained" color={status.color}>
+                                  {statusText}
+                                </SeverityPill>
+                                <br />
+                                <br />
+                                {room.orderDetailList.find(
+                                  (orderDetail) =>
+                                    orderDetail.order &&
+                                    orderDetail.order.status === 1 &&
+                                    orderDetail.order.typeOfOrder == 0 &&
+                                    room.status === 1
+                                ) ? (
+                                  <>
+                                    <SeverityPill variant="contained" color="primary">
+                                      Khách đặt trước
+                                    </SeverityPill>
+                                  </>
+                                ) : null}
+                              </Typography>
+
+                              <Typography variant="h6" component="div">
+                                {room.roomName}
+                                {room.status === 1 ? (
+                                  <>
+                                    <IconButton
+                                      aria-controls={
+                                        openAnchorEl ? "demo-positioned-menu" : undefined
+                                      }
+                                      aria-haspopup="true"
+                                      aria-expanded={openAnchorEl ? "true" : undefined}
+                                      onClick={(event) =>
+                                        handleClick(event, room.id, room.roomName)
+                                      }
+                                    >
+                                      <KeyboardArrowDownIcon />
+                                    </IconButton>
+                                    {room.status === 1 && room.id === idRoom ? (
+                                      <Menu
+                                        id="demo-positioned-menu"
+                                        aria-labelledby="demo-positioned-button"
+                                        anchorEl={anchorEl}
+                                        open={Boolean(anchorEl)}
+                                        onClose={handleClose}
+                                        anchorOrigin={{
+                                          vertical: "top",
+                                          horizontal: "left",
+                                        }}
+                                        transformOrigin={{
+                                          vertical: "top",
+                                          horizontal: "left",
+                                        }}
+                                      >
+                                        <MenuItem onClick={addRoom}>
+                                          <KeyboardArrowDownIcon />
+                                          Chọn phòng
+                                        </MenuItem>
+                                      </Menu>
+                                    ) : null}
+                                  </>
+                                ) : null}
+
+                                <br />
+                                <br />
+                                {room.typeRoom.typeRoomName}
+                              </Typography>
+                            </div>
+                            <br />
+                            {room && room.photoList && room.photoList.length > 0 ? (
+                              <CardMedia
+                                component="img"
+                                alt="Main Room Image"
+                                image={
+                                  room.photoList.map((photo) =>
+                                    typeof photo.url === "string" ? photo.url : ""
+                                  )[0]
+                                }
+                                style={{
+                                  height: 200,
+                                  objectFit: "cover",
+                                  width: "100%",
+                                }}
+                              />
+                            ) : (
+                              <Typography>No Image Available</Typography>
+                            )}
+
+                            <hr />
+                            <div style={{ display: "flex", justifyContent: "space-between" }}>
+                              {room?.status === 2 || room?.status === 1 ? (
+                                <>
+                                  {room?.orderDetailList.map((orderDetail, index) =>
+                                    orderDetail?.status === 1 || orderDetail?.status === 2 ? (
+                                      <React.Fragment key={index}>
+                                        <Typography>
+                                          <SvgIcon fontSize="small">
+                                            <FaHotel />
+                                          </SvgIcon>{" "}
+                                          {orderDetail?.checkInDatetime
+                                            ? format(
+                                                new Date(orderDetail?.checkInDatetime),
+                                                "dd/MM/yyyy HH:mm"
+                                              )
+                                            : ""}
+                                          <Typography
+                                            variant="h6"
+                                            style={{ color: "red", marginTop: 10 }}
+                                          >
+                                            {orderDetail?.roomPrice
+                                              ? formatPrice(orderDetail?.roomPrice)
+                                              : ""}
+                                          </Typography>
+                                        </Typography>
+                                      </React.Fragment>
+                                    ) : null
+                                  )}
+                                </>
+                              ) : null}
+                              {room?.status === 2 || room?.status === 1 ? (
+                                <>
+                                  {room?.orderDetailList.map((orderDetail, index) =>
+                                    orderDetail?.status === 1 || orderDetail?.status === 2 ? (
+                                      <Typography key={index}>
+                                        <SvgIcon fontSize="small">
+                                          <FaSignOutAlt />
+                                        </SvgIcon>{" "}
+                                        {orderDetail?.checkOutDatetime
+                                          ? format(
+                                              new Date(orderDetail?.checkOutDatetime),
+                                              "dd/MM/yyyy HH:mm"
+                                            )
+                                          : ""}
+                                        <Typography variant="h6" style={{ marginTop: 10 }}>
+                                          {orderDetail?.order?.customer?.fullname}
+                                        </Typography>
+                                      </Typography>
+                                    ) : null
+                                  )}
+                                </>
+                              ) : null}
+                            </div>
+                            {/* <div style={{ display: "flex", justifyContent: "center" }}></div> */}
+                          </CardContent>
+                        </Box>
+                      </Grid>
+                    );
+                  })}
+                </Grid>
+              </Stack>
+              <hr />
+            </Box>
+          ))}
+        </DialogContent>
+      </Dialog>
+      <Drawer
+        style={{ marginTop: 65 }}
+        width="55%"
+        title="Thông tin đặt phòng"
+        placement="right"
+        onClose={onClose}
+        open={open}
+      >
+        <Scrollbar>
+          <div>
+            <div style={{ display: "flex", marginLeft: 50 }}>
+              <hr style={{ width: 260 }} />
+              <h4
+                style={{
+                  marginLeft: 30,
+                  marginRight: 30,
+                  display: "flex",
+                  justifyContent: "center",
+                }}
+              >
+                Chi tiết Booking
+              </h4>
+              <hr style={{ width: 290 }} />
+            </div>
+            <br />
+            <div style={{ display: "flex", justifyContent: "space-around" }}>
+              <div style={{ fontSize: 20 }}>
+                <p>+ Tên khách hàng: {booking?.customer?.fullname}</p>
+                <p>+ Số điện thoại: {booking?.customer?.phoneNumber}</p>
+                <p>+ Email: {booking?.customer?.email}</p>
+                <p>+ Loại phòng: {booking?.typeRoom?.typeRoomName}</p>
+                <p>+ Số lượng phòng: {booking?.numberRooms}</p>
+              </div>
+              <div style={{ fontSize: 20 }}>
+                <p>
+                  + Ngày nhận phòng: {booking?.checkInDate ? formatDate(booking?.checkInDate) : ""}
+                </p>
+                <p>
+                  + Ngày trả phòng: {booking?.checkOutDate ? formatDate(booking?.checkOutDate) : ""}
+                </p>
+                <p>+ Số người lớn: {booking?.numberAdults}</p>
+                <p>+ Số trẻ em: {booking?.numberChildren}</p>
+                <p>
+                  + Tiền đã thanh toán:{" "}
+                  {booking?.totalPrice ? formatPrice(booking?.totalPrice) : ""} VND
+                </p>
+              </div>
+            </div>
+            <div style={{ marginLeft: 50, display: "flex" }}>
+              {booking?.status === 2 ||
+              booking?.status === 3 ||
+              booking?.status === 4 ||
+              booking?.status === 0 ? (
+                <>
+                  <h5 style={{ marginTop: 10 }}>Phòng</h5>
+                </>
+              ) : null}
+              {booking?.status === 1 ? (
+                <>
+                  <h5 style={{ marginTop: 10 }}>Chưa xếp phòng</h5>
+                </>
+              ) : null}
+              {booking?.status === 1 || (booking?.status === 2 && booking?.order?.status === 1) ? (
+                <>
+                  <Button onClick={handleOpenChooseRoom}>
+                    <PlusCircleIcon />
+                  </Button>
+                </>
+              ) : null}
+
+              <hr style={{ marginLeft: 20, marginTop: 25, width: 480 }} />
+            </div>
+            <br />
+            {booking?.status === 2 ? (
+              <>
+                <Box>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        {/* <TableCell></TableCell> */}
+                        <TableCell></TableCell>
+                        <TableCell>Phòng</TableCell>
+                        <TableCell>Loại phòng</TableCell>
+                        <TableCell>Ngày check-in</TableCell>
+                        <TableCell>Ngày check-out</TableCell>
+                        {booking?.order?.status === 1 ? <TableCell>Thao tác</TableCell> : ""}
+                        {/* <TableCell>Sức chứa</TableCell>
+                        <TableCell>Số khách</TableCell> */}
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {orderDetail.map((od, index) => {
+                        return (
+                          <TableRow key={index}>
+                            <TableCell>
+                              {od && od.roomImages && od.roomImages[0] && (
+                                <img
+                                  style={{ objectFit: "cover", width: 150 }}
+                                  src={od.roomImages[0]}
+                                  // alt={`Room ${index + 1} Image 1`}
+                                />
+                              )}
+                            </TableCell>
+                            <TableCell>{od?.room?.roomName}</TableCell>
+                            <TableCell>{od?.room?.typeRoom?.typeRoomName}</TableCell>
+                            <TableCell>
+                              {od && od?.checkIn && format(new Date(od?.checkIn), "dd/MM/yyyy")}
+                            </TableCell>
+                            <TableCell>
+                              {od && od?.checkOut && format(new Date(od?.checkOut), "dd/MM/yyyy")}
+                            </TableCell>
+                            {od && od?.order?.status === 1 ? (
+                              <TableCell>
+                                <Button onClick={() => handleDeleteRoom(od?.id)}>
+                                  <XCircleIcon />
+                                </Button>
+                              </TableCell>
+                            ) : (
+                              ""
+                            )}
+                            {/* <TableCell>{od?.room?.typeRoom?.capacity}</TableCell>
+                            <TableCell>{od?.customerQuantity}</TableCell> */}
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                  <div style={{ marginTop: 30, display: "flex", justifyContent: "flex-end" }}>
+                    <TextField
+                      style={{ marginRight: 20 }}
+                      value={numeral(surcharge).format("0,0 ") + "  đ"}
+                      label="* Phụ thu : 10.000đ /h"
+                    />
+                    <Button variant="outlined" onClick={handleOpenCancelBooking} color="error">
+                      Hủy đặt phòng
+                    </Button>
+                    <Button
+                      onClick={handleOpenUpdateCustomer}
+                      variant="outlined"
+                      style={{ marginLeft: 20 }}
+                    >
+                      Khách hàng nhận phòng
+                    </Button>
+                  </div>
+                </Box>
+              </>
+            ) : null}
+            {booking?.status === 3 && booking?.order?.status === 1 ? (
+              <>
+                <Box>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        {/* <TableCell></TableCell> */}
+                        <TableCell></TableCell>
+                        <TableCell>Phòng</TableCell>
+                        <TableCell>Loại phòng</TableCell>
+                        <TableCell>Ngày check-in</TableCell>
+                        <TableCell>Ngày check-out</TableCell>
+                        {/* <TableCell>Sức chứa</TableCell>
+                        <TableCell>Số khách</TableCell> */}
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {orderDetail.map((od, index) => {
+                        return (
+                          <TableRow key={index}>
+                            <TableCell>
+                              {od && od.roomImages && od.roomImages[0] && (
+                                <img
+                                  style={{ objectFit: "cover", width: 150 }}
+                                  src={od.roomImages[0]}
+                                  // alt={`Room ${index + 1} Image 1`}
+                                />
+                              )}
+                            </TableCell>
+                            <TableCell>{od?.room?.roomName}</TableCell>
+                            <TableCell>{od?.room?.typeRoom?.typeRoomName}</TableCell>
+                            <TableCell>
+                              {od && od?.checkIn && format(new Date(od?.checkIn), "dd/MM/yyyy")}
+                            </TableCell>
+                            <TableCell>
+                              {od && od?.checkOut && format(new Date(od?.checkOut), "dd/MM/yyyy")}
+                            </TableCell>
+                            {/* <TableCell>{od?.room?.typeRoom?.capacity}</TableCell>
+                            <TableCell>{od?.customerQuantity}</TableCell> */}
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                  <div style={{ marginTop: 30, display: "flex", justifyContent: "flex-end" }}>
+                    <Button variant="outlined" onClick={onClose} color="error">
+                      Đóng
+                    </Button>
+                    <Button
+                      onClick={handleRedirectDetail}
+                      variant="outlined"
+                      style={{ marginLeft: 20 }}
+                    >
+                      Chi tiết
+                    </Button>
+                  </div>
+                </Box>
+              </>
+            ) : null}
+            {booking?.order?.status === 2 ? (
+              <>
+                <Box>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        {/* <TableCell></TableCell> */}
+                        <TableCell></TableCell>
+                        <TableCell>Phòng</TableCell>
+                        <TableCell>Loại phòng</TableCell>
+                        <TableCell>Ngày check-in</TableCell>
+                        <TableCell>Ngày check-out</TableCell>
+                        {/* <TableCell>Sức chứa</TableCell>
+                        <TableCell>Số khách</TableCell> */}
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {orderDetail.map((od, index) => {
+                        return (
+                          <TableRow key={index}>
+                            <TableCell>
+                              {od && od.roomImages && od.roomImages[0] && (
+                                <img
+                                  style={{ objectFit: "cover", width: 150 }}
+                                  src={od.roomImages[0]}
+                                  // alt={`Room ${index + 1} Image 1`}
+                                />
+                              )}
+                            </TableCell>
+                            <TableCell>{od?.room?.roomName}</TableCell>
+                            <TableCell>{od?.room?.typeRoom?.typeRoomName}</TableCell>
+                            <TableCell>
+                              {od && od?.checkIn && format(new Date(od?.checkIn), "dd/MM/yyyy")}
+                            </TableCell>
+                            <TableCell>
+                              {od && od?.checkOut && format(new Date(od?.checkOut), "dd/MM/yyyy")}
+                            </TableCell>
+                            {/* <TableCell>{od?.room?.typeRoom?.capacity}</TableCell>
+                            <TableCell>{od?.customerQuantity}</TableCell> */}
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                  <div style={{ marginTop: 30, display: "flex", justifyContent: "flex-end" }}>
+                    <Button variant="outlined" onClick={onClose} color="error">
+                      Đóng
+                    </Button>
+                    <Button
+                      onClick={handleUpdateOrder}
+                      variant="outlined"
+                      style={{ marginLeft: 20 }}
+                    >
+                      Chi tiết
+                    </Button>
+                  </div>
+                </Box>
+              </>
+            ) : null}
+            {booking?.order?.status === 3 && booking?.status === 4 ? (
+              <>
+                <Box>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        {/* <TableCell></TableCell> */}
+                        <TableCell></TableCell>
+                        <TableCell>Phòng</TableCell>
+                        <TableCell>Loại phòng</TableCell>
+                        <TableCell>Ngày check-in</TableCell>
+                        <TableCell>Ngày check-out</TableCell>
+                        {/* <TableCell>Sức chứa</TableCell>
+                        <TableCell>Số khách</TableCell> */}
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {orderDetail.map((od, index) => {
+                        return (
+                          <TableRow key={index}>
+                            <TableCell>
+                              {od && od.roomImages && od.roomImages[0] && (
+                                <img
+                                  style={{ objectFit: "cover", width: 150 }}
+                                  src={od.roomImages[0]}
+                                  // alt={`Room ${index + 1} Image 1`}
+                                />
+                              )}
+                            </TableCell>
+                            <TableCell>{od?.room?.roomName}</TableCell>
+                            <TableCell>{od?.room?.typeRoom?.typeRoomName}</TableCell>
+                            <TableCell>
+                              {od && od?.checkIn && format(new Date(od?.checkIn), "dd/MM/yyyy")}
+                            </TableCell>
+                            <TableCell>
+                              {od && od?.checkOut && format(new Date(od?.checkOut), "dd/MM/yyyy")}
+                            </TableCell>
+                            {/* <TableCell>{od?.room?.typeRoom?.capacity}</TableCell>
+                            <TableCell>{od?.customerQuantity}</TableCell> */}
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </Box>
+                <div style={{ marginTop: 30, display: "flex", justifyContent: "flex-end" }}>
+                  <Button variant="outlined" onClick={onClose} color="error">
+                    Đóng
+                  </Button>
+                </div>
+              </>
+            ) : null}
+            {booking?.status === 0 ? (
+              <>
+                <Box>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        {/* <TableCell></TableCell> */}
+                        <TableCell></TableCell>
+                        <TableCell>Phòng</TableCell>
+                        <TableCell>Loại phòng</TableCell>
+                        <TableCell>Ngày check-in</TableCell>
+                        <TableCell>Ngày check-out</TableCell>
+                        {/* <TableCell>Sức chứa</TableCell>
+                        <TableCell>Số khách</TableCell> */}
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {orderDetail.map((od, index) => {
+                        return (
+                          <TableRow key={index}>
+                            <TableCell>
+                              {od && od.roomImages && od.roomImages[0] && (
+                                <img
+                                  style={{ objectFit: "cover", width: 150 }}
+                                  src={od.roomImages[0]}
+                                  // alt={`Room ${index + 1} Image 1`}
+                                />
+                              )}
+                            </TableCell>
+                            <TableCell>{od?.room?.roomName}</TableCell>
+                            <TableCell>{od?.room?.typeRoom?.typeRoomName}</TableCell>
+                            <TableCell>
+                              {od && od?.checkIn && format(new Date(od?.checkIn), "dd/MM/yyyy")}
+                            </TableCell>
+                            <TableCell>
+                              {od && od?.checkOut && format(new Date(od?.checkOut), "dd/MM/yyyy")}
+                            </TableCell>
+                            {/* <TableCell>{od?.room?.typeRoom?.capacity}</TableCell>
+                            <TableCell>{od?.customerQuantity}</TableCell> */}
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </Box>
+                <div style={{ marginTop: 30, display: "flex", justifyContent: "flex-end" }}>
+                  <Button variant="outlined" onClick={onClose} color="error">
+                    Đóng
+                  </Button>
+                </div>
+              </>
+            ) : null}
+            {booking?.status === 1 ? (
+              <React.Fragment>
+                <div style={{ marginLeft: 50 }}>
+                  <h6>Ghi chú hủy đặt phòng: </h6>
+                  <TextareaAutosize
+                    className="form-control"
+                    placeholder="Ghi chú"
+                    name="note"
+                    cols={80}
+                    style={{ height: 150 }}
+                    variant="outlined"
+                    value={note}
+                    onChange={(e) => setNote(e.target.value)}
+                  />
+                </div>
+                <br />
+                <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                  <Button variant="outlined" onClick={onClose} color="error">
+                    Đóng
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    onClick={handleOpenCancelBooking}
+                    style={{ marginLeft: 10 }}
+                  >
+                    Khách hủy đặt phòng
+                  </Button>
+                </div>
+              </React.Fragment>
+            ) : null}
+            <br />
+            <br />
+            <br />
+            <br />
+          </div>
+        </Scrollbar>
+      </Drawer>
       <Scrollbar>
         <Box sx={{ minWidth: 800 }}>
           <Table>
             <TableHead>
               <TableRow>
                 <TableCell padding="checkbox">STT</TableCell>
-                <TableCell>Mã hóa đơn</TableCell>
                 <TableCell>Khách hàng</TableCell>
                 <TableCell>Số điện thoại</TableCell>
                 <TableCell>Email</TableCell>
+                <TableCell>Loại phòng</TableCell>
+                <TableCell>Số lượng phòng</TableCell>
                 <TableCell>Ngày đặt</TableCell>
                 <TableCell>Trạng thái</TableCell>
                 <TableCell>Thao tác</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {items.map((order, index) => {
-                const created = moment(order.createAt).format("DD/MM/YYYY");
-                const statusData = getStatusButtonColor(order.status);
+              {items.map((booking, index) => {
+                const created = moment(booking.createAt).format("DD/MM/YYYY");
+                const statusData = getStatusButtonColor(booking.status);
                 const statusText = statusData.text;
-                const hrefUpdate = `/booking?id=${order.id}`;
 
                 return (
-                  <TableRow hover key={order.id}>
+                  <TableRow hover key={booking.id}>
                     <TableCell padding="checkbox">
                       <div key={index}>
                         <span>{index + props.pageNumber * 5 + 1}</span>
                       </div>
                     </TableCell>
                     <TableCell>
-                      {order.orderCode}
-                      {isNewOrder(order) && (
+                      {booking?.customer?.fullname}
+                      {isNewOrder(booking) && (
                         <span
                           style={{
                             marginLeft: "10px",
@@ -626,9 +1679,10 @@ export const BookRoomTable = (props) => {
                         </span>
                       )}
                     </TableCell>
-                    <TableCell>{order.customer.fullname}</TableCell>
-                    <TableCell>{formatPhoneNumber(order.customer.phoneNumber)}</TableCell>
-                    <TableCell>{order.customer.email}</TableCell>
+                    <TableCell>{formatPhoneNumber(booking?.customer?.phoneNumber)}</TableCell>
+                    <TableCell>{booking?.customer?.email}</TableCell>
+                    <TableCell>{booking?.typeRoom?.typeRoomName}</TableCell>
+                    <TableCell>{booking.numberRooms}</TableCell>
                     <TableCell>{created}</TableCell>
                     <TableCell>
                       <SeverityPill variant="contained" color={statusData.color}>
@@ -636,274 +1690,9 @@ export const BookRoomTable = (props) => {
                       </SeverityPill>
                     </TableCell>
                     <TableCell>
-                      <Button onClick={() => showDrawer(order.id)}>
+                      <Button onClick={() => showDrawer(booking.id)}>
                         <InformationCircleIcon />
                       </Button>
-                      <Drawer
-                        style={{ marginTop: 65 }}
-                        width="55%"
-                        title="Thông tin đặt phòng"
-                        placement="right"
-                        onClose={onClose}
-                        open={open}
-                      >
-                        <Scrollbar>
-                          <div>
-                            <span
-                              style={{
-                                marginRight: 50,
-                              }}
-                            >
-                              <TextField
-                                id="outlined-read-only-input"
-                                label="Tên khách hàng"
-                                value={name}
-                                InputProps={{
-                                  readOnly: true,
-                                }}
-                              />
-                            </span>
-                            <span
-                              style={{
-                                marginRight: 50,
-                              }}
-                            >
-                              <TextField
-                                id="outlined-read-only-input"
-                                label="CCCD"
-                                value={citizenId}
-                                onChange={(e) => setCitizenId(e.target.value)}
-                              />
-                            </span>
-                            <TextField
-                              id="outlined-read-only-input"
-                              label="Quốc tịch"
-                              value={nation}
-                              onChange={(e) => setNation(e.target.value)}
-                            />
-                            <br />
-                            <br />
-                            <span
-                              style={{
-                                marginRight: 50,
-                              }}
-                            >
-                              <TextField
-                                id="outlined-read-only-input"
-                                label="Số điện thoại"
-                                value={phone}
-                                InputProps={{
-                                  readOnly: true,
-                                }}
-                              />
-                            </span>
-                            <DatePicker
-                              disableFuture
-                              maxDate={subYears(new Date(), 18)}
-                              openTo="year"
-                              label="Ngày sinh"
-                              value={birthday || ""}
-                              onChange={handleBirthDayChange}
-                              renderInput={(params) => (
-                                <TextField
-                                  style={{ width: 350, marginRight: 20 }}
-                                  {...params}
-                                  inputProps={{
-                                    value: birthday || "",
-                                    readOnly: true,
-                                  }}
-                                />
-                              )}
-                            />
-                            <br />
-                            <br />
-                            <div
-                              style={{
-                                display: "flex",
-                                justifyContent: "left",
-                              }}
-                            >
-                              <span
-                                style={{
-                                  marginRight: 50,
-                                }}
-                              >
-                                <TextField
-                                  id="outlined-read-only-input"
-                                  label="Email"
-                                  value={email}
-                                  InputProps={{
-                                    readOnly: true,
-                                  }}
-                                />
-                              </span>
-
-                              <span
-                                style={{
-                                  marginRight: 72,
-                                }}
-                              >
-                                <FormControl
-                                  style={{
-                                    width: 200,
-                                    display: "flex",
-                                    justifyContent: "left",
-                                  }}
-                                >
-                                  <FormLabel
-                                    style={{ display: "flex", justifyContent: "left" }}
-                                    id="demo-row-radio-buttons-group-label"
-                                  >
-                                    Giới tính
-                                  </FormLabel>
-                                  <RadioGroup
-                                    row
-                                    aria-labelledby="demo-row-radio-buttons-group-label"
-                                    name="row-radio-buttons-group"
-                                    value={gender === true ? true : false}
-                                    onChange={(e) =>
-                                      setGender(e.target.value === "true" ? true : false)
-                                    }
-                                  >
-                                    <FormControlLabel
-                                      value={"true"}
-                                      control={<Radio />}
-                                      label="Nam"
-                                    />
-                                    <FormControlLabel
-                                      value={"false"}
-                                      control={<Radio />}
-                                      label="Nữ"
-                                    />
-                                  </RadioGroup>
-                                </FormControl>
-                              </span>
-                              <span style={{}}>
-                                <TextField
-                                  id="outlined-read-only-input"
-                                  label="Địa chỉ"
-                                  value={address}
-                                  onChange={(e) => setAddress(e.target.value)}
-                                />
-                              </span>
-                            </div>
-
-                            <hr />
-                            <Box>
-                              <Table>
-                                <TableHead>
-                                  <TableRow>
-                                    {/* <TableCell></TableCell> */}
-                                    <TableCell></TableCell>
-                                    <TableCell>Phòng</TableCell>
-                                    <TableCell>Loại phòng</TableCell>
-                                    <TableCell>Ngày check-in</TableCell>
-                                    <TableCell>Ngày check-out</TableCell>
-                                    <TableCell>Sức chứa</TableCell>
-                                    <TableCell>Số khách</TableCell>
-                                  </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                  {orderDetail.map((od, index) => {
-                                    return (
-                                      <TableRow key={index}>
-                                        {/* <TableCell>
-                                          <Checkbox />
-                                        </TableCell> */}
-                                        <TableCell>
-                                          {od && od.roomImages && od.roomImages[0] && (
-                                            <img
-                                              style={{ objectFit: "cover", width: 150 }}
-                                              src={od.roomImages[0]}
-                                              // alt={`Room ${index + 1} Image 1`}
-                                            />
-                                          )}
-                                        </TableCell>
-                                        <TableCell>{od.room.roomName}</TableCell>
-                                        <TableCell>{od.room.typeRoom.typeRoomName}</TableCell>
-                                        <TableCell>
-                                          {od &&
-                                            od.checkIn &&
-                                            format(new Date(od.checkIn), "dd/MM/yyyy")}
-                                        </TableCell>
-                                        <TableCell>
-                                          {od &&
-                                            od.checkOut &&
-                                            format(new Date(od.checkOut), "dd/MM/yyyy")}
-                                        </TableCell>
-                                        <TableCell>{od.room.typeRoom.capacity}</TableCell>
-                                        <TableCell>{od.customerQuantity}</TableCell>
-                                      </TableRow>
-                                    );
-                                  })}
-                                </TableBody>
-                              </Table>
-                            </Box>
-                            <br />
-                            {renderButtonsBasedOnStatus()}
-                            <br />
-                            <br />
-                            <br />
-                            {/* <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                              <TextField
-                                style={{ marginRight: 20 }}
-                                value={numeral(order.deposit).format("0,0 ") + "  đ"}
-                                label="Tiền cọc"
-                              />
-                              {orderStatus === 5 ? (
-                                <Button variant="outlined" onClick={handleRedirect}>
-                                  Tiến hành nhận phòng
-                                </Button>
-                              ) : (
-                                <p>Loading...</p>
-                              )}
-                              {orderStatus === 1 ? (
-                                <Button variant="outlined" onClick={handleRedirect}>
-                                  Xác nhận
-                                </Button>
-                              ) : (
-                                <p>Loading...</p>
-                              )}
-                            </div> */}
-                          </div>
-                        </Scrollbar>
-                      </Drawer>
-                      {/* {order.status === 1 ? (
-                        <>
-                          <Link className="btn btn-primary m-xl-2" href={hrefUpdate}>
-                            <SvgIcon fontSize="small">
-                              <PencilSquareIcon />
-                            </SvgIcon>
-                          </Link>
-                          <button
-                            onClick={() => handleCancelOrder(order.id)}
-                            className="btn btn-danger m-xl-2"
-                          >
-                            <SvgIcon fontSize="small">
-                              <TrashIcon />
-                            </SvgIcon>
-                          </button>
-                        </>
-                      ) : null}
-                      {order.status === 2 ? (
-                        <>
-                          <Link className="btn btn-primary m-xl-2" href={hrefUpdate}>
-                            <SvgIcon fontSize="small">
-                              <PencilSquareIcon />
-                            </SvgIcon>
-                          </Link>
-                        </>
-                      ) : null}
-                      {order.status === 3 ? (
-                        <>
-                          <Link className="btn btn-warning m-xl-2" href={hrefUpdate}>
-                            <SvgIcon fontSize="small">
-                              <EyeIcon />
-                            </SvgIcon>
-                          </Link>
-                        </>
-                      ) : null}
-                      {order.status === 0 ? <></> : null} */}
                     </TableCell>
                   </TableRow>
                 );

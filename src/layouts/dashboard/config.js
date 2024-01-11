@@ -40,20 +40,11 @@ export const items = [
     ),
   },
   {
-    title: "Phòng đặt Online",
+    title: "Quản lý Booking",
     path: "/book-room-online",
     icon: (
       <SvgIcon fontSize="small">
         <WindowIcon />
-      </SvgIcon>
-    ),
-  },
-  {
-    title: "Đặt phòng tại quầy",
-    path: "/book-room-offline",
-    icon: (
-      <SvgIcon fontSize="small">
-        <TVIcon />
       </SvgIcon>
     ),
   },

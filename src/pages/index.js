@@ -142,22 +142,8 @@ const Page = () => {
             </Grid>
             <Grid xs={12} md={6} lg={4}>
               <OverviewTraffic
-                chartSeries={[
-                  countWait,
-                  countConfirm,
-                  countAccept,
-                  countConfirmInfo,
-                  countPaymentDeposit,
-                  countCancel,
-                ]}
-                labels={[
-                  "Chờ xác nhận",
-                  "Đã nhận phòng",
-                  "Đã trả phòng",
-                  "Xác nhận thông tin",
-                  "Thanh toán tiền cọc",
-                  "Chưa hoàn thành",
-                ]}
+                chartSeries={[countWait, countConfirm, countAccept, countCancel]}
+                labels={["Chờ xác nhận", "Đã nhận phòng", "Đã trả phòng", "Đã hủy"]}
                 sx={{ height: "100%" }}
               />
             </Grid>
