@@ -25,6 +25,7 @@ import {
 import { Scrollbar } from "src/components/scrollbar";
 import TrashIcon from "@heroicons/react/24/solid/TrashIcon";
 import PencilSquareIcon from "@heroicons/react/24/solid/PencilSquareIcon";
+import Link from "next/link";
 
 export const TypeRoomTable = (props) => {
   const {
@@ -99,11 +100,15 @@ export const TypeRoomTable = (props) => {
           <Table>
             <TableHead>
               <TableRow>
+              <TableCell padding="checkbox">STT</TableCell>
+                <TableCell>Ảnh</TableCell>
                 <TableCell>Mã</TableCell>
                 <TableCell>Tên</TableCell>
                 <TableCell>Giá theo ngày</TableCell>
                 <TableCell>Giá theo giờ</TableCell>
                 <TableCell>Sức chứa</TableCell>
+                <TableCell>Người lớn</TableCell>
+                <TableCell>Trẻ em</TableCell>
                 <TableCell>Ghi chú</TableCell>
                 <TableCell>Trạng thái</TableCell>
                 <TableCell>Chức năng</TableCell>
@@ -111,7 +116,8 @@ export const TypeRoomTable = (props) => {
             </TableHead>
 
             <TableBody>
-              {items.map((typeRoom) => {
+              {items.map((typeRoom, index) => {
+                const hrefUpdate = `/update/updateTypeRoom/updateTypeRoom?id=${typeRoom.id}`;
                 const alertDelete = () => {
                   Swal.fire({
                     title: "Bạn có chắc chắn muốn xóa ? ",
@@ -124,34 +130,46 @@ export const TypeRoomTable = (props) => {
                     confirmButtonText: "Xóa!",
                   }).then((result) => {
                     if (result.isConfirmed) {
-                      
                       handleDelete(typeRoom.id);
                       // toast.success("Xóa thành công !");
                     }
                   });
                 };
-                return editState === typeRoom.id ? (
-                  <EditTypeRoom
-                    key={typeRoom.id}
-                    typeRoom={typeRoom}
-                    typeRoomData={typeRoomData}
-                    setTypeRoomData={setTypeRoomData}
-                  />
-                ) : (
+                return (
                   <TableRow hover key={typeRoom.id}>
+                    <TableCell padding="checkbox">
+                      <div key={index}>
+                        <span>{index + props.pageNumber * 5 + 1}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Stack alignItems="center" direction="row" spacing={2}>
+                        {typeRoom.photoDTOS && typeRoom.photoDTOS.length > 0 && (
+                          // Check if photoList is not null/undefined and not empty
+                          <img
+                            key={typeRoom.photoDTOS[0]} // Use key from the first photo
+                            src={`${typeRoom.photoDTOS[0]}`} // Use URL from the first photo
+                            width={200}
+                            height={200}
+                          />
+                        )}
+                      </Stack>
+                    </TableCell>
                     <TableCell>{typeRoom.typeRoomCode}</TableCell>
                     <TableCell>{typeRoom.typeRoomName}</TableCell>
-                    <TableCell>{formatPrice(typeRoom.pricePerDay)}</TableCell>
-                    <TableCell>{formatPrice(typeRoom.pricePerHours)}</TableCell>
+                    <TableCell>{formatPrice(typeRoom.pricePerDay)} VND</TableCell>
+                    <TableCell>{formatPrice(typeRoom.pricePerHours)} VND</TableCell>
                     <TableCell>{typeRoom.capacity}</TableCell>
+                    <TableCell>{typeRoom.adult}</TableCell>
+                    <TableCell>{typeRoom.children}</TableCell>
                     <TableCell>{typeRoom.note}</TableCell>
                     <TableCell>{typeRoom.status == 1 ? "Hoạt động" : "Unactive"}</TableCell>
                     <TableCell>
-                      <button className="btn btn-primary" onClick={() => handleEdit(typeRoom.id)}>
+                      <Link className="btn btn-primary m-xl-2" href={hrefUpdate}>
                         <SvgIcon fontSize="small">
                           <PencilSquareIcon />
                         </SvgIcon>
-                      </button>
+                      </Link>
                       <button className="btn btn-danger m-xl-2" onClick={alertDelete}>
                         <SvgIcon fontSize="small">
                           <TrashIcon />
@@ -161,147 +179,6 @@ export const TypeRoomTable = (props) => {
                     </TableCell>
                   </TableRow>
                 );
-                function EditTypeRoom({ typeRoom, typeRoomData, setTypeRoomData }) {
-                  const [editedTypeRoom, setEditedTypeRoom] = useState({ ...typeRoom });
-
-                  function handleTypeRoomCode(event) {
-                    const name = event.target.value;
-                    setEditedTypeRoom((prevTypeRoom) => ({ ...prevTypeRoom, typeRoomCode: name }));
-                  }
-
-                  function handleTypeRoomName(event) {
-                    const name = event.target.value;
-                    setEditedTypeRoom((prevTypeRoom) => ({ ...prevTypeRoom, typeRoomName: name }));
-                  }
-
-                  function handlePricePerDay(event) {
-                    const name = event.target.value;
-                    setEditedTypeRoom((prevTypeRoom) => ({ ...prevTypeRoom, pricePerDay: name }));
-                  }
-
-                  function handlePricePerHours(event) {
-                    const name = event.target.value;
-                    setEditedTypeRoom((prevTypeRoom) => ({ ...prevTypeRoom, pricePerHours: name }));
-                  }
-
-                  function handlePricePerDaytime(event) {
-                    const name = event.target.value;
-                    setEditedTypeRoom((prevTypeRoom) => ({
-                      ...prevTypeRoom,
-                      pricePerDaytime: name,
-                    }));
-                  }
-
-                  function handlePricePerNighttime(event) {
-                    const name = event.target.value;
-                    setEditedTypeRoom((prevTypeRoom) => ({
-                      ...prevTypeRoom,
-                      pricePerNighttime: name,
-                    }));
-                  }
-
-                  function handlePriceOvertime(event) {
-                    const name = event.target.value;
-                    setEditedTypeRoom((prevTypeRoom) => ({ ...prevTypeRoom, priceOvertime: name }));
-                  }
-
-                  function handleCapacity(event) {
-                    const name = event.target.value;
-                    setEditedTypeRoom((prevTypeRoom) => ({ ...prevTypeRoom, capacity: name }));
-                  }
-
-                  function handleNote(event) {
-                    const note = event.target.value;
-                    setEditedTypeRoom((prevTypeRoom) => ({ ...prevTypeRoom, note: note }));
-                  }
-
-                  // Tương tự cho các trường dữ liệu khác
-                  const handleUpdate = async () => {
-                    try {
-                      await axios.put(
-                        `http://localhost:2003/api/admin/type-room/update/${editedTypeRoom.id}`,
-                        editedTypeRoom
-                      );
-                      const updatedData = typeRoomData.map((f) =>
-                        f.id === editedTypeRoom.id ? editedTypeRoom : f
-                      );
-                      setTypeRoomData(updatedData);
-                      window.location.href = "/type-room";
-                    } catch (error) {
-                      console.error(error);
-                    }
-                  };
-
-                  const alertEdit = () => {
-                    Swal.fire({
-                      title: "Bạn có chắc chắn muốn cập nhật ?",
-                      icon: "info",
-                      showCancelButton: true,
-                      confirmButtonColor: "#3085d6",
-                      cancelButtonColor: "#d33",
-                      confirmButtonText: "Yes, edit it!",
-                    }).then((result) => {
-                      if (result.isConfirmed) {
-                        Swal.fire("Cập nhật thành công !", "Cập nhật thành công !", "success");
-                        handleUpdate();
-                        toast.success("Cập nhật thành công !");
-                      }
-                    });
-                  };
-
-                  return (
-                    <TableRow>
-                      <TableCell>
-                        <Input name="typeRoomCode" value={editedTypeRoom.typeRoomCode} />
-                      </TableCell>
-                      <TableCell>
-                        <Input
-                          onChange={handleTypeRoomName}
-                          name="typeRoomName"
-                          value={editedTypeRoom.typeRoomName}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Input
-                          onChange={handlePricePerDay}
-                          name="pricePerDay"
-                          value={editedTypeRoom.pricePerDay}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Input
-                          onChange={handlePricePerHours}
-                          name="pricePerHours"
-                          value={editedTypeRoom.pricePerHours}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Input
-                          onChange={handleCapacity}
-                          name="capacity"
-                          value={editedTypeRoom.capacity}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Input onChange={handleNote} name="note" value={editedTypeRoom.note} />
-                      </TableCell>
-                      <TableCell>{typeRoom.status == 1 ? "Hoạt động" : "Unactive"}</TableCell>
-                      <TableCell>
-                        <button className="btn btn-primary" onClick={alertEdit}>
-                          <SvgIcon fontSize="small">
-                            <PencilSquareIcon />
-                          </SvgIcon>
-                        </button>
-                        <button className="btn btn-danger m-xl-2" onClick={handldeCancel}>
-                          <SvgIcon fontSize="small">
-                            <TrashIcon />
-                          </SvgIcon>
-                        </button>
-                        <ToastContainer />
-                      </TableCell>
-                    </TableRow>
-                  );
-                }
               })}
             </TableBody>
           </Table>
@@ -309,14 +186,6 @@ export const TypeRoomTable = (props) => {
       </Scrollbar>
     </Card>
   );
-
-  function handleEdit(id) {
-    setEditState(id);
-  }
-
-  function handldeCancel() {
-    setEditState(false);
-  }
 };
 
 TypeRoomTable.propTypes = {
