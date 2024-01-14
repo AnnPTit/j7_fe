@@ -867,6 +867,7 @@ export const BookRoomTable = (props) => {
 
     if (file === undefined) {
       toast.error("Hình ảnh không được để trống !");
+      setLoading(false);
     }
 
     try {
@@ -875,6 +876,7 @@ export const BookRoomTable = (props) => {
         console.log("Bạn chưa đăng nhập");
         return;
       }
+      setLoading(true);
       axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
       const response = await axios.put(
         `http://localhost:2003/api/manage-booking/cancel-booking/customer/${booking?.id}`,
@@ -892,6 +894,7 @@ export const BookRoomTable = (props) => {
       toast.success("Hủy thành công !");
       window.location.reload();
     } catch (error) {
+      setLoading(false);
       if (error.response) {
         if (error.response.status === 400) {
           toast.error(error.response.data, {
@@ -1103,9 +1106,18 @@ export const BookRoomTable = (props) => {
             <Button variant="outlined" onClick={handleCloseRefund} color="error">
               Đóng
             </Button>
-            <Button variant="outlined" onClick={handleCancelBooking2} style={{ marginLeft: 20 }}>
-              Xác nhận
-            </Button>
+            {loading && (
+              <div style={{paddingLeft: "15px"}} class="d-flex justify-content-center">
+                <div class="spinner-border" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+              </div>
+            )}
+            {
+              <Button variant="outlined" onClick={handleCancelBooking2} style={{ marginLeft: 20 }}>
+                Xác nhận
+              </Button>
+            }
           </div>
         </DialogContent>
       </Dialog>
