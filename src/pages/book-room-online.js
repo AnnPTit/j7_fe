@@ -108,16 +108,14 @@ const Page = () => {
       try {
         const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
         console.log(accessToken);
-        axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; // Thêm access token vào tiêu đề "Authorization"
+        axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
 
+        const payload = {
+          key: textSearch,
+          status: statusChoose,
+        };
         let Api = `http://localhost:2003/api/manage-booking/load?current_page=${pageNumber}`; // Thay đổi URL API của bạn tại đây
-        if (textSearch !== "") {
-          Api = Api + `&key=${textSearch}`;
-        }
-        if (statusChoose !== "") {
-          Api = Api + `&status=${statusChoose}`;
-        }
-        const response = await axios.get(Api); // Thay đổi URL API của bạn tại đây
+        const response = await axios.post(Api, payload); // Thay đổi URL API của bạn tại đây
         console.log(response.data);
         setTotalPages(response.data.totalPages);
         setTotalElements(response.data.totalElements);

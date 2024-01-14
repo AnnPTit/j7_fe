@@ -119,7 +119,10 @@ function OrderTimeline() {
   };
 
   const formatPrice = (price) => {
-    return price.toLocaleString("vi-VN") + " VND";
+    if (price !== null) {
+      return price.toLocaleString("vi-VN") + " VND";
+    }
+    return null;
   };
 
   const [timelineEvents, setTimelineEvents] = useState([

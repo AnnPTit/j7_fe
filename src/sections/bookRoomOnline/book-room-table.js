@@ -299,6 +299,8 @@ export const BookRoomTable = (props) => {
         return { color: "warning", text: "Yêu cầu hủy phòng / Hoàn tiền" };
       case 6:
         return { color: "error", text: "Khách hủy" };
+      case -1:
+        return { color: "error", text: "Thanh toán thất bại" };
       default:
         return { color: "default", text: "Unknown" };
     }
