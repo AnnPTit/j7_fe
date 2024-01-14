@@ -53,6 +53,7 @@
     "react": "^18.2.0",
     "react-apexcharts": "1.4.0",
     "react-bootstrap": "^2.8.0",
+    "react-calendar": "^4.7.0",
     "react-currency-input-field": "^3.6.11",
     "react-dom": "^18.2.0",
     "react-icons": "^4.10.1",

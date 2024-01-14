@@ -8,7 +8,7 @@ export const BookRoomSearch = ({ textSearch, setTextSearch }) => {
         <OutlinedInput
           fullWidth
           value={textSearch}
-          placeholder="Tìm kiếm theo hóa đơn và thông tin khách hàng"
+          placeholder="Tìm kiếm theo thông tin khách hàng"
           sx={{ maxWidth: 500 }}
           onChange={(e) => {
             setTextSearch(e.target.value);

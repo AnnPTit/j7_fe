@@ -110,7 +110,7 @@ function OrderTimeline() {
   const getPaymentStatusColor = (status) => {
     switch (status) {
       case 0:
-        return { color: "error", text: "Thất bại" };
+        return { color: "error", text: "Trả khách" };
       case 1:
         return { color: "success", text: "Thành công" };
       default:
@@ -597,31 +597,31 @@ function OrderTimeline() {
             <br />
             <label>Tổng tiền</label>
             <span style={{ marginLeft: 155, color: "red" }}>
-              {order.totalMoney ? formatPrice(order.totalMoney) : "0 VND"}
+              {order?.totalMoney ? formatPrice(order?.totalMoney) : "0 VND"}
             </span>
             <br />
             <br />
             <label>VAT</label>
             <span style={{ marginLeft: 195, color: "red" }}>
-              {order.vat ? formatPrice(order.vat) : "0 VND"}
+              {order?.vat ? formatPrice(order?.vat) : "0 VND"}
             </span>
             <br />
             <br />
             <label>Tiền cọc</label>
             <span style={{ marginLeft: 160, color: "red" }}>
-              {order.deposit ? formatPrice(order.deposit) : "0 VND"}
+              {order?.deposit ? formatPrice(order?.deposit) : "0 VND"}
             </span>
             <br />
             <br />
             <label>Giảm giá</label>
             <span style={{ marginLeft: 157, color: "red" }}>
-              {order.discount ? formatPrice(order.discount) : "0 VND"}
+              {order?.discount ? formatPrice(order?.discount) : "0 VND"}
             </span>
             <br />
             <br />
             <label>Tiền khách trả</label>
             <span style={{ marginLeft: 117, color: "red" }}>
-              {order.moneyGivenByCustomer ? formatPrice(order.moneyGivenByCustomer) : "0 VND"}
+              {order?.moneyGivenByCustomer ? formatPrice(order?.moneyGivenByCustomer) : "0 VND"}
             </span>
             <br />
             <br />
@@ -645,13 +645,13 @@ function OrderTimeline() {
             <br />
             <label>Phụ thu</label>
             <span style={{ marginLeft: 160, color: "red" }}>
-              {order.surcharge ? formatPrice(order.surcharge) : "0 VND"}
+              {order?.surcharge ? formatPrice(order?.surcharge) : "0 VND"}
             </span>
             <br />
             <br />
             <label>Tiền trả lại</label>
             <span style={{ marginLeft: 140, color: "red" }}>
-              {order.excessMoney ? formatPrice(order.excessMoney) : "0 VND"}
+              {order?.excessMoney ? formatPrice(order?.excessMoney) : "0 VND"}
             </span>
           </div>
         </div>
@@ -687,28 +687,32 @@ function OrderTimeline() {
               const statusPaymentText = statusPayment.text;
 
               return (
-                <TableRow hover key={paymentMethod.id}>
-                  <TableCell>
-                    <SeverityPill color="error">
-                      {formatPrice(paymentMethod.totalMoney)}
-                    </SeverityPill>
-                  </TableCell>
-                  <TableCell>
-                    {format(new Date(paymentMethod.createAt), "dd/MM/yyyy - HH:mm:ss")}
-                  </TableCell>
-                  <TableCell>
-                    <SeverityPill variant="contained" color={methodPayment.color}>
-                      {methodPaymentText}
-                    </SeverityPill>
-                  </TableCell>
-                  <TableCell>
-                    <SeverityPill variant="contained" color={statusPayment.color}>
-                      {statusPaymentText}
-                    </SeverityPill>
-                  </TableCell>
-                  <TableCell>{paymentMethod.note}</TableCell>
-                  <TableCell>{paymentMethod.order.account.fullname}</TableCell>
-                </TableRow>
+                <>
+                  {paymentMethod.totalMoney !== 0 ? (
+                    <TableRow hover key={paymentMethod.id}>
+                      <TableCell>
+                        <SeverityPill color="error">
+                          {formatPrice(paymentMethod?.totalMoney)}
+                        </SeverityPill>
+                      </TableCell>
+                      <TableCell>
+                        {format(new Date(paymentMethod.createAt), "dd/MM/yyyy - HH:mm:ss")}
+                      </TableCell>
+                      <TableCell>
+                        <SeverityPill variant="contained" color={methodPayment.color}>
+                          {methodPaymentText}
+                        </SeverityPill>
+                      </TableCell>
+                      <TableCell>
+                        <SeverityPill variant="contained" color={statusPayment.color}>
+                          {statusPaymentText}
+                        </SeverityPill>
+                      </TableCell>
+                      <TableCell>{paymentMethod.note}</TableCell>
+                      <TableCell>{paymentMethod.order.account.fullname}</TableCell>
+                    </TableRow>
+                  ) : null}
+                </>
               );
             })}
           </TableBody>
@@ -762,8 +766,8 @@ function OrderTimeline() {
                   <span>{orderDetail.room.floor.floorName}</span>
                   <br />
                   <br />
-                  Thành tiền: {" "}
-                  <span style={{ color: "red" }}>{formatPrice(orderDetail.roomPrice)}</span>
+                  Thành tiền:{" "}
+                  <span style={{ color: "red" }}>{formatPrice(orderDetail?.roomPrice)}</span>
                   <br />
                   <br />
                 </div>
@@ -777,7 +781,7 @@ function OrderTimeline() {
                         <li key={serviceIndex}>
                           {serviceUsed.service.serviceName} x{serviceUsed.quantity} -{" "}
                           <span style={{ color: "red" }}>
-                            {formatPrice(serviceUsed.service.price * serviceUsed.quantity)}
+                            {formatPrice(serviceUsed?.service?.price * serviceUsed?.quantity)}
                           </span>
                           <br />
                           <br />
@@ -792,7 +796,7 @@ function OrderTimeline() {
                         <li key={comboIndex}>
                           {comboUsed.combo.comboName} x{comboUsed.quantity} -{" "}
                           <span style={{ color: "red" }}>
-                            {formatPrice(comboUsed.combo.price * comboUsed.quantity)}
+                            {formatPrice(comboUsed?.combo?.price * comboUsed?.quantity)}
                           </span>
                           <br />
                           <br />
@@ -819,9 +823,21 @@ function OrderTimeline() {
                   </ul>
                 </div>
                 <div style={{ marginLeft: 800 }}>
-                  <h6>Ngày Check in: {format(new Date(orderDetail.checkIn), "dd/MM/yyyy - HH:mm")}</h6>
-                  {orderDetail.checkOutReal ? <h6>Ngày Check out: {format(new Date(orderDetail.checkOutReal), "dd/MM/yyyy - HH:mm")}</h6> : ""}
-                  <h6>Ngày Check out dự kiến: {format(new Date(orderDetail.checkOut), "dd/MM/yyyy - HH:mm")}</h6>
+                  <h6>
+                    Ngày Check in: {format(new Date(orderDetail.checkIn), "dd/MM/yyyy - HH:mm")}
+                  </h6>
+                  {orderDetail.checkOutReal ? (
+                    <h6>
+                      Ngày Check out:{" "}
+                      {format(new Date(orderDetail.checkOutReal), "dd/MM/yyyy - HH:mm")}
+                    </h6>
+                  ) : (
+                    ""
+                  )}
+                  <h6>
+                    Ngày Check out dự kiến:{" "}
+                    {format(new Date(orderDetail.checkOut), "dd/MM/yyyy - HH:mm")}
+                  </h6>
                 </div>
               </Grid>
               <hr />
