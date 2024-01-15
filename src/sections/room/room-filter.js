@@ -65,6 +65,7 @@ function RoomFilter({
           <MenuItem value={0}>Phòng đang sửa chữa</MenuItem>
           <MenuItem value={1}>Phòng trống</MenuItem>
           <MenuItem value={2}>Phòng đã được đặt</MenuItem>
+          <MenuItem value={3}>Phòng chưa dọn dẹp</MenuItem>
         </Select>
     </div>
   );
