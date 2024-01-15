@@ -242,6 +242,8 @@ function RoomPlan() {
         return { color: "success", text: "Phòng trống" };
       case 2:
         return { color: "error", text: "Đang có khách" };
+      case 3:
+        return { color: "secondary", text: "Chờ dọn dẹp" };
       default:
         return { color: "default", text: "Unknown" };
     }
@@ -483,6 +485,32 @@ function RoomPlan() {
       setIdRoom("");
       setRoomName("");
       router.push(`/booking?id=${order.id}`);
+    } catch (error) {
+      setOpenLoading(false);
+      console.log(error);
+      toast.error("Có lỗi xảy ra !");
+    }
+  };
+
+  // Update Checkout hóa đơn
+  const handleUpdateRoomEmpty = async () => {
+    try {
+      const accessToken = localStorage.getItem("accessToken");
+      if (!accessToken) {
+        console.log("Bạn chưa đăng nhập");
+        return;
+      }
+      axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+      const response = await axios.put(`http://localhost:2003/api/general/change-status/${idRoom}`);
+      const room = await axios.get("http://localhost:2003/api/room/room-plan");
+      console.log("Data: ", room.data);
+      setRoom(room.data);
+      console.log("ACB");
+      setOpenLoading(true);
+      setAnchorEl(null);
+      setIdRoom("");
+      setRoomName("");
+      toast.success("Đã dọn dẹp !");
     } catch (error) {
       setOpenLoading(false);
       console.log(error);
@@ -884,6 +912,28 @@ function RoomPlan() {
                                 ) : null}
                               </>
                             )}
+                            {room.status === 3 && room.id === idRoom ? (
+                              <Menu
+                                id="demo-positioned-menu"
+                                aria-labelledby="demo-positioned-button"
+                                anchorEl={anchorEl}
+                                open={Boolean(anchorEl)}
+                                onClose={handleClose}
+                                anchorOrigin={{
+                                  vertical: "top",
+                                  horizontal: "left",
+                                }}
+                                transformOrigin={{
+                                  vertical: "top",
+                                  horizontal: "left",
+                                }}
+                              >
+                                <MenuItem onClick={handleUpdateRoomEmpty}>
+                                  <KeyboardArrowDownIcon />
+                                  Dọn dẹp
+                                </MenuItem>
+                              </Menu>
+                            ) : null}
                             <br />
                             <br />
                             {room.typeRoom.typeRoomName}

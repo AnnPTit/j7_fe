@@ -110,7 +110,7 @@ function OrderTimeline() {
   const getPaymentStatusColor = (status) => {
     switch (status) {
       case 0:
-        return { color: "error", text: "Thất bại" };
+        return { color: "error", text: "Trả khách" };
       case 1:
         return { color: "success", text: "Thành công" };
       default:
@@ -119,7 +119,10 @@ function OrderTimeline() {
   };
 
   const formatPrice = (price) => {
-    return price.toLocaleString("vi-VN") + " VND";
+    if (price !== null) {
+      return price.toLocaleString("vi-VN") + " VND";
+    }
+    return null;
   };
 
   const [timelineEvents, setTimelineEvents] = useState([
