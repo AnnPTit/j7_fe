@@ -2388,11 +2388,19 @@ function BookRoom() {
   }, [textSearch, floorChose, typeRoomChose, priceRange, valueDateFrom, valueDateTo]);
 
   const createPayment = async () => {
+    if (Number(sumAmountValue) - Number(order?.moneyGivenByCustomer) <= 0) {
+      // Xử lý khi tiền khách trả không hợp lệ, ví dụ: hiển thị thông báo lỗi
+      toast.error("Khách đã trả đủ số tiền!", {
+        position: toast.POSITION.BOTTOM_CENTER,
+      });
+      return;
+    }
+
     try {
       const response = await axios.post(
         `http://localhost:2003/api/payment-method/payment-vnpay/${id}`,
         {
-          amount: sumAmountValue,
+          amount: Number(sumAmountValue) - Number(order?.moneyGivenByCustomer),
           discount: discountMoney,
           idDiscount: selectedDiscount ? selectedDiscount.id : "",
         }
@@ -2405,11 +2413,19 @@ function BookRoom() {
   };
 
   const createPaymentMomo = async () => {
+    if (Number(sumAmountValue) - Number(order?.moneyGivenByCustomer) <= 0) {
+      // Xử lý khi tiền khách trả không hợp lệ, ví dụ: hiển thị thông báo lỗi
+      toast.error("Khách đã trả đủ số tiền!", {
+        position: toast.POSITION.BOTTOM_CENTER,
+      });
+      return;
+    }
+
     try {
       const response = await axios.post(
         `http://localhost:2003/api/payment-method/payment-momo/${id}`,
         {
-          amount: sumAmountValue,
+          amount: Number(sumAmountValue) - Number(order?.moneyGivenByCustomer),
           discount: discountMoney,
           idDiscount: selectedDiscount ? selectedDiscount.id : "",
         }
@@ -3046,7 +3062,11 @@ function BookRoom() {
                   <TableCell>Loại hình thuê</TableCell>
                   <TableCell>Sức chứa</TableCell>
                   <TableCell>Số người</TableCell>
-                  <TableCell>Ngày check-in</TableCell>
+                  {order.typeOfOrder === true ? <TableCell>Ngày check-in</TableCell> : null}
+                  {order.typeOfOrder === false ? <TableCell>Ngày check-in</TableCell> : null}
+                  {order.typeOfOrder === false ? (
+                    <TableCell>Ngày check-in dự kiến</TableCell>
+                  ) : null}
                   {order.status === 1 || order.status === 5 ? (
                     <TableCell>Ngày check out</TableCell>
                   ) : (
@@ -3094,11 +3114,29 @@ function BookRoom() {
                       <TableCell>{orderDetail.timeIn === 1 ? "Theo ngày" : "Theo giờ"}</TableCell>
                       <TableCell>{orderDetail.room.typeRoom.capacity}</TableCell>
                       <TableCell>{orderDetail.customerQuantity}</TableCell>
-                      <TableCell>
-                        {orderDetail &&
-                          orderDetail.checkIn &&
-                          format(new Date(orderDetail.checkIn), "dd/MM/yyyy HH:mm")}
-                      </TableCell>
+                      {order.typeOfOrder === true ? (
+                        <TableCell>
+                          {orderDetail &&
+                            orderDetail.checkIn &&
+                            format(new Date(orderDetail.checkIn), "dd/MM/yyyy HH:mm")}
+                        </TableCell>
+                      ) : null}
+                      {order.typeOfOrder === false ? (
+                        <TableCell>
+                          <TableCell>
+                            {orderDetail &&
+                              orderDetail.checkInReal &&
+                              format(new Date(orderDetail.checkInReal), "dd/MM/yyyy HH:mm")}
+                          </TableCell>
+                        </TableCell>
+                      ) : null}
+                      {order.typeOfOrder === false ? (
+                        <TableCell>
+                          {orderDetail &&
+                            orderDetail.checkIn &&
+                            format(new Date(orderDetail.checkIn), "dd/MM/yyyy HH:mm")}
+                        </TableCell>
+                      ) : null}
                       {order.status === 1 || order.status === 5 ? (
                         <TableCell>
                           {orderDetail &&
@@ -4164,11 +4202,11 @@ function BookRoom() {
               label="Phụ thu"
               value={order.surcharge ? formatPrice(order.surcharge) : "0 VND"}
             />
-            <TextField
+            {/* <TextField
               style={{ marginRight: 20, width: 150 }}
               label="Tiền cọc"
               value={order.deposit ? formatPrice(order.deposit) : "0 VND"}
-            />
+            /> */}
           </div>
           {renderButtonsBasedOnStatus()}
           <Dialog open={openAcceptOrder} maxWidth="md">
@@ -4391,7 +4429,7 @@ function BookRoom() {
             </DialogContent>
             <DialogActions>
               <Button onClick={handleReturnRoom} variant="outlined">
-                Tiền mặt
+                Thanh toán
               </Button>
               {/* <button onClick={createPaymentZaloPay} className="btn btn-outline-primary">
                 Zalo Pay

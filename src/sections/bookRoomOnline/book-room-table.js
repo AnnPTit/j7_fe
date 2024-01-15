@@ -74,6 +74,7 @@ export const BookRoomTable = (props) => {
   const [room, setRoom] = useState([]);
   const [idRoom, setIdRoom] = useState("");
   const [roomName, setRoomName] = useState("");
+  const [priceRoom, setPriceRoom] = useState("");
   const [floor, setFloor] = useState([]);
   const [typeRoom, setTypeRoom] = useState([]);
   const [statusChoose, setStatusChoose] = useState("");
@@ -156,16 +157,18 @@ export const BookRoomTable = (props) => {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const openAnchorEl = Boolean(anchorEl);
 
-  const handleClick = (event, roomId, roomName) => {
+  const handleClick = (event, roomId, roomName, priceRoom) => {
     setAnchorEl(event.currentTarget);
     setIdRoom(roomId);
     setRoomName(roomName);
+    setPriceRoom(priceRoom);
   };
 
   const handleClose = () => {
     setAnchorEl(null);
     setIdRoom("");
     setRoomName("");
+    setPriceRoom("");
   };
 
   const [open, setOpen] = useState(false);
@@ -535,6 +538,13 @@ export const BookRoomTable = (props) => {
     if (idRoom) {
       if (orderDetail.length >= booking?.numberRooms) {
         toast.error("Vượt quá số lượng phòng!", {
+          position: toast.POSITION.BOTTOM_CENTER,
+        });
+        return false;
+      }
+
+      if (priceRoom < booking?.typeRoom?.pricePerDay) {
+        toast.error("Chỉ xếp được phòng ngang hoặc hơn phòng đã book!", {
           position: toast.POSITION.BOTTOM_CENTER,
         });
         return false;
@@ -1342,7 +1352,7 @@ export const BookRoomTable = (props) => {
                                       aria-haspopup="true"
                                       aria-expanded={openAnchorEl ? "true" : undefined}
                                       onClick={(event) =>
-                                        handleClick(event, room.id, room.roomName)
+                                        handleClick(event, room.id, room.roomName, room?.typeRoom?.pricePerDay)
                                       }
                                     >
                                       <KeyboardArrowDownIcon />
