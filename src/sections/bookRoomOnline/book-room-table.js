@@ -648,6 +648,10 @@ export const BookRoomTable = (props) => {
 
   // Xác nhận khách hàng booking
   const handleAcceptCustomerBooking = async () => {
+    if (!booking) {
+      return false;
+    }
+
     if (cccd == null || !cccd.trim() || birthday == null || !birthday.trim()) {
       toast.error("Vui lòng thông tin khách hàng!", {
         position: toast.POSITION.BOTTOM_CENTER,
@@ -680,6 +684,78 @@ export const BookRoomTable = (props) => {
       address: address,
     };
 
+    const { checkInDate } = booking;
+    console.log("Check-in: ", checkInDate);
+    const currentDate = new Date();
+    const checkinDateTime = new Date(checkInDate);
+    console.log("Check-in Datetime: ", checkinDateTime);
+
+    const shouldApplySurcharge =
+      currentDate < checkinDateTime &&
+      (differenceInHours(checkinDateTime, currentDate) <= 38 ||
+        (isToday(checkinDateTime) && currentDate.getHours() < checkinDateTime.getHours()));
+
+    const inTime =
+      currentDate >= checkinDateTime && currentDate.getHours() >= checkinDateTime.getHours();
+
+    if (shouldApplySurcharge) {
+      const payload = {
+        orderId: booking?.order?.id,
+        surcharge: surcharge,
+      };
+
+      try {
+        const accessToken = localStorage.getItem("accessToken");
+        if (!accessToken) {
+          console.log("Bạn chưa đăng nhập");
+          return;
+        }
+        axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+        const response = await axios.put(
+          `http://localhost:2003/api/order/update-surcharge`,
+          payload
+        );
+        setOpenLoading(true);
+        router.push(`/booking?id=${booking?.order?.id}`);
+      } catch (error) {
+        setOpenLoading(false);
+        console.log(error);
+        toast.error("Có lỗi xảy ra !");
+      }
+    } else if (inTime) {
+      const payload = {
+        orderId: booking?.order?.id,
+        surcharge: surcharge,
+      };
+
+      try {
+        const accessToken = localStorage.getItem("accessToken");
+        if (!accessToken) {
+          console.log("Bạn chưa đăng nhập");
+          return;
+        }
+        axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+        const response = await axios.put(
+          `http://localhost:2003/api/order/update-surcharge`,
+          payload
+        );
+        setOpenLoading(true);
+        router.push(`/booking?id=${booking?.order?.id}`);
+      } catch (error) {
+        setOpenLoading(false);
+        console.log(error);
+        toast.error("Có lỗi xảy ra !");
+      }
+    } else {
+      toast.warning(
+        "Vui lòng chờ đến đúng ngày check-in. Hoặc bạn có thể check-in sớm hơn 1 ngày nhưng sẽ tính thêm phụ thu!",
+        {
+          position: toast.POSITION.BOTTOM_CENTER,
+        }
+      );
+      return;
+    }
+
     try {
       const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
       // Kiểm tra xem accessToken có tồn tại không
@@ -696,81 +772,7 @@ export const BookRoomTable = (props) => {
       toast.success("Xác nhận thành công!", {
         position: toast.POSITION.BOTTOM_CENTER,
       });
-      if (!booking) {
-        return false;
-      }
 
-      const { checkInDate } = booking;
-      console.log("Check-in: ", checkInDate);
-      const currentDate = new Date();
-      const checkinDateTime = new Date(checkInDate);
-      console.log("Check-in Datetime: ", checkinDateTime);
-
-      const shouldApplySurcharge =
-        currentDate < checkinDateTime &&
-        (differenceInHours(checkinDateTime, currentDate) <= 38 ||
-          (isToday(checkinDateTime) && currentDate.getHours() < checkinDateTime.getHours()));
-
-      const inTime =
-        currentDate >= checkinDateTime && currentDate.getHours() >= checkinDateTime.getHours();
-
-      if (shouldApplySurcharge) {
-        const payload = {
-          orderId: booking?.order?.id,
-          surcharge: surcharge,
-        };
-
-        try {
-          const accessToken = localStorage.getItem("accessToken");
-          if (!accessToken) {
-            console.log("Bạn chưa đăng nhập");
-            return;
-          }
-          axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
-          const response = await axios.put(
-            `http://localhost:2003/api/order/update-surcharge`,
-            payload
-          );
-          setOpenLoading(true);
-          router.push(`/booking?id=${booking?.order?.id}`);
-        } catch (error) {
-          setOpenLoading(false);
-          console.log(error);
-          toast.error("Có lỗi xảy ra !");
-        }
-      } else if (inTime) {
-        const payload = {
-          orderId: booking?.order?.id,
-          surcharge: surcharge,
-        };
-
-        try {
-          const accessToken = localStorage.getItem("accessToken");
-          if (!accessToken) {
-            console.log("Bạn chưa đăng nhập");
-            return;
-          }
-          axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
-          const response = await axios.put(
-            `http://localhost:2003/api/order/update-surcharge`,
-            payload
-          );
-          setOpenLoading(true);
-          router.push(`/booking?id=${booking?.order?.id}`);
-        } catch (error) {
-          setOpenLoading(false);
-          console.log(error);
-          toast.error("Có lỗi xảy ra !");
-        }
-      } else {
-        toast.warning(
-          "Vui lòng chờ đến đúng ngày check-in. Hoặc bạn có thể check-in sớm hơn 1 ngày nhưng sẽ tính thêm phụ thu!",
-          {
-            position: toast.POSITION.BOTTOM_CENTER,
-          }
-        );
-        return;
-      }
       router.push(`/booking?id=${booking?.order?.id}`);
       console.log("Customer Booking added: ", response.data);
       setCccd("");
@@ -778,6 +780,7 @@ export const BookRoomTable = (props) => {
       setBirthday(null);
       setNationality("");
       setAddress("");
+      setOpenUpdateCustomer(false);
     } catch (error) {
       if (error.response) {
         // Xử lý response lỗi

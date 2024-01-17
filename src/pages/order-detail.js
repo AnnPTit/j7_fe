@@ -826,9 +826,21 @@ function OrderTimeline() {
                   </ul>
                 </div>
                 <div style={{ marginLeft: 800 }}>
-                  <h6>
-                    Ngày Check in: {format(new Date(orderDetail.checkIn), "dd/MM/yyyy - HH:mm")}
-                  </h6>
+                  {order?.typeOfOrder === false ? (
+                    <>
+                      <h6>
+                        Ngày Check in: {format(new Date(orderDetail.checkInReal), "dd/MM/yyyy - HH:mm")}
+                      </h6>
+                      <h6>
+                        Ngày Check in dự kiến: {format(new Date(orderDetail.checkIn), "dd/MM/yyyy - HH:mm")}
+                      </h6>
+                    </>
+                  ) : (
+                    <h6>
+                      Ngày Check in: {format(new Date(orderDetail.checkIn), "dd/MM/yyyy - HH:mm")}
+                    </h6>
+                  )}
+
                   {orderDetail.checkOutReal ? (
                     <h6>
                       Ngày Check out:{" "}
