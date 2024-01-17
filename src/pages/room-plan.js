@@ -847,9 +847,9 @@ function RoomPlan() {
                                   horizontal: "left",
                                 }}
                               >
-                                <MenuItem onClick={handleClose}>
+                                <MenuItem onClick={handleOpenDateDialog}>
                                   <KeyboardArrowDownIcon />
-                                  Tiến hành nhận phòng
+                                  Tiến hành check-in
                                 </MenuItem>
                               </Menu>
                             ) : null}
