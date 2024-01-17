@@ -38,20 +38,16 @@ import PlusCircleIcon from "@heroicons/react/24/solid/PlusCircleIcon";
 import CheckCircleIcon from "@heroicons/react/24/solid/CheckCircleIcon";
 import XCircleIcon from "@heroicons/react/24/solid/XCircleIcon";
 import { SeverityPill } from "src/components/severity-pill";
-import Link from "next/link";
 import { useRouter } from "next/router";
 import React from "react";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { Drawer } from "antd";
-import { DatePicker, TimePicker } from "@mui/x-date-pickers";
-import { parse, format, subYears, differenceInYears, differenceInHours, isToday } from "date-fns";
-import Swal from "sweetalert2";
+import { DatePicker } from "@mui/x-date-pickers";
+import { parse, format, subYears, differenceInHours, isToday } from "date-fns";
 import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
 import "bootstrap/dist/css/bootstrap.min.css";
-import Backdrop from "@mui/material/Backdrop";
-import CircularProgress from "@mui/material/CircularProgress";
 import { FaHotel, FaSignOutAlt } from "react-icons/fa";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import CloseIcon from "@mui/icons-material/Close";
@@ -188,6 +184,7 @@ export const BookRoomTable = (props) => {
       setBooking(responseBooking.data);
       // setOrderId(responseOrder.data.id);
       console.log(responseBooking.data);
+      setNoteCancelBooking(responseBooking.data.cancelReason);
 
       if (booking?.order?.id !== null) {
         const responseOrderDetail = await axios.get(
