@@ -1117,7 +1117,7 @@ export const BookRoomTable = (props) => {
               Đóng
             </Button>
             {loading && (
-              <div style={{paddingLeft: "15px"}} class="d-flex justify-content-center">
+              <div style={{ paddingLeft: "15px" }} class="d-flex justify-content-center">
                 <div class="spinner-border" role="status">
                   <span class="visually-hidden">Loading...</span>
                 </div>
@@ -1343,45 +1343,41 @@ export const BookRoomTable = (props) => {
 
                               <Typography variant="h6" component="div">
                                 {room.roomName}
-                                {room.status === 1 ? (
-                                  <>
-                                    <IconButton
-                                      aria-controls={
-                                        openAnchorEl ? "demo-positioned-menu" : undefined
-                                      }
-                                      aria-haspopup="true"
-                                      aria-expanded={openAnchorEl ? "true" : undefined}
-                                      onClick={(event) =>
-                                        handleClick(event, room.id, room.roomName, room?.typeRoom?.pricePerDay)
-                                      }
-                                    >
-                                      <KeyboardArrowDownIcon />
-                                    </IconButton>
-                                    {room.status === 1 && room.id === idRoom ? (
-                                      <Menu
-                                        id="demo-positioned-menu"
-                                        aria-labelledby="demo-positioned-button"
-                                        anchorEl={anchorEl}
-                                        open={Boolean(anchorEl)}
-                                        onClose={handleClose}
-                                        anchorOrigin={{
-                                          vertical: "top",
-                                          horizontal: "left",
-                                        }}
-                                        transformOrigin={{
-                                          vertical: "top",
-                                          horizontal: "left",
-                                        }}
-                                      >
-                                        <MenuItem onClick={addRoom}>
-                                          <KeyboardArrowDownIcon />
-                                          Chọn phòng
-                                        </MenuItem>
-                                      </Menu>
-                                    ) : null}
-                                  </>
-                                ) : null}
-
+                                <IconButton
+                                  aria-controls={openAnchorEl ? "demo-positioned-menu" : undefined}
+                                  aria-haspopup="true"
+                                  aria-expanded={openAnchorEl ? "true" : undefined}
+                                  onClick={(event) =>
+                                    handleClick(
+                                      event,
+                                      room.id,
+                                      room.roomName,
+                                      room?.typeRoom?.pricePerDay
+                                    )
+                                  }
+                                >
+                                  <KeyboardArrowDownIcon />
+                                </IconButton>
+                                <Menu
+                                  id="demo-positioned-menu"
+                                  aria-labelledby="demo-positioned-button"
+                                  anchorEl={anchorEl}
+                                  open={Boolean(anchorEl)}
+                                  onClose={handleClose}
+                                  anchorOrigin={{
+                                    vertical: "top",
+                                    horizontal: "left",
+                                  }}
+                                  transformOrigin={{
+                                    vertical: "top",
+                                    horizontal: "left",
+                                  }}
+                                >
+                                  <MenuItem onClick={addRoom}>
+                                    <KeyboardArrowDownIcon />
+                                    Chọn phòng
+                                  </MenuItem>
+                                </Menu>
                                 <br />
                                 <br />
                                 {room.typeRoom.typeRoomName}

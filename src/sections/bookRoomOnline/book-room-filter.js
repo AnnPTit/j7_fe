@@ -18,8 +18,9 @@ function BookRoomOnlineFilter({ statusChoose, setStatusChoose }) {
           <MenuItem value="2">Đã xếp phòng</MenuItem>
           <MenuItem value="3">Đã nhận phòng</MenuItem>
           <MenuItem value="4">Đã trả phòng</MenuItem>
-          <MenuItem value="5">Yêu cầu Hủy</MenuItem>
+          <MenuItem value="5">Yêu cầu hủy</MenuItem>
           <MenuItem value="6">Khách hàng hủy</MenuItem>
+          <MenuItem value="-1">Thanh toán thất bại</MenuItem>
         </Select>
       </FormControl>
     </div>
