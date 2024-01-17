@@ -29,7 +29,7 @@ export const NotificationPopover = (props) => {
               <Typography>Có khách đặt phòng. Check ngay</Typography>
               <Link href="/book-room-online">
                 <Typography onClick={handleLinkClick}>
-                  {order.orderCode} / {order.customer.fullname}
+                  {order.customer.fullname} / {order.customer.phoneNumber}
                 </Typography>
               </Link>
               <Typography>{format(new Date(order.createAt), "EEEE, dd/MM/yyyy")}</Typography>

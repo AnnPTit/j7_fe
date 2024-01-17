@@ -38,7 +38,7 @@ export const TopNav = (props) => {
       try {
         const accessToken = localStorage.getItem("accessToken");
         axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`; 
-        const response = await axios.get("http://localhost:2003/api/order/loadNotify");
+        const response = await axios.get("http://localhost:2003/api/manage-booking/loadNotify");
         setRecentOrders(response.data);
       } catch (error) {
         console.error("Error fetching recent orders:", error);
