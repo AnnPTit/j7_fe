@@ -782,7 +782,7 @@ function RoomPlan() {
                               (orderDetail) =>
                                 orderDetail.order &&
                                 orderDetail.order.status === 1 &&
-                                orderDetail.order.typeOfOrder == 0 &&
+                                orderDetail.order.typeOfOrder === false &&
                                 room.status === 1
                             ) ? (
                               <>

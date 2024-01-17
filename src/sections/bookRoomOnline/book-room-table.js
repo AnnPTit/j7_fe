@@ -70,6 +70,7 @@ export const BookRoomTable = (props) => {
   const [room, setRoom] = useState([]);
   const [idRoom, setIdRoom] = useState("");
   const [roomName, setRoomName] = useState("");
+  const [priceRoom, setPriceRoom] = useState("");
   const [floor, setFloor] = useState([]);
   const [typeRoom, setTypeRoom] = useState([]);
   const [statusChoose, setStatusChoose] = useState("");
@@ -152,16 +153,18 @@ export const BookRoomTable = (props) => {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const openAnchorEl = Boolean(anchorEl);
 
-  const handleClick = (event, roomId, roomName) => {
+  const handleClick = (event, roomId, roomName, priceRoom) => {
     setAnchorEl(event.currentTarget);
     setIdRoom(roomId);
     setRoomName(roomName);
+    setPriceRoom(priceRoom);
   };
 
   const handleClose = () => {
     setAnchorEl(null);
     setIdRoom("");
     setRoomName("");
+    setPriceRoom("");
   };
 
   const [open, setOpen] = useState(false);
@@ -537,6 +540,13 @@ export const BookRoomTable = (props) => {
         return false;
       }
 
+      if (priceRoom < booking?.typeRoom?.pricePerDay) {
+        toast.error("Chỉ xếp được phòng ngang hoặc hơn phòng đã book!", {
+          position: toast.POSITION.BOTTOM_CENTER,
+        });
+        return false;
+      }
+
       try {
         const accessToken = localStorage.getItem("accessToken"); // Lấy access token từ localStorage
         // Kiểm tra xem accessToken có tồn tại không
@@ -864,6 +874,7 @@ export const BookRoomTable = (props) => {
 
     if (file === undefined) {
       toast.error("Hình ảnh không được để trống !");
+      setLoading(false);
     }
 
     try {
@@ -872,6 +883,7 @@ export const BookRoomTable = (props) => {
         console.log("Bạn chưa đăng nhập");
         return;
       }
+      setLoading(true);
       axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
       const response = await axios.put(
         `http://localhost:2003/api/manage-booking/cancel-booking/customer/${booking?.id}`,
@@ -889,6 +901,7 @@ export const BookRoomTable = (props) => {
       toast.success("Hủy thành công !");
       window.location.reload();
     } catch (error) {
+      setLoading(false);
       if (error.response) {
         if (error.response.status === 400) {
           toast.error(error.response.data, {
@@ -1100,9 +1113,18 @@ export const BookRoomTable = (props) => {
             <Button variant="outlined" onClick={handleCloseRefund} color="error">
               Đóng
             </Button>
-            <Button variant="outlined" onClick={handleCancelBooking2} style={{ marginLeft: 20 }}>
-              Xác nhận
-            </Button>
+            {loading && (
+              <div style={{paddingLeft: "15px"}} class="d-flex justify-content-center">
+                <div class="spinner-border" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+              </div>
+            )}
+            {
+              <Button variant="outlined" onClick={handleCancelBooking2} style={{ marginLeft: 20 }}>
+                Xác nhận
+              </Button>
+            }
           </div>
         </DialogContent>
       </Dialog>
@@ -1327,7 +1349,7 @@ export const BookRoomTable = (props) => {
                                       aria-haspopup="true"
                                       aria-expanded={openAnchorEl ? "true" : undefined}
                                       onClick={(event) =>
-                                        handleClick(event, room.id, room.roomName)
+                                        handleClick(event, room.id, room.roomName, room?.typeRoom?.pricePerDay)
                                       }
                                     >
                                       <KeyboardArrowDownIcon />
